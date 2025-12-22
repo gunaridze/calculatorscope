@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS ---
+
+enum ToolStatus {
+  draft
+  published
+  archived
+}
+
+enum ToolEngine {
+  json
+  custom
+}
+
+// --- MODELS ---
+
+model Tool {
+  id        String   @id @default(uuid())
+  // type делаем String (VARCHAR), чтобы добавлять новые типы без миграций БД
+  // В коде валидируем как: 'calculator' | 'converter' | 'text_tool' etc.
+  type      String
+  status    ToolStatus @default(draft)
+  engine    ToolEngine @default(json)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  i18n       ToolI18n[]
+  categories ToolCategory[] // M:N relation via explicit table
+  config     ToolConfig?
+
+  @@map("tools")
+}
+
+model ToolI18n {
+  id        String   @id @default(uuid())
+  tool_id   String
+  lang      String   // en, de, ru, lv, pl
+
+  // SEO & URL
+  slug             String
+  title            String
+  meta_description String?
+  h1               String?
+  intro_text       String?  @db.Text
+
+  // Content Data
+  body_blocks_json Json?    // Структура блоков контента
+  interface_json   Json?    // Для хранения переводов кнопок ("Рассчитать", "Очистить")
+  faq_json         Json?    // Вопросы и ответы для Schema.org
+  schema_json      Json?    // Дополнительная микроразметка
+
+  tool Tool @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+
+  // Уникальность: один slug на языке, одна локализация для инструмента
+  @@unique([lang, slug])
+  @@unique([tool_id, lang])
+  @@map("tool_i18n")
+}
+
+model Category {
+  id         String  @id @default(uuid())
+  parent_id  String?
+  sort_order Int     @default(0)
+
+  // Self-relation for hierarchy
+  parent     Category?  @relation("CategoryHierarchy", fields: [parent_id], references: [id])
+  children   Category[] @relation("CategoryHierarchy")
+
+  i18n       CategoryI18n[]
+  tools      ToolCategory[]
+
+  @@map("categories")
+}
+
+model CategoryI18n {
+  category_id String
+  lang        String
+
+  slug             String
+  name             String
+  meta_title       String?
+  meta_description String?
+
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@unique([category_id, lang])
+  @@unique([lang, slug]) // Важно для плоского URL
+  @@map("category_i18n")
+}
+
+// Явная таблица связи (Many-to-Many), чтобы управлять порядком или добавлять метаданные позже
+model ToolCategory {
+  tool_id     String
+  category_id String
+
+  tool     Tool     @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@id([tool_id, category_id])
+  @@map("tool_categories")
+}
+
+model ToolConfig {
+  tool_id String @id
+
+  // Конфигурация логики (формулы, коэффициенты, настройки полей)
+  config_json          Json
+  // Имя React-компонента для Custom Engine (например "MortgageAmortization")
+  custom_component_key String?
+
+  tool Tool @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+
+  @@map("tool_config")
+}

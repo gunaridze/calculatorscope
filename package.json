@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
+    "@formatjs/intl-localematcher": "^0.7.2",
+    "@prisma/client": "^5.19.1",
+    "mathjs": "^15.1.0",
+    "negotiator": "^1.0.0",
     "next": "16.1.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -20,7 +24,13 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.0",
+    "prisma": "^5.19.1",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
