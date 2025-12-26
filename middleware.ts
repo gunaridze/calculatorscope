@@ -3,8 +3,8 @@ import type { NextRequest } from 'next/server'
 import { match } from '@formatjs/intl-localematcher'
 import Negotiate from 'negotiator'
 
-// Твои поддерживаемые языки
-const locales = ['en', 'ru', 'lv', 'lt', 'ee', 'de']
+// Поддерживаемые языки
+const locales = ['en', 'de', 'es', 'fr', 'it', 'pl', 'ru', 'lv']
 const defaultLocale = 'en'
 
 // Зарезервированные пути, которые НЕ нужно обрабатывать
