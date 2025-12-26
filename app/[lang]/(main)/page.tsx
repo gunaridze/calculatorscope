@@ -11,20 +11,40 @@ export default async function HomePage({ params }: Props) {
     const { lang } = await params
 
     // 2. Получаем категории и инструменты для текущего языка
+    // Используем select вместо include, чтобы не загружать intro_text, которого нет в БД
     const categories = await prisma.category.findMany({
-        include: {
-            i18n: { where: { lang } }, // Берем перевод категории
+        select: {
+            id: true,
+            sort_order: true,
+            i18n: {
+                where: { lang },
+                select: {
+                    slug: true,
+                    name: true,
+                    meta_title: true,
+                    meta_description: true,
+                    // intro_text не включаем, так как его нет в БД
+                }
+            },
             tools: {
-                include: {
+                select: {
                     tool: {
-                        include: {
-                            i18n: { where: { lang } } // Берем перевод инструмента
+                        select: {
+                            id: true,
+                            i18n: {
+                                where: { lang },
+                                select: {
+                                    slug: true,
+                                    title: true,
+                                    meta_description: true,
+                                }
+                            }
                         }
                     }
                 }
             }
         },
-        orderBy: { sort_order: 'asc' } // Сортируем по порядку
+        orderBy: { sort_order: 'asc' }
     })
 
     return (
