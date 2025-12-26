@@ -3,6 +3,7 @@ import { getToolData } from '@/lib/db'
 import JsonCalculator from '@/components/JsonCalculator'
 import { calculate, type JsonEngineConfig, type JsonEngineOutput } from '@/core/engines/json'
 import type { Metadata } from 'next'
+import Footer from '@/components/Footer'
 
 // Типы для параметров URL (в Next.js 15+ это Promise)
 type Props = {
@@ -114,112 +115,115 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
 
     return (
-        <main className="container mx-auto px-4 py-12 max-w-4xl">
-            {/* Заголовок и описание (SEO) */}
-            <header className="mb-8 text-center">
-                <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{data.h1 || data.title}</h1>
-                {data.intro_text && (
-                    <p className="text-lg text-gray-600">{data.intro_text}</p>
-                )}
-                {data.short_answer && (
-                    <p className="text-xl text-gray-700 mt-4 font-medium">{data.short_answer}</p>
-                )}
-            </header>
+        <>
+            <main className="container mx-auto px-4 py-12 max-w-4xl">
+                {/* Заголовок и описание (SEO) */}
+                <header className="mb-8 text-center">
+                    <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{data.h1 || data.title}</h1>
+                    {data.intro_text && (
+                        <p className="text-lg text-gray-600">{data.intro_text}</p>
+                    )}
+                    {data.short_answer && (
+                        <p className="text-xl text-gray-700 mt-4 font-medium">{data.short_answer}</p>
+                    )}
+                </header>
 
-            {/* Сам калькулятор (Клиентский компонент) */}
-            <div className="flex justify-center mb-12">
-                {config && (
-                    <JsonCalculator 
-                        config={config} 
-                        interface={interfaceData}
-                        initialValues={initialValues}
-                    />
-                )}
-            </div>
+                {/* Сам калькулятор (Клиентский компонент) */}
+                <div className="flex justify-center mb-12">
+                    {config && (
+                        <JsonCalculator 
+                            config={config} 
+                            interface={interfaceData}
+                            initialValues={initialValues}
+                        />
+                    )}
+                </div>
 
-            {/* AI-friendly секции для парсинга LLM */}
-            
-            {/* Examples Section */}
-            {examples.length > 0 && (
-                <section id="examples" className="mb-12 prose lg:prose-xl mx-auto">
-                    <h2 className="text-3xl font-bold mb-6">Examples</h2>
-                    <div className="space-y-6">
-                        {examples.map((ex, idx) => (
-                            <div key={idx} className="bg-gray-50 p-6 rounded-lg">
-                                <h3 className="text-xl font-semibold mb-3">Example {idx + 1}</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <h4 className="font-semibold mb-2">Inputs:</h4>
-                                        <ul className="list-disc list-inside">
-                                            {Object.entries(ex.inputs).map(([key, value]) => (
-                                                <li key={key}>{key}: {value}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold mb-2">Outputs:</h4>
-                                        <ul className="list-disc list-inside">
-                                            {Object.entries(ex.outputs).map(([key, value]) => (
-                                                <li key={key}>
-                                                    {key}: {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                                                </li>
-                                            ))}
-                                        </ul>
+                {/* AI-friendly секции для парсинга LLM */}
+                
+                {/* Examples Section */}
+                {examples.length > 0 && (
+                    <section id="examples" className="mb-12 prose lg:prose-xl mx-auto">
+                        <h2 className="text-3xl font-bold mb-6">Examples</h2>
+                        <div className="space-y-6">
+                            {examples.map((ex, idx) => (
+                                <div key={idx} className="bg-gray-50 p-6 rounded-lg">
+                                    <h3 className="text-xl font-semibold mb-3">Example {idx + 1}</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <h4 className="font-semibold mb-2">Inputs:</h4>
+                                            <ul className="list-disc list-inside">
+                                                {Object.entries(ex.inputs).map(([key, value]) => (
+                                                    <li key={key}>{key}: {value}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold mb-2">Outputs:</h4>
+                                            <ul className="list-disc list-inside">
+                                                {Object.entries(ex.outputs).map(([key, value]) => (
+                                                    <li key={key}>
+                                                        {key}: {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
+                            ))}
+                        </div>
+                    </section>
+                )}
 
-            {/* Formula Section */}
-            {data.formula_md && (
-                <section id="formula" className="mb-12 prose lg:prose-xl mx-auto">
-                    <h2 className="text-3xl font-bold mb-6">Formula</h2>
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                        <div dangerouslySetInnerHTML={{ __html: data.formula_md }} />
-                    </div>
-                </section>
-            )}
+                {/* Formula Section */}
+                {data.formula_md && (
+                    <section id="formula" className="mb-12 prose lg:prose-xl mx-auto">
+                        <h2 className="text-3xl font-bold mb-6">Formula</h2>
+                        <div className="bg-gray-50 p-6 rounded-lg">
+                            <div dangerouslySetInnerHTML={{ __html: data.formula_md }} />
+                        </div>
+                    </section>
+                )}
 
-            {/* Assumptions Section */}
-            {data.assumptions_md && (
-                <section id="assumptions" className="mb-12 prose lg:prose-xl mx-auto">
-                    <h2 className="text-3xl font-bold mb-6">Assumptions</h2>
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                        <div dangerouslySetInnerHTML={{ __html: data.assumptions_md }} />
-                    </div>
-                </section>
-            )}
+                {/* Assumptions Section */}
+                {data.assumptions_md && (
+                    <section id="assumptions" className="mb-12 prose lg:prose-xl mx-auto">
+                        <h2 className="text-3xl font-bold mb-6">Assumptions</h2>
+                        <div className="bg-gray-50 p-6 rounded-lg">
+                            <div dangerouslySetInnerHTML={{ __html: data.assumptions_md }} />
+                        </div>
+                    </section>
+                )}
 
-            {/* FAQ Section */}
-            {data.faq_json && (
-                <section id="faq" className="mb-12 prose lg:prose-xl mx-auto">
-                    <h2 className="text-3xl font-bold mb-6">Frequently Asked Questions</h2>
-                    <div className="space-y-4">
-                        {(() => {
-                            try {
-                                // @ts-ignore
-                                const faqs = typeof data.faq_json === 'string' 
-                                    ? JSON.parse(data.faq_json) 
-                                    : data.faq_json
-                                if (Array.isArray(faqs)) {
-                                    return faqs.map((faq: any, idx: number) => (
-                                        <div key={idx} className="bg-gray-50 p-6 rounded-lg">
-                                            <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
-                                            <p>{faq.answer}</p>
-                                        </div>
-                                    ))
+                {/* FAQ Section */}
+                {data.faq_json && (
+                    <section id="faq" className="mb-12 prose lg:prose-xl mx-auto">
+                        <h2 className="text-3xl font-bold mb-6">Frequently Asked Questions</h2>
+                        <div className="space-y-4">
+                            {(() => {
+                                try {
+                                    // @ts-ignore
+                                    const faqs = typeof data.faq_json === 'string' 
+                                        ? JSON.parse(data.faq_json) 
+                                        : data.faq_json
+                                    if (Array.isArray(faqs)) {
+                                        return faqs.map((faq: any, idx: number) => (
+                                            <div key={idx} className="bg-gray-50 p-6 rounded-lg">
+                                                <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
+                                                <p>{faq.answer}</p>
+                                            </div>
+                                        ))
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing FAQ:', e)
                                 }
-                            } catch (e) {
-                                console.error('Error parsing FAQ:', e)
-                            }
-                            return null
-                        })()}
-                    </div>
-                </section>
-            )}
-        </main>
+                                return null
+                            })()}
+                        </div>
+                    </section>
+                )}
+            </main>
+            <Footer lang={lang} />
+        </>
     )
 }
