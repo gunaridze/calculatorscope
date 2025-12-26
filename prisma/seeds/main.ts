@@ -1,6 +1,5 @@
 // prisma/seeds/main.ts
 import { PrismaClient } from '@prisma/client';
-import { discreteMathCategory, allFinanceTools } from './data/finance';
 import { financeCategory, allFinanceTools } from './data/finance';
 import { statisticsCategory, allStatisticsTools } from './data/statistics';
 import { mathCategory, allMathTools } from './data/math';
