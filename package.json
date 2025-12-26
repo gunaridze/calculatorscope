@@ -7,11 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "studio": "npx prisma studio --url \"$(grep 'postgresql://postgres:4pfBFNcz2.tp2y%21@calculatorscope-db.c9yiqa6ok268.eu-north-1.rds.amazonaws.com:5432/postgres?sslmode=require&sslcert=&sslkey=&sslrootcert=' .env | cut -d '=' -f2- | tr -d '\"' | tr -d \"'\")\""
+    "studio": "npx prisma studio --url \"$(grep 'postgresql://postgres:4pfBFNcz2.tp2y%21@calculatorscope-db.c9yiqa6ok268.eu-north-1.rds.amazonaws.com:5432/postgres?sslmode=require&sslcert=&sslkey=&sslrootcert=' .env | cut -d '=' -f2- | tr -d '\"' | tr -d \"'\")\"",
+    "prisma": "prisma",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:pull": "prisma db pull",
+    "db:seed": "prisma db seed"
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.7.2",
-    "@prisma/client": "^5.19.1",
+    "@prisma/client": "5.19.1",
     "mathjs": "^15.1.0",
     "negotiator": "^1.0.0",
     "next": "16.1.0",
@@ -26,13 +31,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.0",
-    "prisma": "^5.19.1",
+    "prisma": "5.19.1",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }
