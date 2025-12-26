@@ -43,12 +43,12 @@ export default async function ToolPage({ params }: Props) {
             </div>
 
             {/* Текстовый контент под калькулятором */}
-            {data.body_blocks_json && (
+            {/* Временно закомментировано - поле body_blocks_json отсутствует в ToolI18n */}
+            {/* {data.body_blocks_json && (
                 <article className="prose lg:prose-xl mx-auto text-gray-700">
-                    {/* @ts-ignore - здесь пока просто выводим сырой контент */}
                     <p>{(data.body_blocks_json as any).content}</p>
                 </article>
-            )}
+            )} */}
         </main>
     )
 }
