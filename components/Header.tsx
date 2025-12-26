@@ -109,7 +109,7 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                         {/* Бургер категорий */}
                         <button
                             onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex-shrink-0"
                             style={{ color: '#1814E6' }}
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,19 +118,22 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                             <span className="font-medium">Calculators</span>
                         </button>
 
-                        {/* H1 и meta_description */}
-                        <div className="flex-1">
+                        {/* H1 и meta_description - по центру с адаптивными размерами */}
+                        <div className="flex-1 text-center">
                             {h1 && (
-                                <h1 className="text-2xl font-bold text-black mb-1">
+                                <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-black mb-1">
                                     {h1}
                                 </h1>
                             )}
                             {metaDescription && (
-                                <p className="text-sm text-gray-600">
+                                <p className="text-xs sm:text-sm md:text-base text-gray-600 px-2">
                                     {metaDescription}
                                 </p>
                             )}
                         </div>
+
+                        {/* Пустое место справа для баланса */}
+                        <div className="flex-shrink-0 w-0 sm:w-auto sm:min-w-[120px]"></div>
                     </div>
                 </div>
             </div>
