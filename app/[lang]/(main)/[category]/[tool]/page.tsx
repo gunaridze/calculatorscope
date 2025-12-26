@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getToolData } from '@/lib/db'
 import JsonCalculator from '@/components/JsonCalculator'
-import { calculate, type JsonEngineConfig } from '@/core/engines/json'
+import { calculate, type JsonEngineConfig, type JsonEngineOutput } from '@/core/engines/json'
 import type { Metadata } from 'next'
 
 // Типы для параметров URL (в Next.js 15+ это Promise)
@@ -94,7 +94,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
 
     // 6. Генерация примеров через единый движок (для SEO/AI)
-    let examples: Array<{ inputs: Record<string, number>, outputs: Record<string, number> }> = []
+    let examples: Array<{ inputs: Record<string, number>, outputs: JsonEngineOutput }> = []
     if (config && data.examples_json) {
         try {
             // @ts-ignore
@@ -160,7 +160,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                         <h4 className="font-semibold mb-2">Outputs:</h4>
                                         <ul className="list-disc list-inside">
                                             {Object.entries(ex.outputs).map(([key, value]) => (
-                                                <li key={key}>{key}: {typeof value === 'number' ? value.toFixed(2) : value}</li>
+                                                <li key={key}>
+                                                    {key}: {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                                </li>
                                             ))}
                                         </ul>
                                     </div>
