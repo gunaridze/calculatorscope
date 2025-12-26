@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
@@ -29,6 +29,13 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
 
     // Получаем текущий путь без языка для переключения языков
     const pathWithoutLang = pathname.replace(`/${lang}`, '') || '/'
+
+    // Сортируем языки так, чтобы текущий был первым
+    const sortedLanguages = useMemo(() => {
+        const current = languages.find(l => l.code === lang)
+        const others = languages.filter(l => l.code !== lang)
+        return current ? [current, ...others] : languages
+    }, [lang])
 
     return (
         <header className="sticky top-0 z-50">
@@ -67,17 +74,17 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                                 onChange={(e) => {
                                     window.location.href = `/${e.target.value}${pathWithoutLang}`
                                 }}
-                                className="appearance-none bg-transparent border-none px-2 py-2 cursor-pointer focus:outline-none text-sm"
+                                className="appearance-none bg-transparent border-none pl-2 pr-8 py-2 cursor-pointer focus:outline-none text-sm"
                                 style={{ color: '#1814E6' }}
                             >
-                                {languages.map((langOption) => (
+                                {sortedLanguages.map((langOption) => (
                                     <option key={langOption.code} value={langOption.code}>
                                         {langOption.name}
                                     </option>
                                 ))}
                             </select>
                             <svg
-                                className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none w-4 h-4"
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none w-4 h-4"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -130,17 +137,17 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                                 onChange={(e) => {
                                     window.location.href = `/${e.target.value}${pathWithoutLang}`
                                 }}
-                                className="appearance-none bg-transparent border-none px-3 py-2 cursor-pointer focus:outline-none"
+                                className="appearance-none bg-transparent border-none pl-3 pr-8 py-2 cursor-pointer focus:outline-none"
                                 style={{ color: '#1814E6' }}
                             >
-                                {languages.map((langOption) => (
+                                {sortedLanguages.map((langOption) => (
                                     <option key={langOption.code} value={langOption.code}>
                                         {langOption.name}
                                     </option>
                                 ))}
                             </select>
                             <svg
-                                className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none w-4 h-4"
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none w-4 h-4"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
