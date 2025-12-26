@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 
 const languages = [
-    { code: 'en', name: 'Eng' },
+    { code: 'en', name: 'En' },
     { code: 'de', name: 'De' },
     { code: 'es', name: 'Es' },
     { code: 'fr', name: 'Fr' },
