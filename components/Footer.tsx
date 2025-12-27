@@ -8,10 +8,10 @@ export default function Footer({ lang }: FooterProps) {
     const currentYear = new Date().getFullYear()
 
     return (
-        <footer className="border-t border-gray-300 mt-auto">
+        <footer className="border-t border-gray-300 mt-auto bg-white">
             <div className="container mx-auto px-4 py-6">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-                <Link 
+                    <Link 
                         href={`/${lang}/privacy`}
                         className="text-blue-600 hover:text-blue-800 transition-colors"
                     >
