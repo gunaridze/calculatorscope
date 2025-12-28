@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 const languages = [
@@ -24,7 +24,9 @@ type HeaderProps = {
 
 export default function Header({ lang, h1, metaDescription }: HeaderProps) {
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
+    const [isSwitchingLang, setIsSwitchingLang] = useState(false)
     const pathname = usePathname()
+    const router = useRouter()
     const currentLang = languages.find(l => l.code === lang) || languages[0]
 
     // Получаем текущий путь без языка для переключения языков
@@ -36,6 +38,34 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
         const others = languages.filter(l => l.code !== lang)
         return current ? [current, ...others] : languages
     }, [lang])
+
+    // Обработка переключения языка
+    const handleLanguageChange = async (targetLang: string) => {
+        if (targetLang === lang || isSwitchingLang) return
+
+        setIsSwitchingLang(true)
+
+        try {
+            // Запрашиваем правильный URL для нового языка
+            const response = await fetch(
+                `/api/language-switch?currentLang=${lang}&targetLang=${targetLang}&pathname=${encodeURIComponent(pathname)}`
+            )
+            const data = await response.json()
+            
+            if (data.url) {
+                router.push(data.url)
+            } else {
+                // Fallback: если API не вернул URL, идем на главную
+                router.push(`/${targetLang}`)
+            }
+        } catch (error) {
+            console.error('Error switching language:', error)
+            // Fallback: в случае ошибки идем на главную
+            router.push(`/${targetLang}`)
+        } finally {
+            setIsSwitchingLang(false)
+        }
+    }
 
     return (
         <header className="sticky top-0 z-50">
@@ -69,14 +99,13 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                             />
                         </Link>
 
-                        {/* Выбор языка */}
+                        {/* Выбор языка - мобильная версия */}
                         <div className="relative flex-shrink-0">
                             <select
                                 value={lang}
-                                onChange={(e) => {
-                                    window.location.href = `/${e.target.value}${pathWithoutLang}`
-                                }}
-                                className="appearance-none bg-transparent border-none pl-2 pr-8 py-2 cursor-pointer focus:outline-none text-sm"
+                                onChange={(e) => handleLanguageChange(e.target.value)}
+                                disabled={isSwitchingLang}
+                                className="appearance-none bg-transparent border-none pl-2 pr-8 py-2 cursor-pointer focus:outline-none text-sm disabled:opacity-50"
                                 style={{ color: '#1814E6' }}
                             >
                                 {sortedLanguages.map((langOption) => (
@@ -136,9 +165,8 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                         <div className="relative flex-shrink-0">
                             <select
                                 value={lang}
-                                onChange={(e) => {
-                                    window.location.href = `/${e.target.value}${pathWithoutLang}`
-                                }}
+                                onChange={(e) => handleLanguageChange(e.target.value)}
+                                disabled={isSwitchingLang}
                                 className="appearance-none bg-transparent border-none pl-3 pr-8 py-2 cursor-pointer focus:outline-none"
                                 style={{ color: '#1814E6' }}
                             >
