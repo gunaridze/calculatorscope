@@ -7,9 +7,138 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// =====================
-// ENUMS
-// =====================
+model Tool {
+  id         String         @id @default(uuid())
+  type       String
+  status     ToolStatus     @default(draft)
+  engine     ToolEngine     @default(json)
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+  categories ToolCategory[]
+  config     ToolConfig?
+  i18n       ToolI18n[]
+
+  @@map("tools")
+}
+
+model ToolI18n {
+  id                  String    @id @default(uuid())
+  tool_id             String
+  lang                String
+  slug                String
+  title               String
+  h1                  String?
+  meta_title          String?
+  meta_description    String?
+  meta_robots         String?   @default("index,follow")
+  canonical_path      String?
+  short_answer        String?
+  intro_text          String?
+  key_points_json     Json?
+  inputs_json         Json?
+  outputs_json        Json?
+  examples_json       Json?
+  formula_md          String?
+  assumptions_md      String?
+  faq_json            Json?
+  howto_json          Json?
+  schema_json         Json?
+  og_title            String?
+  og_description      String?
+  og_image_url        String?
+  twitter_title       String?
+  twitter_description String?
+  twitter_image_url   String?
+  last_reviewed_at    DateTime?
+  updated_at          DateTime  @updatedAt
+  tool                Tool      @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+
+  @@unique([lang, slug])
+  @@unique([tool_id, lang])
+  @@map("tool_i18n")
+}
+
+model ToolConfig {
+  tool_id              String  @id
+  config_json          Json
+  custom_component_key String?
+  tool                 Tool    @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+
+  @@map("tool_config")
+}
+
+model Category {
+  id         String         @id @default(uuid())
+  parent_id  String?
+  sort_order Int            @default(0)
+  parent     Category?      @relation("CategoryHierarchy", fields: [parent_id], references: [id])
+  children   Category[]     @relation("CategoryHierarchy")
+  i18n       CategoryI18n[]
+  tools      ToolCategory[]
+
+  @@map("categories")
+}
+
+model CategoryI18n {
+  category_id         String
+  lang                String
+  slug                String
+  name                String
+  meta_title          String?
+  meta_description    String?
+  intro_text          String?
+  og_title            String?
+  og_description      String?
+  og_image_url        String?
+  content_blocks_json Json?
+  og_image_alt        String?
+  category            Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@unique([category_id, lang])
+  @@unique([lang, slug])
+  @@map("category_i18n")
+}
+
+model ToolCategory {
+  tool_id     String
+  category_id String
+  category    Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  tool        Tool     @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+
+  @@id([tool_id, category_id])
+  @@map("tool_categories")
+}
+
+model Page {
+  id         String     @id @default(uuid())
+  code       String     @unique
+  status     PageStatus @default(draft)
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  i18n       PageI18n[]
+
+  @@map("pages")
+}
+
+model PageI18n {
+  page_id          String
+  lang             String
+  slug             String
+  meta_title       String?
+  meta_description String?
+  meta_robots      String?
+  h1               String
+  short_answer     String?
+  body_blocks_json Json?
+  schema_json      Json?
+  updated_at       DateTime  @updatedAt
+  last_reviewed_at DateTime?
+  page             Page      @relation(fields: [page_id], references: [id], onDelete: Cascade)
+
+  @@unique([page_id, lang])
+  @@unique([lang, slug])
+  @@map("page_i18n")
+}
 
 enum ToolStatus {
   draft
@@ -25,208 +154,4 @@ enum ToolEngine {
 enum PageStatus {
   draft
   published
-}
-
-// =====================
-// CORE MODELS
-// =====================
-
-model Tool {
-  id        String      @id @default(uuid())
-  type      String      // calculator | converter | text_tool | generator | checker
-  status    ToolStatus  @default(draft)
-  engine    ToolEngine  @default(json)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  i18n       ToolI18n[]
-  categories ToolCategory[]
-  config     ToolConfig?
-
-  @@map("tools")
-}
-
-// =====================
-// TOOL I18N (SEO + AI)
-// =====================
-
-model ToolI18n {
-  id        String   @id @default(uuid())
-  tool_id   String
-  lang      String   // en, de, ru, lv, pl ...
-
-  // URL & Head
-  slug             String
-  title            String
-  h1               String?
-
-  // SEO
-  meta_title       String?
-  meta_description String?
-  meta_robots      String?  @default("index,follow")
-  canonical_path   String?
-
-  // AI-friendly content blocks
-  short_answer     String?  @db.Text
-  intro_text       String?  @db.Text
-
-  key_points_json  Json?
-  inputs_json      Json?
-  outputs_json     Json?
-  examples_json    Json?
-  formula_md       String?  @db.Text
-  assumptions_md   String?  @db.Text
-
-  // Structured data
-  faq_json         Json?
-  howto_json       Json?
-  schema_json      Json?
-
-  // OpenGraph / Twitter
-  og_title              String?
-  og_description        String?
-  og_image_url          String?
-  twitter_title         String?
-  twitter_description   String?
-  twitter_image_url     String?
-
-  // Review & timestamps
-  last_reviewed_at DateTime?
-  updated_at        DateTime @updatedAt
-
-  tool Tool @relation(fields: [tool_id], references: [id], onDelete: Cascade)
-
-  @@unique([lang, slug])
-  @@unique([tool_id, lang])
-  @@map("tool_i18n")
-}
-
-// =====================
-// TOOL CONFIG
-// =====================
-
-model ToolConfig {
-  tool_id String @id
-
-  // Calculation logic / coefficients / defaults
-  config_json Json
-
-  // For Custom Engine UI
-  custom_component_key String?
-
-  tool Tool @relation(fields: [tool_id], references: [id], onDelete: Cascade)
-
-  @@map("tool_config")
-}
-
-// =====================
-// CATEGORIES
-// =====================
-
-model Category {
-  id         String   @id @default(uuid())
-  parent_id  String?
-  sort_order Int      @default(0)
-
-  parent   Category?  @relation("CategoryHierarchy", fields: [parent_id], references: [id])
-  children Category[] @relation("CategoryHierarchy")
-
-  i18n  CategoryI18n[]
-  tools ToolCategory[]
-
-  @@map("categories")
-}
-
-// =====================
-// CATEGORY I18N (SEO HUB)
-// =====================
-
-model CategoryI18n {
-  category_id String
-  lang        String
-
-  slug String
-  name String
-
-  // SEO
-  meta_title       String?
-  meta_description String?
-  intro_text       String? @db.Text
-
-  // OpenGraph
-  og_title       String?
-  og_description String?
-  og_image_url   String?
-  og_image_alt   String?
-
-  // Hub content
-  content_blocks_json Json?
-
-  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
-
-  @@unique([category_id, lang])
-  @@unique([lang, slug])
-  @@map("category_i18n")
-}
-
-// =====================
-// TOOL <-> CATEGORY (M:N)
-// =====================
-
-model ToolCategory {
-  tool_id     String
-  category_id String
-
-  tool     Tool     @relation(fields: [tool_id], references: [id], onDelete: Cascade)
-  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
-
-  @@id([tool_id, category_id])
-  @@map("tool_categories")
-}
-
-// =====================
-// STATIC PAGES
-// =====================
-
-model Page {
-  id     String     @id @default(uuid())
-  code   String     @unique   // contact_us, privacy_policy, etc
-  status PageStatus @default(draft)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  i18n PageI18n[]
-
-  @@map("pages")
-}
-
-model PageI18n {
-  page_id String
-  lang    String
-
-  slug String
-
-  // SEO
-  meta_title       String?
-  meta_description String?
-  meta_robots      String?
-
-  // Content
-  h1            String
-  short_answer  String? @db.Text
-  body_blocks_json Json?
-
-  // Structured data
-  schema_json Json?
-
-  updated_at        DateTime @updatedAt
-  last_reviewed_at DateTime?
-
-  page Page @relation(fields: [page_id], references: [id], onDelete: Cascade)
-
-  @@unique([page_id, lang])
-  @@unique([lang, slug])
-  @@map("page_i18n")
 }
