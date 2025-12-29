@@ -158,6 +158,7 @@ model CategoryI18n {
   og_title       String?
   og_description String?
   og_image_url   String?
+  og_image_alt   String?
 
   // Hub content
   content_blocks_json Json?
