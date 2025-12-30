@@ -20,9 +20,13 @@ type HeaderProps = {
     lang: string
     h1?: string
     metaDescription?: string
+    translations: {
+        burger_button: string
+        header_search_placeholder: string
+    }
 }
 
-export default function Header({ lang, h1, metaDescription }: HeaderProps) {
+export default function Header({ lang, h1, metaDescription, translations }: HeaderProps) {
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
     const [isSwitchingLang, setIsSwitchingLang] = useState(false)
     const pathname = usePathname()
@@ -145,7 +149,7 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                             <div className="relative">
                                 <input
                                     type="text"
-                                    placeholder="Search calculator"
+                                    placeholder={translations.header_search_placeholder}
                                     className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
                                     style={{ color: '#9A9898' }}
                                 />
@@ -199,7 +203,7 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="Search calculator"
+                            placeholder={translations.header_search_placeholder}
                             className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
                             style={{ color: '#9A9898' }}
                         />
@@ -249,7 +253,7 @@ export default function Header({ lang, h1, metaDescription }: HeaderProps) {
                                 alt={isCategoriesOpen ? "Close menu" : "Open menu"}
                                 className="w-6 h-auto"
                             />
-                            <span className="font-medium">Calculators</span>
+                            <span className="font-medium">{translations.burger_button}</span>
                         </button>
 
                         {/* H1 и meta_description - по центру с адаптивными размерами */}

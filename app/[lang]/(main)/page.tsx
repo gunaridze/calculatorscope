@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { getTranslations } from '@/lib/translations'
 
 // Типы для параметров (params - это Promise)
 type Props = {
@@ -12,7 +13,10 @@ export default async function HomePage({ params }: Props) {
     // 1. ВАЖНО: Ждем разрешения параметров, чтобы получить язык
     const { lang } = await params
 
-    // 2. Получаем категории и инструменты для текущего языка
+    // 2. Получаем переводы для текущего языка
+    const translations = getTranslations(lang)
+
+    // 3. Получаем категории и инструменты для текущего языка
     const categories = await prisma.category.findMany({
         select: {
             id: true,
@@ -47,16 +51,16 @@ export default async function HomePage({ params }: Props) {
         orderBy: { sort_order: 'asc' }
     })
 
-    // SEO данные для хедера
-    const h1 = "Calculator Scope - Smart Online Calculators for Everything"
-    const metaDescription = "From math, science, finance, health, and construction to marketing, text tools, developer utilities, and more. All calculators in one fast, accurate, easy-to-use platform."
-
     return (
         <>
             <Header 
                 lang={lang} 
-                h1={h1}
-                metaDescription={metaDescription}
+                h1={translations.header_h1}
+                metaDescription={translations.header_text}
+                translations={{
+                    burger_button: translations.burger_button,
+                    header_search_placeholder: translations.header_search_placeholder,
+                }}
             />
             <main className="container mx-auto px-4 py-12">
                 <div className="grid gap-8">
@@ -103,7 +107,15 @@ export default async function HomePage({ params }: Props) {
                     })}
                 </div>
             </main>
-            <Footer lang={lang} />
+            <Footer 
+                lang={lang} 
+                translations={{
+                    footer_link_1: translations.footer_link_1,
+                    footer_link_2: translations.footer_link_2,
+                    footer_link_3: translations.footer_link_3,
+                    footer_copyright: translations.footer_copyright,
+                }}
+            />
         </>
     )
 }

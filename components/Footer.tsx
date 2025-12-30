@@ -2,9 +2,15 @@ import Link from 'next/link'
 
 type FooterProps = {
     lang: string
+    translations: {
+        footer_link_1: string
+        footer_link_2: string
+        footer_link_3: string
+        footer_copyright: string
+    }
 }
 
-export default function Footer({ lang }: FooterProps) {
+export default function Footer({ lang, translations }: FooterProps) {
     const currentYear = new Date().getFullYear()
 
     return (
@@ -15,23 +21,23 @@ export default function Footer({ lang }: FooterProps) {
                         href={`/${lang}/privacy`}
                         className="text-blue-600 hover:text-blue-800 transition-colors"
                     >
-                        Privacy Policy
+                        {translations.footer_link_1}
                     </Link>
                     <Link 
                         href={`/${lang}/terms`}
                         className="text-blue-600 hover:text-blue-800 transition-colors"
                     >
-                        Legal Information & Terms of Use
+                        {translations.footer_link_2}
                     </Link>
                     <Link 
                         href={`/${lang}/contact`}
                         className="text-blue-600 hover:text-blue-800 transition-colors"
                     >
-                        Contact Us
+                        {translations.footer_link_3}
                     </Link>
                 </div>
                 <div className="text-center text-black">
-                    © {currentYear} CalculatorScope. All Rights Reserved.
+                    © {currentYear} {translations.footer_copyright}
                 </div>
             </div>
         </footer>

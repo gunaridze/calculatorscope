@@ -4,6 +4,7 @@ import JsonCalculator from '@/components/JsonCalculator'
 import { calculate, type JsonEngineConfig, type JsonEngineOutput } from '@/core/engines/json'
 import type { Metadata } from 'next'
 import Footer from '@/components/Footer'
+import { getTranslations } from '@/lib/translations'
 
 // Типы для параметров URL (в Next.js 15+ это Promise)
 type Props = {
@@ -64,6 +65,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
     if (!data) {
         return notFound()
     }
+
+    // Получаем переводы для текущего языка
+    const translations = getTranslations(lang)
 
     // 4. Достаем конфиги из JSON полей
     // @ts-ignore (TypeScript не всегда корректно типизирует JSON из Prisma)
@@ -223,7 +227,15 @@ export default async function ToolPage({ params, searchParams }: Props) {
                     </section>
                 )}
             </main>
-            <Footer lang={lang} />
+            <Footer 
+                lang={lang} 
+                translations={{
+                    footer_link_1: translations.footer_link_1,
+                    footer_link_2: translations.footer_link_2,
+                    footer_link_3: translations.footer_link_3,
+                    footer_copyright: translations.footer_copyright,
+                }}
+            />
         </>
     )
 }
