@@ -42,16 +42,19 @@ export default async function HomePage({ params }: Props) {
                 }
             },
             tools: {
-                take: 3, // Показываем только первые 3 инструмента
                 select: {
                     tool: {
                         select: {
                             id: true,
                             i18n: {
-                                where: { lang },
+                                where: { 
+                                    lang,
+                                    is_popular: 1  // Показываем только популярные инструменты
+                                },
                                 select: {
                                     slug: true,
                                     title: true,
+                                    is_popular: true,
                                 }
                             }
                         }
@@ -88,6 +91,7 @@ export default async function HomePage({ params }: Props) {
                                     slug: true,
                                     title: true,
                                     meta_description: true,
+                                    is_popular: true,
                                 }
                             }
                         }
@@ -120,6 +124,10 @@ export default async function HomePage({ params }: Props) {
                                 if (!catData) return null
                                 
                                 const catSlug = catData.slug
+                                // Фильтруем только популярные инструменты
+                                const popularTools = cat.tools.filter(({ tool }) => 
+                                    tool.i18n.length > 0 && tool.i18n[0].is_popular === 1
+                                )
 
                                 return (
                                     <Link
@@ -135,11 +143,11 @@ export default async function HomePage({ params }: Props) {
                                                 {catData.short_description}
                                             </p>
                                         )}
-                                        {cat.tools.length > 0 && (
+                                        {popularTools.length > 0 && (
                                             <div className="mt-4 pt-4 border-t border-blue-200">
                                                 <p className="text-xs font-semibold text-blue-700 mb-2">Popular Tools:</p>
                                                 <ul className="space-y-1">
-                                                    {cat.tools.map(({ tool }) => {
+                                                    {popularTools.map(({ tool }) => {
                                                         const toolData = tool.i18n[0]
                                                         if (!toolData) return null
                                                         return (
@@ -161,16 +169,11 @@ export default async function HomePage({ params }: Props) {
                 {/* Все категории */}
                 <div className="grid gap-8">
                     {categories.map((cat) => {
-                        // Безопасно достаем название категории
                         const catName = cat.i18n[0]?.name || 'Unnamed Category'
-                        // Slug категории нужен для формирования ссылки
                         const catSlug = cat.i18n[0]?.slug || 'cat'
-                        // Пропускаем популярные категории, так как они уже показаны выше
                         const isPopular = cat.i18n[0]?.is_popular === 1
 
-                        // Если в категории нет инструментов, можно не показывать её (опционально)
                         if (cat.tools.length === 0) return null
-                        // Пропускаем популярные категории в основном списке
                         if (isPopular) return null
 
                         return (
@@ -182,22 +185,35 @@ export default async function HomePage({ params }: Props) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {cat.tools.map(({ tool }) => {
                                         const toolData = tool.i18n[0]
-                                        // Если у инструмента нет перевода на текущий язык — пропускаем
                                         if (!toolData) return null
+
+                                        const isToolPopular = toolData.is_popular === 1
 
                                         return (
                                             <Link
                                                 key={tool.id}
-                                                // Формируем ссылку: /ru/category-slug/tool-slug
                                                 href={`/${lang}/${catSlug}/${toolData.slug}`}
-                                                className="group block p-4 border rounded-lg hover:border-blue-500 hover:shadow-md transition-all duration-200 bg-gray-50 hover:bg-white"
+                                                className={`group block p-4 border rounded-lg hover:border-blue-500 hover:shadow-md transition-all duration-200 ${
+                                                    isToolPopular 
+                                                        ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
+                                                        : 'bg-gray-50 hover:bg-white'
+                                                }`}
                                             >
-                                                <h3 className="font-bold text-lg text-blue-600 mb-1 group-hover:text-blue-700">
-                                                    {toolData.title}
-                                                </h3>
-                                                <p className="text-sm text-gray-500 line-clamp-2">
-                                                    {toolData.meta_description}
-                                                </p>
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <h3 className="font-bold text-lg text-blue-600 mb-1 group-hover:text-blue-700">
+                                                            {toolData.title}
+                                                        </h3>
+                                                        <p className="text-sm text-gray-500 line-clamp-2">
+                                                            {toolData.meta_description}
+                                                        </p>
+                                                    </div>
+                                                    {isToolPopular && (
+                                                        <span className="ml-2 text-yellow-500 text-lg" title="Popular tool">
+                                                            ⭐
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </Link>
                                         )
                                     })}

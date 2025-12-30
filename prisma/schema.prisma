@@ -49,6 +49,7 @@ model ToolI18n {
   twitter_title       String?
   twitter_description String?
   twitter_image_url   String?
+  is_popular          Int       @default(0)
   last_reviewed_at    DateTime?
   updated_at          DateTime  @updatedAt
   tool                Tool      @relation(fields: [tool_id], references: [id], onDelete: Cascade)
