@@ -16,7 +16,53 @@ export default async function HomePage({ params }: Props) {
     // 2. Получаем переводы для текущего языка
     const translations = getTranslations(lang)
 
-    // 3. Получаем категории и инструменты для текущего языка
+    // 3. Получаем популярные категории
+    const popularCategories = await prisma.category.findMany({
+        where: {
+            i18n: {
+                some: {
+                    lang,
+                    is_popular: 1
+                }
+            }
+        },
+        select: {
+            id: true,
+            sort_order: true,
+            i18n: {
+                where: { 
+                    lang,
+                    is_popular: 1
+                },
+                select: {
+                    slug: true,
+                    name: true,
+                    short_description: true,
+                    meta_description: true,
+                }
+            },
+            tools: {
+                take: 3, // Показываем только первые 3 инструмента
+                select: {
+                    tool: {
+                        select: {
+                            id: true,
+                            i18n: {
+                                where: { lang },
+                                select: {
+                                    slug: true,
+                                    title: true,
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        orderBy: { sort_order: 'asc' }
+    })
+
+    // 4. Получаем все категории и инструменты для текущего языка
     const categories = await prisma.category.findMany({
         select: {
             id: true,
@@ -28,6 +74,7 @@ export default async function HomePage({ params }: Props) {
                     name: true,
                     meta_title: true,
                     meta_description: true,
+                    is_popular: true,
                 }
             },
             tools: {
@@ -63,15 +110,68 @@ export default async function HomePage({ params }: Props) {
                 }}
             />
             <main className="container mx-auto px-4 py-12">
+                {/* Блок популярных категорий */}
+                {popularCategories.length > 0 && (
+                    <section className="mb-12">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-6">Popular Categories</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {popularCategories.map((cat) => {
+                                const catData = cat.i18n[0]
+                                if (!catData) return null
+                                
+                                const catSlug = catData.slug
+
+                                return (
+                                    <Link
+                                        key={cat.id}
+                                        href={`/${lang}/${catSlug}`}
+                                        className="group block bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-blue-100 hover:border-blue-300"
+                                    >
+                                        <h3 className="text-xl font-bold text-blue-900 mb-2 group-hover:text-blue-700">
+                                            {catData.name}
+                                        </h3>
+                                        {catData.short_description && (
+                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                                                {catData.short_description}
+                                            </p>
+                                        )}
+                                        {cat.tools.length > 0 && (
+                                            <div className="mt-4 pt-4 border-t border-blue-200">
+                                                <p className="text-xs font-semibold text-blue-700 mb-2">Popular Tools:</p>
+                                                <ul className="space-y-1">
+                                                    {cat.tools.map(({ tool }) => {
+                                                        const toolData = tool.i18n[0]
+                                                        if (!toolData) return null
+                                                        return (
+                                                            <li key={tool.id} className="text-sm text-gray-700 hover:text-blue-600">
+                                                                → {toolData.title}
+                                                            </li>
+                                                        )
+                                                    })}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    </section>
+                )}
+
+                {/* Все категории */}
                 <div className="grid gap-8">
                     {categories.map((cat) => {
                         // Безопасно достаем название категории
                         const catName = cat.i18n[0]?.name || 'Unnamed Category'
                         // Slug категории нужен для формирования ссылки
                         const catSlug = cat.i18n[0]?.slug || 'cat'
+                        // Пропускаем популярные категории, так как они уже показаны выше
+                        const isPopular = cat.i18n[0]?.is_popular === 1
 
                         // Если в категории нет инструментов, можно не показывать её (опционально)
                         if (cat.tools.length === 0) return null
+                        // Пропускаем популярные категории в основном списке
+                        if (isPopular) return null
 
                         return (
                             <section key={cat.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

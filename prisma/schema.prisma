@@ -93,6 +93,7 @@ model CategoryI18n {
   og_image_url        String?
   content_blocks_json Json?
   og_image_alt        String?
+  is_popular          Int            @default(0)
   category            Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
 
   @@unique([category_id, lang])

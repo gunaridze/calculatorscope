@@ -18,6 +18,7 @@ interface CategoryI18nRow {
   intro_text?: string
   og_image_alt?: string
   og_image_url?: string
+  is_popular?: string  // Может быть "0" или "1" в CSV
 }
 
 async function importCategoryI18n() {
@@ -95,6 +96,11 @@ async function importCategoryI18n() {
         }
       })
 
+      // Обрабатываем is_popular: конвертируем строку "0"/"1" в число
+      const isPopular = row.is_popular 
+        ? (row.is_popular === '1' || row.is_popular === 'true' ? 1 : 0)
+        : 0
+
       // Подготавливаем данные для создания/обновления
       const data = {
         slug: row.slug || '',
@@ -107,6 +113,7 @@ async function importCategoryI18n() {
         og_description: row.og_description || null,
         og_image_url: row.og_image_url || null,
         og_image_alt: row.og_image_alt || null,
+        is_popular: isPopular,
       }
 
       // Используем upsert для создания или обновления
@@ -131,7 +138,7 @@ async function importCategoryI18n() {
         created++
       }
 
-      console.log(`✅ ${categoryId}/${row.lang}: ${row.name}`)
+      console.log(`✅ ${categoryId}/${row.lang}: ${row.name}${isPopular === 1 ? ' ⭐ (популярная)' : ''}`)
     } catch (error: any) {
       console.error(`❌ Ошибка при импорте ${row.id}/${row.lang}:`, error.message)
       errors++
