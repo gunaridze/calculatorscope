@@ -86,6 +86,7 @@ model CategoryI18n {
   name                String
   meta_title          String?
   meta_description    String?
+  short_description   String?
   intro_text          String?
   og_title            String?
   og_description      String?

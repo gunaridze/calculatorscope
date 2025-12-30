@@ -12,6 +12,7 @@ interface CategoryI18nRow {
   slug: string
   meta_title?: string
   meta_description?: string
+  short_description?: string
   og_title?: string
   og_description?: string
   intro_text?: string
@@ -100,6 +101,7 @@ async function importCategoryI18n() {
         name: row.name || '',
         meta_title: row.meta_title || null,
         meta_description: row.meta_description || null,
+        short_description: row.short_description || null,
         intro_text: row.intro_text || null,
         og_title: row.og_title || null,
         og_description: row.og_description || null,
