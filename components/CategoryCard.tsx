@@ -26,13 +26,11 @@ export default function CategoryCard({
   return (
     <Link
       href={`/${lang}/${slug}`}
-      // h-[140px] - fixed height
-      // relative - establishes context for absolute children
-      // flex flex-col - для правильного распределения пространства
-      className="group relative block bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] flex flex-col"
+      // ДОБАВЛЕНО: overflow-hidden
+      // Это критически важно! Это скажет Grid-сетке: "Мой размер ровно 140px, игнорируй всё, что торчит внутри".
+      className="group relative flex flex-col bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] overflow-hidden"
     >
-      {/* 1. ICON */}
-      {/* Strictly Top-Left: Top 10px, Left 10px */}
+      {/* ИКОНКА */}
       {iconUrl && (
         <div className="absolute top-[10px] left-[10px] w-[24px] h-[24px] flex items-center justify-center z-10">
           <Image
@@ -46,17 +44,17 @@ export default function CategoryCard({
         </div>
       )}
 
-      {/* 2. TITLE */}
-      {/* px-[40px] is critical to prevent overlap with the 34px icon space. */}
-      <h3 className="mt-[10px] font-bold text-center px-[40px] text-lg leading-tight text-gray-900">
+      {/* ЗАГОЛОВОК */}
+      {/* Добавил leading-tight, чтобы длинные заголовки занимали меньше места по вертикали */}
+      <h3 className="mt-[10px] font-bold text-center px-[40px] text-lg leading-tight text-gray-900 z-20">
         {name}
       </h3>
 
-      {/* 3. DESCRIPTION */}
-      {/* flex-1 занимает всё свободное место между заголовком и низом карточки */}
-      {/* Это позволяет описанию адаптироваться к высоте заголовка */}
+      {/* ОПИСАНИЕ */}
+      {/* ДОБАВЛЕНО: min-h-0 */}
+      {/* Это позволяет флекс-элементу сжиматься, даже если текст внутри хочет больше места */}
       {shortDescription && (
-        <div className="flex-1 flex items-center justify-center pb-[15px] px-[10px]">
+        <div className="flex-1 flex items-center justify-center px-[10px] pb-2 min-h-0">
           <p className="text-center text-sm text-gray-600 line-clamp-3 leading-snug">
             {shortDescription}
           </p>
