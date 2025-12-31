@@ -206,7 +206,7 @@ export default async function HomePage({ params }: Props) {
                 const catData = cat.i18n[0]
                 return catData && catData.is_popular !== 1
             })
-            .slice(0, 18) // Максимум 18 категорий для сетки
+            .slice(0, 21) // Максимум 21 категория для сетки
 
         return (
             <>
@@ -329,30 +329,34 @@ export default async function HomePage({ params }: Props) {
                                     if (popularTools.length === 0) return null
 
                                     return (
-                                        <div key={cat.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                                            <h3 className="font-bold text-center pt-[10px] mb-4 text-lg">
+                                        <div key={cat.id} className="bg-white border border-gray-200 rounded-lg">
+                                            {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
+                                            <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
                                                 {catData.name}
                                             </h3>
-                                            <ul className="space-y-2">
+                                            
+                                            {/* Три ряда со ссылками на инструменты */}
+                                            <div className="px-[50px] pb-4 space-y-2">
                                                 {popularTools.map(({ tool }) => {
                                                     const toolData = tool.i18n[0]
                                                     const categorySlug = catData.slug
                                                     if (!toolData) return null
                                                     
                                                     return (
-                                                        <li key={tool.id}>
+                                                        <div key={tool.id}>
                                                             <Link
                                                                 href={`/${lang}/${categorySlug}/${toolData.slug}`}
                                                                 className="block text-blue-600 hover:text-blue-800 hover:underline"
                                                             >
-                                                                <h4 className="font-medium">
+                                                                {/* h1 из tool_i18n размечается как h3 */}
+                                                                <h3 className="font-medium">
                                                                     {toolData.h1 || toolData.title}
-                                                                </h4>
+                                                                </h3>
                                                             </Link>
-                                                        </li>
+                                                        </div>
                                                     )
                                                 })}
-                                            </ul>
+                                            </div>
                                         </div>
                                     )
                                 })}
