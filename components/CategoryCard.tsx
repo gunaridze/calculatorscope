@@ -28,7 +28,8 @@ export default function CategoryCard({
       href={`/${lang}/${slug}`}
       // h-[140px] - fixed height
       // relative - establishes context for absolute children
-      className="group relative block bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px]"
+      // flex flex-col - для правильного распределения пространства
+      className="group relative block bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] flex flex-col"
     >
       {/* 1. ICON */}
       {/* Strictly Top-Left: Top 10px, Left 10px */}
@@ -52,10 +53,10 @@ export default function CategoryCard({
       </h3>
 
       {/* 3. DESCRIPTION */}
-      {/* Content Zone: Top 49px to Bottom 15px */}
-      {/* Text is centered horizontally and vertically within this rigid zone */}
+      {/* flex-1 занимает всё свободное место между заголовком и низом карточки */}
+      {/* Это позволяет описанию адаптироваться к высоте заголовка */}
       {shortDescription && (
-        <div className="absolute top-[49px] bottom-[15px] left-0 right-0 flex items-center justify-center px-[10px]">
+        <div className="flex-1 flex items-center justify-center pb-[15px] px-[10px]">
           <p className="text-center text-sm text-gray-600 line-clamp-3 leading-snug">
             {shortDescription}
           </p>

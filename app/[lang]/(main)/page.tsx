@@ -226,10 +226,10 @@ export default async function HomePage({ params }: Props) {
                             {content.body_h2_1 || 'Calculators by category'}
                         </h2>
                         
-                        {/* Desktop: Grid 4 колонки (3 категории + 1 sidebar) */}
-                        <div className="hidden lg:grid lg:grid-cols-4 gap-[20px]">
-                            {/* Категории - занимают 3 колонки */}
-                            <div className="lg:col-span-3 grid grid-cols-3 gap-[20px]">
+                        {/* Desktop: Две независимые колонки (категории и баннеры) */}
+                        <div className="hidden lg:flex lg:gap-[20px]">
+                            {/* Левая колонка: Сетка категорий */}
+                            <div className="flex-1 grid grid-cols-3 gap-[20px]">
                                 {categoriesForGrid.map((cat) => {
                                     const catData = cat.i18n[0]
                                     if (!catData) return null
@@ -247,8 +247,8 @@ export default async function HomePage({ params }: Props) {
                                 })}
                             </div>
                             
-                            {/* Desktop Sidebar - занимает 1 колонку */}
-                            <div className="lg:col-span-1 space-y-5" style={{ marginTop: '21px' }}>
+                            {/* Правая колонка: Баннеры (независимая высота) */}
+                            <div className="w-[300px] space-y-5" style={{ marginTop: '21px' }}>
                                 <AdBanner 
                                     lang={lang} 
                                     adNumber={1} 
