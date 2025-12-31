@@ -142,6 +142,7 @@ export default async function HomePage({ params }: Props) {
                                     slug: true,
                                     h1: true,
                                     title: true,
+                                    is_popular: true, // Добавить это поле
                                 }
                             }
                         }
