@@ -3,10 +3,50 @@ import { prisma } from '@/lib/db'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { getTranslations } from '@/lib/translations'
+import type { Metadata } from 'next'
 
 // Типы для параметров (params - это Promise)
 type Props = {
     params: Promise<{ lang: string }>
+}
+
+// Генерация метаданных для SEO
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { lang } = await params
+    
+    // Получаем данные страницы из page_i18n
+    const pageData = await prisma.pageI18n.findFirst({
+        where: {
+            lang,
+            slug: '/', // Главная страница имеет slug "/"
+            page: {
+                code: 'home' // Код страницы для главной
+            }
+        },
+        select: {
+            meta_title: true,
+            meta_description: true,
+            meta_robots: true,
+        }
+    })
+
+    const url = process.env.NEXT_PUBLIC_SITE_URL || 'https://calculatorscope.com'
+    const canonicalUrl = `${url}/${lang}`
+
+    return {
+        title: pageData?.meta_title || 'Calculator Scope - Smart Online Calculators',
+        description: pageData?.meta_description || undefined,
+        robots: pageData?.meta_robots || 'index,follow',
+        alternates: {
+            canonical: canonicalUrl,
+        },
+        openGraph: {
+            title: pageData?.meta_title || 'Calculator Scope',
+            description: pageData?.meta_description || undefined,
+            locale: lang,
+            type: 'website',
+        },
+    }
 }
 
 export default async function HomePage({ params }: Props) {
@@ -16,7 +56,35 @@ export default async function HomePage({ params }: Props) {
     // 2. Получаем переводы для текущего языка
     const translations = getTranslations(lang)
 
-    // 3. Получаем популярные категории
+    // 3. Получаем данные страницы из page_i18n
+    const pageData = await prisma.pageI18n.findFirst({
+        where: {
+            lang,
+            slug: '/',
+            page: {
+                code: 'home'
+            }
+        },
+        select: {
+            h1: true,
+            short_answer: true,
+            body_blocks_json: true,
+        }
+    })
+
+    // Парсим body_blocks_json
+    let bodyBlocks: Record<string, string> = {}
+    if (pageData?.body_blocks_json) {
+        try {
+            bodyBlocks = typeof pageData.body_blocks_json === 'string'
+                ? JSON.parse(pageData.body_blocks_json)
+                : pageData.body_blocks_json as Record<string, string>
+        } catch (e) {
+            console.error('Error parsing body_blocks_json:', e)
+        }
+    }
+
+    // 4. Получаем популярные категории
     const popularCategories = await prisma.category.findMany({
         where: {
             i18n: {
@@ -49,7 +117,7 @@ export default async function HomePage({ params }: Props) {
                             i18n: {
                                 where: { 
                                     lang,
-                                    is_popular: 1  // Показываем только популярные инструменты
+                                    is_popular: 1
                                 },
                                 select: {
                                     slug: true,
@@ -65,7 +133,7 @@ export default async function HomePage({ params }: Props) {
         orderBy: { sort_order: 'asc' }
     })
 
-    // 4. Получаем все категории и инструменты для текущего языка
+    // 5. Получаем все категории и инструменты для текущего языка
     const categories = await prisma.category.findMany({
         select: {
             id: true,
@@ -106,25 +174,33 @@ export default async function HomePage({ params }: Props) {
         <>
             <Header 
                 lang={lang} 
-                h1={translations.header_h1}
-                metaDescription={translations.header_text}
+                h1={pageData?.h1 || translations.header_h1}
+                metaDescription={pageData?.short_answer || translations.header_text}
                 translations={{
                     burger_button: translations.burger_button,
                     header_search_placeholder: translations.header_search_placeholder,
                 }}
             />
             <main className="container mx-auto px-4 py-12">
+                {/* Вступительный текст из page_i18n */}
+                {pageData?.short_answer && (
+                    <section className="mb-12 text-center">
+                        <p className="text-xl text-gray-700">{pageData.short_answer}</p>
+                    </section>
+                )}
+
                 {/* Блок популярных категорий */}
                 {popularCategories.length > 0 && (
                     <section className="mb-12">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-6">Popular Categories</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                            {bodyBlocks.body_h2_2 || 'Popular Categories'}
+                        </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {popularCategories.map((cat) => {
                                 const catData = cat.i18n[0]
                                 if (!catData) return null
                                 
                                 const catSlug = catData.slug
-                                // Фильтруем только популярные инструменты
                                 const popularTools = cat.tools.filter(({ tool }) => 
                                     tool.i18n.length > 0 && tool.i18n[0].is_popular === 1
                                 )
@@ -164,6 +240,13 @@ export default async function HomePage({ params }: Props) {
                             })}
                         </div>
                     </section>
+                )}
+
+                {/* Заголовок "Calculators by category" из body_blocks_json */}
+                {bodyBlocks.body_h2_1 && (
+                    <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                        {bodyBlocks.body_h2_1}
+                    </h2>
                 )}
 
                 {/* Все категории */}
@@ -222,6 +305,38 @@ export default async function HomePage({ params }: Props) {
                         )
                     })}
                 </div>
+
+                {/* Дополнительные блоки из body_blocks_json */}
+                {bodyBlocks.body_h2_4 && (
+                    <section className="mt-12 mb-8">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                            {bodyBlocks.body_h2_4}
+                        </h2>
+                        {bodyBlocks.body_pop_up_text && (
+                            <p className="text-lg text-gray-700 mb-4">
+                                {bodyBlocks.body_pop_up_text}
+                            </p>
+                        )}
+                        {bodyBlocks.body_get_pop_up_button && (
+                            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                                {bodyBlocks.body_get_pop_up_button}
+                            </button>
+                        )}
+                    </section>
+                )}
+
+                {bodyBlocks.body_h2_5 && (
+                    <section className="mt-12 mb-8">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                            {bodyBlocks.body_h2_5}
+                        </h2>
+                        {bodyBlocks.body_about_us_text && (
+                            <p className="text-lg text-gray-700">
+                                {bodyBlocks.body_about_us_text}
+                            </p>
+                        )}
+                    </section>
+                )}
             </main>
             <Footer 
                 lang={lang} 
