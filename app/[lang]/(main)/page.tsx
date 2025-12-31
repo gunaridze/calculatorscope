@@ -4,6 +4,9 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { getTranslations } from '@/lib/translations'
 import type { Metadata } from 'next'
+import CategoryCard from '@/components/CategoryCard'
+import AdBanner from '@/components/AdBanner'
+import type { HomePageContent } from '@/lib/types'
 
 // Типы для параметров (params - это Promise)
 type Props = {
@@ -14,14 +17,11 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { lang } = await params
     
-    // Получаем данные страницы из page_i18n
     const pageData = await prisma.pageI18n.findFirst({
         where: {
             lang,
-            slug: '/', // Главная страница имеет slug "/"
-            page: {
-                code: 'home' // Код страницы для главной
-            }
+            slug: '/',
+            page: { code: 'home' }
         },
         select: {
             meta_title: true,
@@ -37,9 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: pageData?.meta_title || 'Calculator Scope - Smart Online Calculators',
         description: pageData?.meta_description || undefined,
         robots: pageData?.meta_robots || 'index,follow',
-        alternates: {
-            canonical: canonicalUrl,
-        },
+        alternates: { canonical: canonicalUrl },
         openGraph: {
             title: pageData?.meta_title || 'Calculator Scope',
             description: pageData?.meta_description || undefined,
@@ -50,20 +48,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function HomePage({ params }: Props) {
-    // 1. ВАЖНО: Ждем разрешения параметров, чтобы получить язык
     const { lang } = await params
-
-    // 2. Получаем переводы для текущего языка
     const translations = getTranslations(lang)
 
-    // 3. Получаем данные страницы из page_i18n
+    // Получаем данные страницы из page_i18n
     const pageData = await prisma.pageI18n.findFirst({
         where: {
             lang,
             slug: '/',
-            page: {
-                code: 'home'
-            }
+            page: { code: 'home' }
         },
         select: {
             h1: true,
@@ -72,19 +65,50 @@ export default async function HomePage({ params }: Props) {
         }
     })
 
-    // Парсим body_blocks_json
-    let bodyBlocks: Record<string, string> = {}
+    // Парсим body_blocks_json с типизацией
+    let content: Partial<HomePageContent> = {}
     if (pageData?.body_blocks_json) {
         try {
-            bodyBlocks = typeof pageData.body_blocks_json === 'string'
+            const parsed = typeof pageData.body_blocks_json === 'string'
                 ? JSON.parse(pageData.body_blocks_json)
-                : pageData.body_blocks_json as Record<string, string>
+                : pageData.body_blocks_json
+            content = parsed as HomePageContent
         } catch (e) {
             console.error('Error parsing body_blocks_json:', e)
         }
     }
 
-    // 4. Получаем популярные категории
+    // Получаем slug для страницы с ID=5 (для кнопки промо)
+    const promoPage = await prisma.pageI18n.findFirst({
+        where: {
+            page_id: '5',
+            lang,
+        },
+        select: {
+            slug: true,
+        }
+    })
+
+    // Получаем все категории с иконками
+    const allCategories = await prisma.category.findMany({
+        select: {
+            id: true,
+            sort_order: true,
+            i18n: {
+                where: { lang },
+                select: {
+                    slug: true,
+                    name: true,
+                    short_description: true,
+                    og_image_url: true,
+                    is_popular: true,
+                }
+            },
+        },
+        orderBy: { sort_order: 'asc' }
+    })
+
+    // Получаем популярные категории с инструментами (для секции "Popular Calculators")
     const popularCategories = await prisma.category.findMany({
         where: {
             i18n: {
@@ -98,15 +122,10 @@ export default async function HomePage({ params }: Props) {
             id: true,
             sort_order: true,
             i18n: {
-                where: { 
-                    lang,
-                    is_popular: 1
-                },
+                where: { lang, is_popular: 1 },
                 select: {
                     slug: true,
                     name: true,
-                    short_description: true,
-                    meta_description: true,
                 }
             },
             tools: {
@@ -121,8 +140,8 @@ export default async function HomePage({ params }: Props) {
                                 },
                                 select: {
                                     slug: true,
+                                    h1: true,
                                     title: true,
-                                    is_popular: true,
                                 }
                             }
                         }
@@ -133,42 +152,45 @@ export default async function HomePage({ params }: Props) {
         orderBy: { sort_order: 'asc' }
     })
 
-    // 5. Получаем все категории и инструменты для текущего языка
-    const categories = await prisma.category.findMany({
+    // Получаем все инструменты для секции "All Calculators"
+    const allTools = await prisma.tool.findMany({
+        where: {
+            status: 'published'
+        },
         select: {
             id: true,
-            sort_order: true,
             i18n: {
                 where: { lang },
                 select: {
                     slug: true,
-                    name: true,
-                    meta_title: true,
-                    meta_description: true,
-                    is_popular: true,
+                    h1: true,
+                    title: true,
                 }
             },
-            tools: {
+            categories: {
                 select: {
-                    tool: {
+                    category: {
                         select: {
-                            id: true,
                             i18n: {
                                 where: { lang },
                                 select: {
                                     slug: true,
-                                    title: true,
-                                    meta_description: true,
-                                    is_popular: true,
                                 }
                             }
                         }
                     }
                 }
             }
-        },
-        orderBy: { sort_order: 'asc' }
+        }
     })
+
+    // Фильтруем категории для сетки (исключаем популярные, они в отдельной секции)
+    const categoriesForGrid = allCategories
+        .filter(cat => {
+            const catData = cat.i18n[0]
+            return catData && catData.is_popular !== 1
+        })
+        .slice(0, 18) // Максимум 18 категорий для сетки
 
     return (
         <>
@@ -182,159 +204,215 @@ export default async function HomePage({ params }: Props) {
                 }}
             />
             <main className="container mx-auto px-4 py-12">
-                {/* Вступительный текст из page_i18n */}
-                {pageData?.short_answer && (
-                    <section className="mb-12 text-center">
-                        <p className="text-xl text-gray-700">{pageData.short_answer}</p>
-                    </section>
-                )}
+                {/* Секция 1: Сетка категорий и баннеров */}
+                <section className="mb-12">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                        {content.body_h2_1 || 'Calculators by category'}
+                    </h2>
+                    
+                    {/* Desktop: Grid 4 колонки (3 категории + 1 sidebar) */}
+                    <div className="hidden lg:grid lg:grid-cols-4 gap-5">
+                        <div className="lg:col-span-3 grid grid-cols-3 gap-5">
+                            {categoriesForGrid.map((cat) => {
+                                const catData = cat.i18n[0]
+                                if (!catData) return null
+                                return (
+                                    <CategoryCard
+                                        key={cat.id}
+                                        lang={lang}
+                                        categoryId={cat.id}
+                                        slug={catData.slug}
+                                        name={catData.name}
+                                        shortDescription={catData.short_description}
+                                        iconUrl={catData.og_image_url}
+                                    />
+                                )
+                            })}
+                        </div>
+                        
+                        {/* Desktop Sidebar */}
+                        <div className="space-y-5" style={{ marginTop: '21px' }}>
+                            <AdBanner 
+                                lang={lang} 
+                                adNumber={1} 
+                                href={content.ad_link_1}
+                            />
+                            <AdBanner 
+                                lang={lang} 
+                                adNumber={2} 
+                                href={content.ad_link_2}
+                            />
+                            <AdBanner 
+                                lang={lang} 
+                                adNumber={3} 
+                                href={content.ad_link_3}
+                            />
+                            <AdBanner 
+                                lang={lang} 
+                                adNumber={4} 
+                                href={content.ad_link_4}
+                            />
+                        </div>
+                    </div>
 
-                {/* Блок популярных категорий */}
+                    {/* Mobile: 1 колонка с interleaved баннерами */}
+                    <div className="lg:hidden space-y-5">
+                        {categoriesForGrid.map((cat, index) => {
+                            const catData = cat.i18n[0]
+                            if (!catData) return null
+
+                            const showAdAfter = [2, 4, 8, 10].includes(index + 1)
+                            const adNumber = index + 1 === 2 ? 1 : index + 1 === 4 ? 2 : index + 1 === 8 ? 3 : 4
+                            const adLink = index + 1 === 2 ? content.ad_link_1 
+                                : index + 1 === 4 ? content.ad_link_2 
+                                : index + 1 === 8 ? content.ad_link_3 
+                                : content.ad_link_4
+
+                            return (
+                                <div key={cat.id}>
+                                    <CategoryCard
+                                        lang={lang}
+                                        categoryId={cat.id}
+                                        slug={catData.slug}
+                                        name={catData.name}
+                                        shortDescription={catData.short_description}
+                                        iconUrl={catData.og_image_url}
+                                    />
+                                    {showAdAfter && (
+                                        <div className="mt-5">
+                                            <AdBanner 
+                                                lang={lang} 
+                                                adNumber={adNumber as 1 | 2 | 3 | 4} 
+                                                href={adLink}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </section>
+
+                {/* Секция 2: Популярные калькуляторы */}
                 {popularCategories.length > 0 && (
                     <section className="mb-12">
                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                            {bodyBlocks.body_h2_2 || 'Popular Categories'}
+                            {content.body_h2_2 || 'Popular Calculators'}
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {popularCategories.map((cat) => {
+                            {popularCategories.slice(0, 6).map((cat) => {
                                 const catData = cat.i18n[0]
                                 if (!catData) return null
-                                
-                                const catSlug = catData.slug
-                                const popularTools = cat.tools.filter(({ tool }) => 
-                                    tool.i18n.length > 0 && tool.i18n[0].is_popular === 1
-                                )
+
+                                const popularTools = cat.tools
+                                    .filter(({ tool }) => tool.i18n.length > 0 && tool.i18n[0].is_popular === 1)
+                                    .slice(0, 3)
+
+                                if (popularTools.length === 0) return null
 
                                 return (
-                                    <Link
-                                        key={cat.id}
-                                        href={`/${lang}/${catSlug}`}
-                                        className="group block bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-blue-100 hover:border-blue-300"
-                                    >
-                                        <h3 className="text-xl font-bold text-blue-900 mb-2 group-hover:text-blue-700">
+                                    <div key={cat.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                                        <h3 className="font-bold text-center pt-[10px] mb-4 text-lg">
                                             {catData.name}
                                         </h3>
-                                        {catData.short_description && (
-                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                                                {catData.short_description}
-                                            </p>
-                                        )}
-                                        {popularTools.length > 0 && (
-                                            <div className="mt-4 pt-4 border-t border-blue-200">
-                                                <p className="text-xs font-semibold text-blue-700 mb-2">Popular Tools:</p>
-                                                <ul className="space-y-1">
-                                                    {popularTools.map(({ tool }) => {
-                                                        const toolData = tool.i18n[0]
-                                                        if (!toolData) return null
-                                                        return (
-                                                            <li key={tool.id} className="text-sm text-gray-700 hover:text-blue-600">
-                                                                → {toolData.title}
-                                                            </li>
-                                                        )
-                                                    })}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </Link>
+                                        <ul className="space-y-2">
+                                            {popularTools.map(({ tool }) => {
+                                                const toolData = tool.i18n[0]
+                                                const categorySlug = catData.slug
+                                                if (!toolData) return null
+                                                
+                                                return (
+                                                    <li key={tool.id}>
+                                                        <Link
+                                                            href={`/${lang}/${categorySlug}/${toolData.slug}`}
+                                                            className="block text-blue-600 hover:text-blue-800 hover:underline"
+                                                        >
+                                                            <h4 className="font-medium">
+                                                                {toolData.h1 || toolData.title}
+                                                            </h4>
+                                                        </Link>
+                                                    </li>
+                                                )
+                                            })}
+                                        </ul>
+                                    </div>
                                 )
                             })}
                         </div>
                     </section>
                 )}
 
-                {/* Заголовок "Calculators by category" из body_blocks_json */}
-                {bodyBlocks.body_h2_1 && (
-                    <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                        {bodyBlocks.body_h2_1}
-                    </h2>
-                )}
-
-                {/* Все категории */}
-                <div className="grid gap-8">
-                    {categories.map((cat) => {
-                        const catName = cat.i18n[0]?.name || 'Unnamed Category'
-                        const catSlug = cat.i18n[0]?.slug || 'cat'
-                        const isPopular = cat.i18n[0]?.is_popular === 1
-
-                        if (cat.tools.length === 0) return null
-                        if (isPopular) return null
-
-                        return (
-                            <section key={cat.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                                <h2 className="text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">
-                                    {catName}
-                                </h2>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {cat.tools.map(({ tool }) => {
-                                        const toolData = tool.i18n[0]
-                                        if (!toolData) return null
-
-                                        const isToolPopular = toolData.is_popular === 1
-
-                                        return (
-                                            <Link
-                                                key={tool.id}
-                                                href={`/${lang}/${catSlug}/${toolData.slug}`}
-                                                className={`group block p-4 border rounded-lg hover:border-blue-500 hover:shadow-md transition-all duration-200 ${
-                                                    isToolPopular 
-                                                        ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
-                                                        : 'bg-gray-50 hover:bg-white'
-                                                }`}
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <h3 className="font-bold text-lg text-blue-600 mb-1 group-hover:text-blue-700">
-                                                            {toolData.title}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-500 line-clamp-2">
-                                                            {toolData.meta_description}
-                                                        </p>
-                                                    </div>
-                                                    {isToolPopular && (
-                                                        <span className="ml-2 text-yellow-500 text-lg" title="Popular tool">
-                                                            ⭐
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </Link>
-                                        )
-                                    })}
-                                </div>
-                            </section>
-                        )
-                    })}
-                </div>
-
-                {/* Дополнительные блоки из body_blocks_json */}
-                {bodyBlocks.body_h2_4 && (
-                    <section className="mt-12 mb-8">
+                {/* Секция 3: Промо (Pop-Up Widgets) */}
+                {content.body_h2_4 && (
+                    <section className="mb-12 bg-blue-50 border border-blue-200 rounded-lg p-8">
                         <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                            {bodyBlocks.body_h2_4}
+                            {content.body_h2_4}
                         </h2>
-                        {bodyBlocks.body_pop_up_text && (
-                            <p className="text-lg text-gray-700 mb-4">
-                                {bodyBlocks.body_pop_up_text}
-                            </p>
+                        {content.body_pop_up_text && (
+                            <div className="text-lg text-gray-700 mb-6 space-y-4">
+                                {content.body_pop_up_text.split('\n').map((paragraph, index) => (
+                                    paragraph.trim() && (
+                                        <p key={index}>{paragraph.trim()}</p>
+                                    )
+                                ))}
+                            </div>
                         )}
-                        {bodyBlocks.body_get_pop_up_button && (
-                            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
-                                {bodyBlocks.body_get_pop_up_button}
-                            </button>
+                        {content.body_get_pop_up_button && promoPage && (
+                            <Link
+                                href={`/${lang}/${promoPage.slug}`}
+                                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                            >
+                                {content.body_get_pop_up_button}
+                            </Link>
                         )}
                     </section>
                 )}
 
-                {bodyBlocks.body_h2_5 && (
-                    <section className="mt-12 mb-8">
+                {/* Секция 4: О нас (About) */}
+                {content.body_h2_5 && (
+                    <section className="mb-12">
                         <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                            {bodyBlocks.body_h2_5}
+                            {content.body_h2_5}
                         </h2>
-                        {bodyBlocks.body_about_us_text && (
-                            <p className="text-lg text-gray-700">
-                                {bodyBlocks.body_about_us_text}
-                            </p>
+                        {content.body_about_us_text && (
+                            <div className="text-lg text-gray-700 space-y-4">
+                                {content.body_about_us_text.split('\n').map((paragraph, index) => (
+                                    paragraph.trim() && (
+                                        <p key={index}>{paragraph.trim()}</p>
+                                    )
+                                ))}
+                            </div>
                         )}
+                    </section>
+                )}
+
+                {/* Секция 5: Все калькуляторы */}
+                {content.body_h2_3 && (
+                    <section className="mb-12">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                            {content.body_h2_3}
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {allTools
+                                .filter(tool => tool.i18n.length > 0)
+                                .map((tool) => {
+                                    const toolData = tool.i18n[0]
+                                    const categorySlug = tool.categories[0]?.category.i18n[0]?.slug || ''
+                                    if (!toolData || !categorySlug) return null
+
+                                    return (
+                                        <Link
+                                            key={tool.id}
+                                            href={`/${lang}/${categorySlug}/${toolData.slug}`}
+                                            className="block text-blue-600 hover:text-blue-800 hover:underline p-2"
+                                        >
+                                            <h4 className="font-medium">
+                                                {toolData.h1 || toolData.title}
+                                            </h4>
+                                        </Link>
+                                    )
+                                })}
+                        </div>
                     </section>
                 )}
             </main>
