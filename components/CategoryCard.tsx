@@ -18,7 +18,7 @@ export default function CategoryCard({
   shortDescription,
   iconUrl,
 }: CategoryCardProps) {
-  // Путь к иконке - файлы должны быть в /public/assets/icons/
+  // Path to icon
   const iconPath = iconUrl 
     ? `/assets/icons/${iconUrl}`
     : '/assets/icons/default.svg'
@@ -26,9 +26,12 @@ export default function CategoryCard({
   return (
     <Link
       href={`/${lang}/${slug}`}
-      className="group relative block bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] flex flex-col"
+      // h-[140px] - fixed height
+      // relative - establishes context for absolute children
+      className="group relative block bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px]"
     >
-      {/* Иконка - абсолютное позиционирование слева сверху */}
+      {/* 1. ICON */}
+      {/* Strictly Top-Left: Top 10px, Left 10px */}
       {iconUrl && (
         <div className="absolute top-[10px] left-[10px] w-[24px] h-[24px] flex items-center justify-center z-10">
           <Image
@@ -42,20 +45,18 @@ export default function CategoryCard({
         </div>
       )}
 
-      {/* Заголовок - по центру с отступом сверху */}
-      <h3 className="mt-[10px] font-bold text-center px-[20px] text-lg">
+      {/* 2. TITLE */}
+      {/* px-[40px] is critical to prevent overlap with the 34px icon space. */}
+      <h3 className="mt-[10px] font-bold text-center px-[40px] text-lg leading-tight text-gray-900">
         {name}
       </h3>
 
-      {/* Описание - посередине между (нижний край иконки + 15px) и (нижняя граница - 15px) */}
+      {/* 3. DESCRIPTION */}
+      {/* Content Zone: Top 49px to Bottom 15px */}
+      {/* Text is centered horizontally and vertically within this rigid zone */}
       {shortDescription && (
-        <div className="flex-1 flex items-center justify-center pb-[15px]">
-          <p 
-            className="text-center text-sm px-[10px] text-gray-600 line-clamp-2"
-            style={{
-              marginTop: iconUrl ? '15px' : '0'
-            }}
-          >
+        <div className="absolute top-[49px] bottom-[15px] left-0 right-0 flex items-center justify-center px-[10px]">
+          <p className="text-center text-sm text-gray-600 line-clamp-3 leading-snug">
             {shortDescription}
           </p>
         </div>
