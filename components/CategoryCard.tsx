@@ -26,32 +26,39 @@ export default function CategoryCard({
   return (
     <Link
       href={`/${lang}/${slug}`}
-      className="group relative block bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] flex flex-col items-center justify-start"
+      className="group relative block bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] flex flex-col"
     >
-      {/* Иконка - абсолютное позиционирование сверху справа */}
+      {/* Иконка - абсолютное позиционирование слева сверху */}
       {iconUrl && (
-        <div className="absolute top-[10px] right-[10px] w-[24px] h-[24px] flex items-center justify-center">
+        <div className="absolute top-[10px] left-[10px] w-[24px] h-[24px] flex items-center justify-center z-10">
           <Image
             src={iconPath}
             alt={name}
             width={24}
             height={24}
             className="object-contain"
-            unoptimized // Если изображения не оптимизируются, используйте unoptimized
+            unoptimized
           />
         </div>
       )}
 
-      {/* Заголовок - по центру с отступами */}
-      <h3 className="mt-[10px] font-bold text-center px-[30px] text-lg flex-1 flex items-start justify-center">
+      {/* Заголовок - по центру с отступом сверху */}
+      <h3 className="mt-[10px] font-bold text-center px-[20px] text-lg">
         {name}
       </h3>
 
-      {/* Описание - под заголовком */}
+      {/* Описание - посередине между (нижний край иконки + 15px) и (нижняя граница - 15px) */}
       {shortDescription && (
-        <p className="mt-[15px] text-center text-sm px-[10px] text-gray-600 line-clamp-2">
-          {shortDescription}
-        </p>
+        <div className="flex-1 flex items-center justify-center pb-[15px]">
+          <p 
+            className="text-center text-sm px-[10px] text-gray-600 line-clamp-2"
+            style={{
+              marginTop: iconUrl ? '15px' : '0'
+            }}
+          >
+            {shortDescription}
+          </p>
+        </div>
       )}
     </Link>
   )

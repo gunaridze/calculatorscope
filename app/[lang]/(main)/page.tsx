@@ -227,9 +227,9 @@ export default async function HomePage({ params }: Props) {
                         </h2>
                         
                         {/* Desktop: Grid 4 колонки (3 категории + 1 sidebar) */}
-                        <div className="hidden lg:grid lg:grid-cols-4 gap-5">
+                        <div className="hidden lg:grid lg:grid-cols-4 gap-[20px]">
                             {/* Категории - занимают 3 колонки */}
-                            <div className="lg:col-span-3 grid grid-cols-3 gap-5">
+                            <div className="lg:col-span-3 grid grid-cols-3 gap-[20px]">
                                 {categoriesForGrid.map((cat) => {
                                     const catData = cat.i18n[0]
                                     if (!catData) return null
@@ -273,7 +273,7 @@ export default async function HomePage({ params }: Props) {
                         </div>
 
                         {/* Mobile: 1 колонка с interleaved баннерами */}
-                        <div className="lg:hidden space-y-5">
+                        <div className="lg:hidden space-y-[20px]">
                             {categoriesForGrid.map((cat, index) => {
                                 const catData = cat.i18n[0]
                                 if (!catData) return null
