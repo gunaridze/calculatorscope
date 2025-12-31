@@ -1,3 +1,5 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -18,24 +20,24 @@ export default function AdBanner({ lang, adNumber, className = '', href }: AdBan
     ? `/assets/banners/${lang}-own-ads.png`
     : `/assets/banners/${lang}-google-ads-${adNumber === 4 ? 3 : adNumber}.png`
 
-const imageElement = (
-  <Image
-    src={imagePath}
-    alt={`Advertisement ${adNumber}`}
-    width={width}
-    height={height}
-    className="object-contain"
-    onError={(e) => {
-      // Предотвращаем бесконечный цикл
-      const target = e.target as HTMLImageElement
-      if (!target.dataset.fallbackUsed) {
-        target.dataset.fallbackUsed = 'true'
-        // Можно установить placeholder или скрыть изображение
-        target.style.display = 'none'
-      }
-    }}
-  />
-)
+  const imageElement = (
+    <Image
+      src={imagePath}
+      alt={`Advertisement ${adNumber}`}
+      width={width}
+      height={height}
+      className="object-contain"
+      onError={(e) => {
+        // Предотвращаем бесконечный цикл
+        const target = e.target as HTMLImageElement
+        if (!target.dataset.fallbackUsed) {
+          target.dataset.fallbackUsed = 'true'
+          // Можно установить placeholder или скрыть изображение
+          target.style.display = 'none'
+        }
+      }}
+    />
+  )
 
   // Если есть ссылка, оборачиваем в Link, иначе просто div
   if (href) {
