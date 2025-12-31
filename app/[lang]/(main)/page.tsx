@@ -228,6 +228,7 @@ export default async function HomePage({ params }: Props) {
                         
                         {/* Desktop: Grid 4 колонки (3 категории + 1 sidebar) */}
                         <div className="hidden lg:grid lg:grid-cols-4 gap-5">
+                            {/* Категории - занимают 3 колонки */}
                             <div className="lg:col-span-3 grid grid-cols-3 gap-5">
                                 {categoriesForGrid.map((cat) => {
                                     const catData = cat.i18n[0]
@@ -246,8 +247,8 @@ export default async function HomePage({ params }: Props) {
                                 })}
                             </div>
                             
-                            {/* Desktop Sidebar */}
-                            <div className="space-y-5" style={{ marginTop: '21px' }}>
+                            {/* Desktop Sidebar - занимает 1 колонку */}
+                            <div className="lg:col-span-1 space-y-5" style={{ marginTop: '21px' }}>
                                 <AdBanner 
                                     lang={lang} 
                                     adNumber={1} 

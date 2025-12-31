@@ -18,6 +18,7 @@ export default function CategoryCard({
   shortDescription,
   iconUrl,
 }: CategoryCardProps) {
+  // Путь к иконке - файлы должны быть в /public/assets/icons/
   const iconPath = iconUrl 
     ? `/assets/icons/${iconUrl}`
     : '/assets/icons/default.svg'
@@ -25,39 +26,30 @@ export default function CategoryCard({
   return (
     <Link
       href={`/${lang}/${slug}`}
-      className="group relative block bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-      style={{ minHeight: '140px', width: '100%', maxWidth: '273px' }}
+      className="group relative block bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] flex flex-col items-center justify-start"
     >
-      {/* Иконка - сверху справа, отступ 10px */}
+      {/* Иконка - абсолютное позиционирование сверху справа */}
       {iconUrl && (
-        <div className="absolute top-[10px] right-[10px]">
+        <div className="absolute top-[10px] right-[10px] w-[24px] h-[24px] flex items-center justify-center">
           <Image
             src={iconPath}
             alt={name}
-            width={40}
-            height={40}
+            width={24}
+            height={24}
             className="object-contain"
+            unoptimized // Если изображения не оптимизируются, используйте unoptimized
           />
         </div>
       )}
 
-      {/* Заголовок - по центру, mt-10px, отступы от иконки минимум 20px */}
-      <h3 
-        className="font-bold text-center mt-[10px] text-lg"
-        style={{ 
-          paddingLeft: iconUrl ? '20px' : '0',
-          paddingRight: iconUrl ? '60px' : '0'
-        }}
-      >
+      {/* Заголовок - по центру с отступами */}
+      <h3 className="mt-[10px] font-bold text-center px-[30px] text-lg flex-1 flex items-start justify-center">
         {name}
       </h3>
 
-      {/* Описание - под заголовком, отступ от низа иконки 15px, по центру, px-10px */}
+      {/* Описание - под заголовком */}
       {shortDescription && (
-        <p 
-          className="text-sm text-gray-600 text-center px-[10px]"
-          style={{ marginTop: iconUrl ? '15px' : '10px' }}
-        >
+        <p className="mt-[15px] text-center text-sm px-[10px] text-gray-600 line-clamp-2">
           {shortDescription}
         </p>
       )}
