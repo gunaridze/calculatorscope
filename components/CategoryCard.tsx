@@ -46,7 +46,9 @@ export default function CategoryCard({
 
       {/* ЗАГОЛОВОК */}
       {/* Добавил leading-tight, чтобы длинные заголовки занимали меньше места по вертикали */}
-      <h3 className="mt-[10px] font-bold text-center px-[40px] text-lg leading-tight text-gray-900 z-20">
+      {/* line-clamp-2 ограничивает заголовок максимум 2 строками */}
+      {/* mb-2 добавляет отступ снизу, чтобы не перекрывать описание */}
+      <h3 className="mt-[10px] mb-2 font-bold text-center px-[40px] text-lg leading-tight text-gray-900 z-20 line-clamp-2">
         {name}
       </h3>
 

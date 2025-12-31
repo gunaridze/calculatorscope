@@ -227,9 +227,10 @@ export default async function HomePage({ params }: Props) {
                         </h2>
                         
                         {/* Desktop: Две независимые колонки (категории и баннеры) */}
-                        <div className="hidden lg:flex lg:gap-[20px]">
+                        <div className="hidden lg:flex lg:gap-[20px] lg:items-start">
                             {/* Левая колонка: Сетка категорий */}
-                            <div className="flex-1 grid grid-cols-3 gap-[20px]">
+                            {/* items-start предотвращает растягивание карточек по высоте */}
+                            <div className="flex-1 grid grid-cols-3 gap-[20px] items-start">
                                 {categoriesForGrid.map((cat) => {
                                     const catData = cat.i18n[0]
                                     if (!catData) return null
