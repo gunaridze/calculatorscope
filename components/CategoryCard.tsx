@@ -28,7 +28,7 @@ export default function CategoryCard({
       href={`/${lang}/${slug}`}
       // ДОБАВЛЕНО: overflow-hidden
       // Это критически важно! Это скажет Grid-сетке: "Мой размер ровно 140px, игнорируй всё, что торчит внутри".
-      className="group relative flex flex-col bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] overflow-hidden"
+      className="group relative flex flex-col bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[140px] overflow-hidden will-change-shadow"
     >
       {/* ИКОНКА */}
       {iconUrl && (

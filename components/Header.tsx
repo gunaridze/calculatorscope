@@ -58,14 +58,18 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
             
             if (data.url) {
                 router.push(data.url)
+                // Обновляем роутер, чтобы стили применились сразу
+                router.refresh()
             } else {
                 // Fallback: если API не вернул URL, идем на главную
                 router.push(`/${targetLang}`)
+                router.refresh()
             }
         } catch (error) {
             console.error('Error switching language:', error)
             // Fallback: в случае ошибки идем на главную
             router.push(`/${targetLang}`)
+            router.refresh()
         } finally {
             setIsSwitchingLang(false)
         }
