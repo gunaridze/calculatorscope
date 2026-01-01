@@ -220,32 +220,87 @@ export default async function HomePage({ params }: Props) {
                     }}
                 />
                 <main className="container mx-auto px-4 py-12">
-                    {/* Секция 1: Сетка категорий и баннеров */}
+                    {/* Секция 1: Сетка категорий, популярные категории и баннеры */}
                     <section className="mb-12">
                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
                             {content.body_h2_1 || 'Calculators by category'}
                         </h2>
                         
-                        {/* Desktop: Две независимые колонки (категории и баннеры) */}
+                        {/* Desktop: Две независимые колонки (категории + популярные и баннеры) */}
                         <div className="hidden lg:flex lg:gap-[20px] lg:items-start">
-                            {/* Левая колонка: Сетка категорий */}
-                            {/* items-start предотвращает растягивание карточек по высоте */}
-                            <div className="flex-1 grid grid-cols-3 gap-[20px] items-start">
-                                {categoriesForGrid.map((cat) => {
-                                    const catData = cat.i18n[0]
-                                    if (!catData) return null
-                                    return (
-                                        <CategoryCard
-                                            key={cat.id}
-                                            lang={lang}
-                                            categoryId={cat.id}
-                                            slug={catData.slug}
-                                            name={catData.name}
-                                            shortDescription={catData.short_description}
-                                            iconUrl={catData.og_image_url}
-                                        />
-                                    )
-                                })}
+                            {/* Левая колонка: Сетка категорий + Популярные категории */}
+                            <div className="flex-1">
+                                {/* Сетка категорий */}
+                                <div className="grid grid-cols-3 gap-[20px] items-start">
+                                    {categoriesForGrid.map((cat) => {
+                                        const catData = cat.i18n[0]
+                                        if (!catData) return null
+                                        return (
+                                            <CategoryCard
+                                                key={cat.id}
+                                                lang={lang}
+                                                categoryId={cat.id}
+                                                slug={catData.slug}
+                                                name={catData.name}
+                                                shortDescription={catData.short_description}
+                                                iconUrl={catData.og_image_url}
+                                            />
+                                        )
+                                    })}
+                                </div>
+                                
+                                {/* Популярные категории - начинаются через 20px после последнего ряда */}
+                                {popularCategories.length > 0 && (
+                                    <div className="mt-[20px]">
+                                        <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                                            {content.body_h2_2 || 'Popular Calculators'}
+                                        </h2>
+                                        <div className="grid grid-cols-3 gap-6">
+                                            {popularCategories.slice(0, 6).map((cat) => {
+                                                const catData = cat.i18n[0]
+                                                if (!catData) return null
+
+                                                const popularTools = cat.tools
+                                                    .filter(({ tool }) => tool.i18n.length > 0 && tool.i18n[0]?.is_popular === 1)
+                                                    .slice(0, 3)
+
+                                                if (popularTools.length === 0) return null
+
+                                                return (
+                                                    <div key={cat.id} className="bg-white border border-gray-200 rounded-lg">
+                                                        {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
+                                                        <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
+                                                            {catData.name}
+                                                        </h3>
+                                                        
+                                                        {/* Три ряда со ссылками на инструменты */}
+                                                        <div className="px-[50px] pb-4 space-y-2">
+                                                            {popularTools.map(({ tool }) => {
+                                                                const toolData = tool.i18n[0]
+                                                                const categorySlug = catData.slug
+                                                                if (!toolData) return null
+                                                                
+                                                                return (
+                                                                    <div key={tool.id}>
+                                                                        <Link
+                                                                            href={`/${lang}/${categorySlug}/${toolData.slug}`}
+                                                                            className="block text-blue-600 hover:text-blue-800 hover:underline"
+                                                                        >
+                                                                            {/* h1 из tool_i18n размечается как h3 */}
+                                                                            <h3 className="font-medium">
+                                                                                {toolData.h1 || toolData.title}
+                                                                            </h3>
+                                                                        </Link>
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             
                             {/* Правая колонка: Баннеры (независимая высота) */}
@@ -308,61 +363,61 @@ export default async function HomePage({ params }: Props) {
                                     </div>
                                 )
                             })}
+                            
+                            {/* Мобильная версия: Популярные калькуляторы */}
+                            {popularCategories.length > 0 && (
+                                <div className="mt-5">
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                                        {content.body_h2_2 || 'Popular Calculators'}
+                                    </h2>
+                                    <div className="grid grid-cols-1 gap-6">
+                                        {popularCategories.slice(0, 6).map((cat) => {
+                                            const catData = cat.i18n[0]
+                                            if (!catData) return null
+
+                                            const popularTools = cat.tools
+                                                .filter(({ tool }) => tool.i18n.length > 0 && tool.i18n[0]?.is_popular === 1)
+                                                .slice(0, 3)
+
+                                            if (popularTools.length === 0) return null
+
+                                            return (
+                                                <div key={cat.id} className="bg-white border border-gray-200 rounded-lg">
+                                                    {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
+                                                    <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
+                                                        {catData.name}
+                                                    </h3>
+                                                    
+                                                    {/* Три ряда со ссылками на инструменты */}
+                                                    <div className="px-[50px] pb-4 space-y-2">
+                                                        {popularTools.map(({ tool }) => {
+                                                            const toolData = tool.i18n[0]
+                                                            const categorySlug = catData.slug
+                                                            if (!toolData) return null
+                                                            
+                                                            return (
+                                                                <div key={tool.id}>
+                                                                    <Link
+                                                                        href={`/${lang}/${categorySlug}/${toolData.slug}`}
+                                                                        className="block text-blue-600 hover:text-blue-800 hover:underline"
+                                                                    >
+                                                                        {/* h1 из tool_i18n размечается как h3 */}
+                                                                        <h3 className="font-medium">
+                                                                            {toolData.h1 || toolData.title}
+                                                                        </h3>
+                                                                    </Link>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </section>
-
-                    {/* Секция 2: Популярные калькуляторы */}
-                    {popularCategories.length > 0 && (
-                        <section className="mb-12">
-                            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                {content.body_h2_2 || 'Popular Calculators'}
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {popularCategories.slice(0, 6).map((cat) => {
-                                    const catData = cat.i18n[0]
-                                    if (!catData) return null
-
-                                    const popularTools = cat.tools
-                                        .filter(({ tool }) => tool.i18n.length > 0 && tool.i18n[0]?.is_popular === 1)
-                                        .slice(0, 3)
-
-                                    if (popularTools.length === 0) return null
-
-                                    return (
-                                        <div key={cat.id} className="bg-white border border-gray-200 rounded-lg">
-                                            {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
-                                            <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
-                                                {catData.name}
-                                            </h3>
-                                            
-                                            {/* Три ряда со ссылками на инструменты */}
-                                            <div className="px-[50px] pb-4 space-y-2">
-                                                {popularTools.map(({ tool }) => {
-                                                    const toolData = tool.i18n[0]
-                                                    const categorySlug = catData.slug
-                                                    if (!toolData) return null
-                                                    
-                                                    return (
-                                                        <div key={tool.id}>
-                                                            <Link
-                                                                href={`/${lang}/${categorySlug}/${toolData.slug}`}
-                                                                className="block text-blue-600 hover:text-blue-800 hover:underline"
-                                                            >
-                                                                {/* h1 из tool_i18n размечается как h3 */}
-                                                                <h3 className="font-medium">
-                                                                    {toolData.h1 || toolData.title}
-                                                                </h3>
-                                                            </Link>
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </section>
-                    )}
 
                     {/* Секция 3: Промо (Pop-Up Widgets) */}
                     {content.body_h2_4 && (
