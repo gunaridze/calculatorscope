@@ -435,12 +435,14 @@ export default async function HomePage({ params }: Props) {
                                 </div>
                             )}
                             {content.body_get_pop_up_button && promoPage?.slug && (
-                                <Link
-                                    href={`/${lang}/${promoPage.slug}`}
-                                    className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-                                >
-                                    {content.body_get_pop_up_button}
-                                </Link>
+                                <div className="flex justify-center">
+                                    <Link
+                                        href={`/${lang}/${promoPage.slug}`}
+                                        className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                                    >
+                                        {content.body_get_pop_up_button}
+                                    </Link>
+                                </div>
                             )}
                         </section>
                     )}
