@@ -87,19 +87,41 @@ export default async function HomePage({ params }: Props) {
             }
         }
 
-        // Получаем slug для страницы с ID=5 (для кнопки промо)
+        // Получаем slug для страницы с ID=105 (для кнопки промо)
         // Используем try-catch на случай если страница не найдена
         let promoPage: { slug: string } | null = null
         try {
+            // Сначала пытаемся найти по page_id: '105'
             promoPage = await prisma.pageI18n.findFirst({
                 where: {
-                    page_id: '5',
+                    page_id: '105',
                     lang,
                 },
                 select: {
                     slug: true,
                 }
             })
+            
+            // Если не найдено, пытаемся найти через Page с code или id
+            if (!promoPage) {
+                const page = await prisma.page.findFirst({
+                    where: {
+                        OR: [
+                            { id: '105' },
+                            { code: 'promo' }
+                        ]
+                    },
+                    include: {
+                        i18n: {
+                            where: { lang },
+                            select: { slug: true }
+                        }
+                    }
+                })
+                if (page?.i18n[0]) {
+                    promoPage = { slug: page.i18n[0].slug }
+                }
+            }
         } catch (error) {
             console.error('Error fetching promo page:', error)
         }
@@ -434,14 +456,24 @@ export default async function HomePage({ params }: Props) {
                                     ))}
                                 </div>
                             )}
-                            {content.body_get_pop_up_button && promoPage?.slug && (
+                            {content.body_get_pop_up_button && (
                                 <div className="flex justify-center">
-                                    <Link
-                                        href={`/${lang}/${promoPage.slug}`}
-                                        className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-                                    >
-                                        {content.body_get_pop_up_button}
-                                    </Link>
+                                    {promoPage?.slug ? (
+                                        <Link
+                                            href={`/${lang}/${promoPage.slug}`}
+                                            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                                        >
+                                            {content.body_get_pop_up_button}
+                                        </Link>
+                                    ) : (
+                                        <button
+                                            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors cursor-not-allowed opacity-75"
+                                            disabled
+                                            title="Promo page not found"
+                                        >
+                                            {content.body_get_pop_up_button}
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </section>
