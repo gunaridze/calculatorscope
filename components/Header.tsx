@@ -1,9 +1,17 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
+
+type Category = {
+    id: string
+    slug: string
+    name: string
+    sort_order: number
+    children: Category[]
+}
 
 const languages = [
     { code: 'en', name: 'En' },
@@ -29,6 +37,8 @@ type HeaderProps = {
 export default function Header({ lang, h1, metaDescription, translations }: HeaderProps) {
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
     const [isSwitchingLang, setIsSwitchingLang] = useState(false)
+    const [categories, setCategories] = useState<Category[]>([])
+    const [isLoadingCategories, setIsLoadingCategories] = useState(false)
     const pathname = usePathname()
     const router = useRouter()
     const currentLang = languages.find(l => l.code === lang) || languages[0]
@@ -42,6 +52,31 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
         const others = languages.filter(l => l.code !== lang)
         return current ? [current, ...others] : languages
     }, [lang])
+
+    // Сброс категорий при изменении языка
+    useEffect(() => {
+        setCategories([])
+    }, [lang])
+
+    // Загрузка категорий при открытии меню
+    useEffect(() => {
+        if (isCategoriesOpen && categories.length === 0 && !isLoadingCategories) {
+            setIsLoadingCategories(true)
+            fetch(`/api/categories?lang=${lang}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.categories) {
+                        setCategories(data.categories)
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading categories:', error)
+                })
+                .finally(() => {
+                    setIsLoadingCategories(false)
+                })
+        }
+    }, [isCategoriesOpen, lang, categories.length, isLoadingCategories])
 
     // Обработка переключения языка
     const handleLanguageChange = async (targetLang: string) => {
@@ -75,8 +110,23 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
         }
     }
 
+    // Закрытие меню при клике вне его области
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement
+            if (isCategoriesOpen && !target.closest('header')) {
+                setIsCategoriesOpen(false)
+            }
+        }
+
+        if (isCategoriesOpen) {
+            document.addEventListener('mousedown', handleClickOutside)
+            return () => document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [isCategoriesOpen])
+
     return (
-        <header className="sticky top-0 z-50">
+        <header className="sticky top-0 z-50 relative">
             {/* Верхний блок */}
             <div className="bg-[#FFFFFF] border-b border-[#000000]">
                 <div className="container mx-auto px-4">
@@ -279,6 +329,53 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                     </div>
                 </div>
             </div>
+
+            {/* Выпадающее меню категорий */}
+            {isCategoriesOpen && (
+                <div className="absolute top-full left-0 right-0 bg-white border-b border-[#000000] shadow-lg z-50 max-h-[80vh] overflow-y-auto">
+                    <div className="container mx-auto px-4 py-6">
+                        {isLoadingCategories ? (
+                            <div className="text-center py-8">
+                                <p className="text-gray-600">Loading categories...</p>
+                            </div>
+                        ) : categories.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {categories.map((category) => (
+                                    <div key={category.id} className="space-y-2">
+                                        {/* Главная категория - жирным */}
+                                        <Link
+                                            href={`/${lang}/${category.slug}`}
+                                            className="block font-bold text-[#1814E6] hover:underline text-base md:text-lg"
+                                            onClick={() => setIsCategoriesOpen(false)}
+                                        >
+                                            {category.name}
+                                        </Link>
+                                        {/* Подкатегории - обычным шрифтом */}
+                                        {category.children.length > 0 && (
+                                            <div className="pl-4 space-y-1">
+                                                {category.children.map((child) => (
+                                                    <Link
+                                                        key={child.id}
+                                                        href={`/${lang}/${child.slug}`}
+                                                        className="block text-gray-700 hover:text-[#1814E6] hover:underline text-sm md:text-base"
+                                                        onClick={() => setIsCategoriesOpen(false)}
+                                                    >
+                                                        {child.name}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <p className="text-gray-600">No categories found</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </header>
     )
 }
