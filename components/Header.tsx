@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -29,6 +29,8 @@ type HeaderProps = {
 export default function Header({ lang, h1, metaDescription, translations }: HeaderProps) {
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
     const [isSwitchingLang, setIsSwitchingLang] = useState(false)
+    const [isScrolledDown, setIsScrolledDown] = useState(false)
+    const [lastScrollY, setLastScrollY] = useState(0)
     const pathname = usePathname()
     const router = useRouter()
     const currentLang = languages.find(l => l.code === lang) || languages[0]
@@ -42,6 +44,27 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
         const others = languages.filter(l => l.code !== lang)
         return current ? [current, ...others] : languages
     }, [lang])
+
+    // Отслеживание скролла для мобильных устройств
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY
+            
+            // Если скроллим вниз и проскроллили больше 10px - скрываем части
+            if (currentScrollY > lastScrollY && currentScrollY > 10) {
+                setIsScrolledDown(true)
+            } 
+            // Если скроллим вверх или вернулись на самый верх - показываем все
+            else if (currentScrollY < lastScrollY || currentScrollY === 0) {
+                setIsScrolledDown(false)
+            }
+            
+            setLastScrollY(currentScrollY)
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [lastScrollY])
 
     // Обработка переключения языка
     const handleLanguageChange = async (targetLang: string) => {
@@ -202,7 +225,9 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
             <div className="h-px bg-[#000000]"></div>
 
             {/* Второй ряд - поиск на мобильных */}
-            <div className="bg-[#FFFFFF] border-b border-[#000000] md:hidden">
+            <div className={`bg-[#FFFFFF] border-b border-[#000000] md:hidden transition-all duration-300 ease-in-out ${
+                isScrolledDown ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
+            }`}>
                 <div className="container mx-auto px-4 py-3">
                     <div className="relative">
                         <input
@@ -225,13 +250,17 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
             </div>
 
             {/* Разделительная линия для мобильных */}
-            <div className="h-px bg-[#000000] md:hidden"></div>
+            <div className={`h-px bg-[#000000] md:hidden transition-all duration-300 ${
+                isScrolledDown ? 'opacity-0 h-0' : 'opacity-100'
+            }`}></div>
 
             {/* Нижний блок */}
             <div className="bg-[#F5F5F5]">
                 <div className="container mx-auto px-4">
                     {/* Мобильная версия: только текст */}
-                    <div className="py-4 md:hidden">
+                    <div className={`py-4 md:hidden transition-all duration-300 ease-in-out ${
+                        isScrolledDown ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
+                    }`}>
                         {h1 && (
                             <h1 className="text-base font-bold text-black mb-1 text-center">
                                 {h1}
