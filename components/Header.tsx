@@ -11,7 +11,6 @@ type Category = {
     name: string
     iconUrl?: string | null
     sort_order: number
-    children: Category[]
 }
 
 const languages = [
@@ -373,22 +372,6 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                                                     {category.name}
                                                 </span>
                                             </Link>
-                                            
-                                            {/* Подкатегории - обычным шрифтом с увеличенным line-height */}
-                                            {category.children.length > 0 && (
-                                                <div className="space-y-2 pl-9 md:pl-10">
-                                                    {category.children.map((child) => (
-                                                        <Link
-                                                            key={child.id}
-                                                            href={`/${lang}/${child.slug}`}
-                                                            className="block text-gray-700 hover:text-[#1814E6] hover:underline text-sm md:text-base leading-relaxed transition-colors"
-                                                            onClick={() => setIsCategoriesOpen(false)}
-                                                        >
-                                                            {child.name}
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 ))}
