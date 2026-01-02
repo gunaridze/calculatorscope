@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
                     select: {
                         slug: true,
                         name: true,
+                        og_image_url: true,
                     }
                 },
                 children: {
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
                             select: {
                                 slug: true,
                                 name: true,
+                                og_image_url: true,
                             }
                         }
                     },
@@ -48,6 +50,7 @@ export async function GET(request: NextRequest) {
                 id: cat.id,
                 slug: cat.i18n[0].slug,
                 name: cat.i18n[0].name,
+                iconUrl: cat.i18n[0].og_image_url,
                 sort_order: cat.sort_order,
                 children: cat.children
                     .filter(child => child.i18n.length > 0)
@@ -55,6 +58,7 @@ export async function GET(request: NextRequest) {
                         id: child.id,
                         slug: child.i18n[0].slug,
                         name: child.i18n[0].name,
+                        iconUrl: child.i18n[0].og_image_url,
                         sort_order: child.sort_order,
                     }))
                     .sort((a, b) => a.sort_order - b.sort_order)
