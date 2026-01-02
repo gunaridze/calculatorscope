@@ -357,7 +357,7 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                                                 {/* Иконка категории */}
                                                 {category.iconUrl ? (
                                                     <img 
-                                                        src={category.iconUrl} 
+                                                        src={`/assets/icons/${category.iconUrl}`}
                                                         alt={category.name}
                                                         className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0 object-contain"
                                                     />
