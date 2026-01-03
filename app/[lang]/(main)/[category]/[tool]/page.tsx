@@ -69,27 +69,34 @@ function ContentWithAds({
     content, 
     lang 
 }: { 
-    content: React.ReactNode[], 
+    content: Array<{ node: React.ReactNode, sectionType?: string }>, 
     lang: string 
 }) {
     const result: React.ReactNode[] = []
-    let h2Count = 0
 
-    content.forEach((node, idx) => {
-        // Проверяем, является ли элемент h2
-        if (React.isValidElement(node) && typeof node.type === 'string' && node.type === 'h2') {
-            h2Count++
-            // Добавляем баннер перед h2 (начиная со второго h2)
-            if (h2Count > 1) {
-                const adNumber = h2Count === 2 ? 2 : h2Count === 3 ? 3 : 4
-                result.push(
-                    <div key={`ad-before-${idx}`} className="my-5">
-                        <AdBanner lang={lang} adNumber={adNumber as 1 | 2 | 3 | 4} />
-                    </div>
-                )
-            }
+    content.forEach((item, idx) => {
+        // Добавляем баннер перед конкретными секциями
+        if (item.sectionType === 'short_answer') {
+            result.push(
+                <div key={`ad-before-short-answer`} className="my-5">
+                    <AdBanner lang={lang} adNumber={2} />
+                </div>
+            )
+        } else if (item.sectionType === 'key_points') {
+            result.push(
+                <div key={`ad-before-key-points`} className="my-5">
+                    <AdBanner lang={lang} adNumber={3} />
+                </div>
+            )
+        } else if (item.sectionType === 'examples') {
+            result.push(
+                <div key={`ad-before-examples`} className="my-5">
+                    <AdBanner lang={lang} adNumber={4} />
+                </div>
+            )
         }
-        result.push(<React.Fragment key={idx}>{node}</React.Fragment>)
+        
+        result.push(<React.Fragment key={idx}>{item.node}</React.Fragment>)
     })
 
     return <>{result}</>
@@ -203,14 +210,14 @@ export default async function ToolPage({ params, searchParams }: Props) {
         }
     }
 
-    // Подготавливаем контент для мобильной версии
-    const contentSections: React.ReactNode[] = []
+    // Подготавливаем контент для мобильной версии (с маркерами секций для баннеров)
+    const contentSections: Array<{ node: React.ReactNode, sectionType?: string }> = []
 
     // Intro text
     if (data.intro_text) {
-        contentSections.push(
-            <p key="intro" className="mb-4 text-gray-700">{data.intro_text}</p>
-        )
+        contentSections.push({
+            node: <p key="intro" className="mb-4 text-gray-700">{data.intro_text}</p>
+        })
     }
 
     // Рендерим content_blocks_json (если есть)
@@ -218,143 +225,199 @@ export default async function ToolPage({ params, searchParams }: Props) {
         contentBlocks.forEach((block, idx) => {
             switch (block.type) {
                 case 'h2':
-                    contentSections.push(
-                        <h2 
-                            key={`content-block-h2-${idx}`} 
-                            className="text-3xl font-bold mb-6 mt-8"
-                            id={block.id}
-                        >
-                            {block.content}
-                        </h2>
-                    )
+                    contentSections.push({
+                        node: (
+                            <h2 
+                                key={`content-block-h2-${idx}`} 
+                                className="text-3xl font-bold mb-6 mt-8"
+                                id={block.id}
+                            >
+                                {block.content}
+                            </h2>
+                        )
+                    })
                     break
                 case 'paragraph':
-                    contentSections.push(
-                        <p key={`content-block-p-${idx}`} className="mb-4 text-gray-700">
-                            {block.content}
-                        </p>
-                    )
+                    contentSections.push({
+                        node: (
+                            <p key={`content-block-p-${idx}`} className="mb-4 text-gray-700">
+                                {block.content}
+                            </p>
+                        )
+                    })
                     break
                 case 'html':
-                    contentSections.push(
-                        <div 
-                            key={`content-block-html-${idx}`} 
-                            className="mb-4 prose lg:prose-xl"
-                            dangerouslySetInnerHTML={{ __html: block.content }}
-                        />
-                    )
+                    contentSections.push({
+                        node: (
+                            <div 
+                                key={`content-block-html-${idx}`} 
+                                className="mb-4 prose lg:prose-xl"
+                                dangerouslySetInnerHTML={{ __html: block.content }}
+                            />
+                        )
+                    })
                     break
                 case 'section':
-                    contentSections.push(
-                        <section 
-                            key={`content-block-section-${idx}`} 
-                            className="mb-12 prose lg:prose-xl"
-                            id={block.id}
-                        >
-                            <div dangerouslySetInnerHTML={{ __html: block.content }} />
-                        </section>
-                    )
+                    contentSections.push({
+                        node: (
+                            <section 
+                                key={`content-block-section-${idx}`} 
+                                className="mb-12 prose lg:prose-xl"
+                                id={block.id}
+                            >
+                                <div dangerouslySetInnerHTML={{ __html: block.content }} />
+                            </section>
+                        )
+                    })
                     break
             }
         })
     }
 
+    // Short Answer Section
+    if (data.short_answer) {
+        contentSections.push({
+            node: (
+                <div key="short-answer" className="mb-4">
+                    <p className="text-xl text-gray-700 font-medium">{data.short_answer}</p>
+                </div>
+            ),
+            sectionType: 'short_answer'
+        })
+    }
+
+    // Key Points Section
+    if (data.key_points_json) {
+        try {
+            // @ts-ignore
+            const keyPoints = typeof data.key_points_json === 'string'
+                ? JSON.parse(data.key_points_json)
+                : data.key_points_json
+            
+            if (Array.isArray(keyPoints) && keyPoints.length > 0) {
+                contentSections.push({
+                    node: (
+                        <section key="key-points" id="key-points" className="mb-12 prose lg:prose-xl">
+                            <ul className="list-disc list-inside space-y-2">
+                                {keyPoints.map((point: string, idx: number) => (
+                                    <li key={idx} className="text-gray-700">{point}</li>
+                                ))}
+                            </ul>
+                        </section>
+                    ),
+                    sectionType: 'key_points'
+                })
+            }
+        } catch (e) {
+            console.error('Error parsing key_points_json:', e)
+        }
+    }
+
     // Examples Section
     if (examples.length > 0) {
-        contentSections.push(
-            <h2 key="examples-h2" className="text-3xl font-bold mb-6 mt-8">Examples</h2>
-        )
-        contentSections.push(
-            <section key="examples-section" id="examples" className="mb-12 prose lg:prose-xl">
-                <div className="space-y-6">
-                    {examples.map((ex, idx) => (
-                        <div key={idx} className="bg-gray-50 p-6 rounded-lg">
-                            <h3 className="text-xl font-semibold mb-3">Example {idx + 1}</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <h4 className="font-semibold mb-2">Inputs:</h4>
-                                    <ul className="list-disc list-inside">
-                                        {Object.entries(ex.inputs).map(([key, value]) => (
-                                            <li key={key}>{key}: {value}</li>
-                                        ))}
-                                    </ul>
+        contentSections.push({
+            node: (
+                <>
+                    <h2 key="examples-h2" className="text-3xl font-bold mb-6 mt-8">Examples</h2>
+                    <section key="examples-section" id="examples" className="mb-12 prose lg:prose-xl">
+                        <div className="space-y-6">
+                            {examples.map((ex, idx) => (
+                                <div key={idx} className="bg-gray-50 p-6 rounded-lg">
+                                    <h3 className="text-xl font-semibold mb-3">Example {idx + 1}</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <h4 className="font-semibold mb-2">Inputs:</h4>
+                                            <ul className="list-disc list-inside">
+                                                {Object.entries(ex.inputs).map(([key, value]) => (
+                                                    <li key={key}>{key}: {value}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold mb-2">Outputs:</h4>
+                                            <ul className="list-disc list-inside">
+                                                {Object.entries(ex.outputs).map(([key, value]) => (
+                                                    <li key={key}>
+                                                        {key}: {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="font-semibold mb-2">Outputs:</h4>
-                                    <ul className="list-disc list-inside">
-                                        {Object.entries(ex.outputs).map(([key, value]) => (
-                                            <li key={key}>
-                                                {key}: {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </section>
-        )
+                    </section>
+                </>
+            ),
+            sectionType: 'examples'
+        })
     }
 
     // Formula Section
     if (data.formula_md) {
-        contentSections.push(
-            <h2 key="formula-h2" className="text-3xl font-bold mb-6 mt-8">Formula</h2>
-        )
-        contentSections.push(
-            <section key="formula-section" id="formula" className="mb-12 prose lg:prose-xl">
-                <div className="bg-gray-50 p-6 rounded-lg">
-                    <div dangerouslySetInnerHTML={{ __html: data.formula_md }} />
-                </div>
-            </section>
-        )
+        contentSections.push({
+            node: (
+                <>
+                    <h2 key="formula-h2" className="text-3xl font-bold mb-6 mt-8">Formula</h2>
+                    <section key="formula-section" id="formula" className="mb-12 prose lg:prose-xl">
+                        <div className="bg-gray-50 p-6 rounded-lg">
+                            <div dangerouslySetInnerHTML={{ __html: data.formula_md }} />
+                        </div>
+                    </section>
+                </>
+            )
+        })
     }
 
     // Assumptions Section
     if (data.assumptions_md) {
-        contentSections.push(
-            <h2 key="assumptions-h2" className="text-3xl font-bold mb-6 mt-8">Assumptions</h2>
-        )
-        contentSections.push(
-            <section key="assumptions-section" id="assumptions" className="mb-12 prose lg:prose-xl">
-                <div className="bg-gray-50 p-6 rounded-lg">
-                    <div dangerouslySetInnerHTML={{ __html: data.assumptions_md }} />
-                </div>
-            </section>
-        )
+        contentSections.push({
+            node: (
+                <>
+                    <h2 key="assumptions-h2" className="text-3xl font-bold mb-6 mt-8">Assumptions</h2>
+                    <section key="assumptions-section" id="assumptions" className="mb-12 prose lg:prose-xl">
+                        <div className="bg-gray-50 p-6 rounded-lg">
+                            <div dangerouslySetInnerHTML={{ __html: data.assumptions_md }} />
+                        </div>
+                    </section>
+                </>
+            )
+        })
     }
 
     // FAQ Section
     if (data.faq_json) {
-        contentSections.push(
-            <h2 key="faq-h2" className="text-3xl font-bold mb-6 mt-8">Frequently Asked Questions</h2>
-        )
-        contentSections.push(
-            <section key="faq-section" id="faq" className="mb-12 prose lg:prose-xl">
-                <div className="space-y-4">
-                    {(() => {
-                        try {
-                            // @ts-ignore
-                            const faqs = typeof data.faq_json === 'string' 
-                                ? JSON.parse(data.faq_json) 
-                                : data.faq_json
-                            if (Array.isArray(faqs)) {
-                                return faqs.map((faq: any, idx: number) => (
-                                    <div key={idx} className="bg-gray-50 p-6 rounded-lg">
-                                        <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
-                                        <p>{faq.answer}</p>
-                                    </div>
-                                ))
-                            }
-                        } catch (e) {
-                            console.error('Error parsing FAQ:', e)
-                        }
-                        return null
-                    })()}
-                </div>
-            </section>
-        )
+        contentSections.push({
+            node: (
+                <>
+                    <h2 key="faq-h2" className="text-3xl font-bold mb-6 mt-8">Frequently Asked Questions</h2>
+                    <section key="faq-section" id="faq" className="mb-12 prose lg:prose-xl">
+                        <div className="space-y-4">
+                            {(() => {
+                                try {
+                                    // @ts-ignore
+                                    const faqs = typeof data.faq_json === 'string' 
+                                        ? JSON.parse(data.faq_json) 
+                                        : data.faq_json
+                                    if (Array.isArray(faqs)) {
+                                        return faqs.map((faq: any, idx: number) => (
+                                            <div key={idx} className="bg-gray-50 p-6 rounded-lg">
+                                                <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
+                                                <p>{faq.answer}</p>
+                                            </div>
+                                        ))
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing FAQ:', e)
+                                }
+                                return null
+                            })()}
+                        </div>
+                    </section>
+                </>
+            )
+        })
     }
 
     return (
@@ -409,7 +472,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
                         {/* Текстовый контент (обтекает виджет и сайдбар) */}
                         <div className="prose lg:prose-xl max-w-none">
-                            {contentSections}
+                            {contentSections.map((item, idx) => (
+                                <React.Fragment key={idx}>{item.node}</React.Fragment>
+                            ))}
                         </div>
 
                         {/* Clear float в конце */}

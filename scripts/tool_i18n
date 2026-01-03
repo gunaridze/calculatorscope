@@ -1,0 +1,930 @@
+[
+  {
+    "id": 1001,
+    "type": "converter",
+    "lang": "en",
+    "slug": "number-to-text-converter",
+    "h1": "Number to Text Converter",
+    "content_blocks_json": "...",
+    "title": "Number to Words Converter - Cheque Writer & VAT Calculator",
+    "meta_title": "Convert Numbers to Text: Cheques, Currency & VAT Tool",
+    "meta_description": "Instantly convert numbers to words for cheques, legal documents, and invoices. Supports USD, EUR, GBP, VAT calculations, and scientific notation.",
+    "meta_robots": "index, follow",
+    "canonical_path": null,
+    "short_answer": "The Number to Text Converter is a utility that translates numerical digits (e.g., 150) into their written word equivalents (e.g., \"one hundred fifty\"). It supports multiple currencies, cheque formatting, VAT calculations, and scientific notation for financial and legal precision.",
+    "intro_text": "<p>In an era dominated by digital transactions, the precise conversion of numerical values into written text remains a cornerstone of financial security and legal clarity. The <b>Number to Text Converter</b> is a sophisticated utility designed to bridge the gap between raw data and formal documentation. Whether you are drafting a legal contract, finalizing a bank cheque, or preparing an invoice with complex tax implications, converting digits into words eliminates ambiguity. A simple typing error in a numerical field can lead to significant financial discrepancies—for instance, a misplaced decimal point can transform $100.00 into $1000.00. However, when the value is reinforced by its textual equivalent (“one hundred dollars”), the intent becomes indisputable, providing a critical layer of fraud protection.</p><p>This tool goes beyond simple linguistic translation. It is engineered with advanced algorithms capable of handling standard integers, decimals, and even scientific notation (E-notation) for extreme values up to 300 digits. It supports a variety of global currencies including USD, EUR, GBP, PLN, and RUB, making it an indispensable asset for international business. Furthermore, the integrated VAT (Value Added Tax) calculator allows users to automatically compute and articulate tax-inclusive totals, streamlining the workflow for accountants and administrative professionals.</p><p>Accuracy in documentation is not just about correctness; it is about professionalism and compliance. Different contexts require different formatting—academic papers may require Title Case, while bank cheques have specific standards for fractional cents. This converter offers granular control over text casing and output formats, ensuring that your generated text adheres to the specific stylistic guidelines of your industry. From writing a check for rent to visualizing the magnitude of a Googol ($1 \\times 10^{100}$), this tool ensures your numbers speak as clearly as your words.</p>",
+    "key_points_json": [
+      "<b>Financial Fraud Prevention:</b> Converting numbers to words is a standard security measure in banking. While digits can be easily altered (e.g., changing '1' to '7'), written text is far more difficult to forge without detection, ensuring the integrity of cheques and contracts.",
+      "<b>Cheque Writing Standard:</b> The tool includes a dedicated 'Check Writing' mode that formats the output specifically for banking standards. It automatically converts decimal values into fractional notation (e.g., 'and 50/100') and appends the currency name, ready for transcription onto legal tender.",
+      "<b>Advanced VAT Integration:</b> Uniquely, this converter handles tax calculations. By selecting the 'Currency + VAT' mode and inputting a tax rate (e.g., 20%), the tool calculates the gross total and converts the final sum into words, ideal for invoices and receipts.",
+      "<b>Multi-Currency Support:</b> The utility is not limited to dollars. It supports five major global currencies: United States Dollar (USD), Euro (EUR), British Pound (GBP), Polish Zloty (PLN), and Russian Ruble (RUB), handling the specific linguistic nuances of each.",
+      "<b>Scientific Notation Handling:</b> For scientific and academic use, the tool accepts E-notation input (e.g., 1e100). This allows for the conversion of astronomically large or infinitesimally small numbers that standard calculators cannot process.",
+      "<b>Flexible Text Casing:</b> Users can toggle between multiple text styles including 'lowercase' for casual use, 'UPPERCASE' for emphasis or telex headers, 'Title Case' for headers, and 'Sentence case' for standard prose.",
+      "<b>Accessibility Enhancement:</b> Converting data to text improves web accessibility. Screen readers often stumble over complex numerical strings; providing a text alternative ensures that visually impaired users receive accurate information regarding prices and quantities.",
+      "<b>Clipboard Efficiency:</b> Designed for high-volume workflow, the interface includes a one-click 'Copy' function, allowing users to instantly transfer the converted text into Word documents, Excel sheets, or banking software without manual retyping."
+    ],
+    "inputs_json": [
+      {
+        "name": "inputNumber",
+        "label": "Number to Convert",
+        "type": "text",
+        "unit": null,
+        "min": 0,
+        "max": null,
+        "description": "The numerical value you wish to convert. Accepts integers, decimals (floats), and scientific notation (e.g., 1.5e6). Supports values up to 300 digits."
+      },
+      {
+        "name": "conversionMode",
+        "label": "Conversion Mode",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Defines the output format. Options include 'Words' (standard text), 'Check Writing' (bank format with fractions), 'Currency' (monetary format), or 'Currency + VAT' (tax calculation)."
+      },
+      {
+        "name": "currency",
+        "label": "Target Currency",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Select the currency context for the text. Supported options: USD, EUR, GBP, PLN, RUB. This appends the correct currency name and subdivision (e.g., dollars/cents)."
+      },
+      {
+        "name": "textCase",
+        "label": "Text Case",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Controls the capitalization of the result. Choose 'Sentence case' for standard grammar, 'Title Case' for headlines, 'UPPERCASE' for legal emphasis, or 'lowercase'."
+      },
+      {
+        "name": "vatRate",
+        "label": "VAT Rate (%)",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "description": "The tax percentage to apply. Only active when 'Currency + VAT' mode is selected. It calculates the tax and adds it to the principal before conversion."
+      }
+    ],
+    "outputs_json": [
+      {
+        "name": "textResult",
+        "label": "Converted Text",
+        "unit": null,
+        "rounding": null,
+        "description": "The final written representation of the number, formatted according to the selected mode, currency, and grammatical case."
+      },
+      {
+        "name": "calculatedTotal",
+        "label": "Numeric Total (VAT Mode)",
+        "unit": null,
+        "rounding": "2",
+        "description": "If VAT mode is active, this displays the numeric total (Principal + Tax) before it is converted to text."
+      }
+    ],
+    "examples_json": [
+      {
+        "input": {
+          "inputNumber": "1250.50",
+          "conversionMode": "Check Writing",
+          "currency": "USD"
+        },
+        "output": {
+          "textResult": "One thousand two hundred fifty and 50/100 dollars"
+        }
+      }
+    ],
+    "formula_md": "While linguistic conversion relies on dictionary mapping rather than a mathematical formula, the **VAT (Value Added Tax)** calculation uses standard percentage logic. \n\nWhen calculating the **Total Amount** including tax:\n\n$$ Total = Principal \\times \\left( 1 + \\frac{VAT\\_Rate}{100} \\right) $$\n\nWhere:\n* **Principal** is the input number.\n* **VAT_Rate** is the percentage tax.\n\nFor **Check Writing**, the fractional part is derived as:\n\n$$ Fraction = \\text{round}((Number - \\text{floor}(Number)) \\times 100) $$\n\nThe result is then formatted as \"XX/100\".",
+    "assumptions_md": "* **Scale:** The converter uses the short scale system (standard in US and modern UK English) where a billion is $10^9$, not $10^{12}$.\n* **Rounding:** Monetary values are rounded to two decimal places (nearest cent/penny) before conversion.\n* **Language:** The output is strictly in English, regardless of the currency selected (e.g., 'RUB' outputs 'rubles', not 'рублей').\n* **Limit:** The maximum number of digits supported is 300.",
+    "howto_json": [
+      {
+        "question": "How do I use this tool to write a bank cheque?",
+        "answer": "<p>Writing a cheque requires a specific format to be legally valid and secure. Follow these steps:</p><ol><li>Enter the exact amount (e.g., <b>1234.56</b>) in the input field.</li><li>Select <b>'Check Writing'</b> from the Mode options.</li><li>Ensure the currency is set to <b>USD</b> (or your relevant currency).</li><li>Click <b>Calculate</b>.</li></ol><p>The result will appear as <i>'One thousand two hundred thirty-four and 56/100 dollars'</i>. Transcribe this text onto the legal line of your cheque. The '56/100' format is standard banking practice to clearly denote cents.</p>"
+      },
+      {
+        "question": "What is the difference between Title Case and Sentence Case?",
+        "answer": "<p>These options control the capitalization of the output text, which changes based on where you intend to use the text:</p><ul><li><b>Sentence case:</b> Capitalizes only the first letter of the first word (e.g., <i>'Five hundred dollars'</i>). This is best for use inside a standard paragraph or sentence.</li><li><b>Title Case:</b> Capitalizes the first letter of every major word (e.g., <i>'Five Hundred Dollars'</i>). This is ideal for headings, titles, or formal standalone declarations on certificates.</li></ul>"
+      },
+      {
+        "question": "How does the VAT calculation feature work?",
+        "answer": "<p>The VAT (Value Added Tax) mode helps you determine the final invoice amount including tax without needing a separate calculator. Select <b>'Currency + VAT'</b> mode, enter your net amount (pre-tax price), and specify the tax percentage in the <b>VAT Rate</b> field. The tool will mathematically add the tax to your number ($Total = Net + Tax$) and then convert that final total into words automatically.</p>"
+      }
+    ]
+  },
+  {
+    "id": 1001,
+    "type": "converter",
+    "lang": "de",
+    "slug": "zahl-in-text-umwandler",
+    "h1": "Zahl in Text Umwandler",
+    "content_blocks_json": "...",
+    "title": "Zahl zu Text Konverter - Scheck & MwSt Rechner",
+    "meta_title": "Zahlen in Text umwandeln: Tool für Schecks, Währung & MwSt",
+    "meta_description": "Konvertieren Sie Zahlen sofort in Worte für Schecks, Rechtsdokumente und Rechnungen. Unterstützt USD, EUR, GBP, MwSt-Berechnungen und wissenschaftliche Notation.",
+    "meta_robots": "index, follow",
+    "canonical_path": null,
+    "short_answer": "Der Zahl in Text Umwandler ist ein Dienstprogramm, das numerische Ziffern (z. B. 150) in ihre ausgeschriebenen Wortäquivalente (z. B. „einhundertfünfzig“) übersetzt. Es unterstützt mehrere Währungen, Scheckformatierung, MwSt-Berechnungen und wissenschaftliche Notation für finanzielle und rechtliche Präzision.",
+    "intro_text": "<p>In einer von digitalen Transaktionen dominierten Ära bleibt die präzise Umwandlung von numerischen Werten in geschriebenen Text ein Eckpfeiler der finanziellen Sicherheit und rechtlichen Klarheit. Der <b>Zahl in Text Umwandler</b> ist ein ausgefeiltes Dienstprogramm, das die Lücke zwischen Rohdaten und formaler Dokumentation schließt. Egal, ob Sie einen rechtlichen Vertrag aufsetzen, einen Bankscheck ausstellen oder eine Rechnung mit komplexen steuerlichen Auswirkungen vorbereiten – die Umwandlung von Ziffern in Worte beseitigt Mehrdeutigkeiten. Ein einfacher Tippfehler in einem Zahlenfeld kann zu erheblichen finanziellen Abweichungen führen – beispielsweise kann ein falsch platziertes Komma 100,00 $ in 1000,00 $ verwandeln. Wenn der Wert jedoch durch sein textliches Äquivalent („einhundert Dollar“) verstärkt wird, wird die Absicht unbestreitbar und bietet eine kritische Schutzschicht gegen Betrug.</p><p>Dieses Tool geht über die einfache sprachliche Übersetzung hinaus. Es wurde mit fortschrittlichen Algorithmen entwickelt, die Standard-Ganzzahlen, Dezimalzahlen und sogar wissenschaftliche Notation (E-Notation) für extreme Werte bis zu 300 Stellen verarbeiten können. Es unterstützt eine Vielzahl globaler Währungen, darunter USD, EUR, GBP, PLN und RUB, was es zu einem unverzichtbaren Asset für internationale Geschäfte macht. Darüber hinaus ermöglicht der integrierte MwSt-Rechner (Mehrwertsteuer) Benutzern die automatische Berechnung und Formulierung von steuerbereinigten Summen, was den Arbeitsablauf für Buchhalter und Verwaltungsfachleute rationalisiert.</p><p>Genauigkeit in der Dokumentation bedeutet nicht nur Richtigkeit; es geht um Professionalität und Compliance. Unterschiedliche Kontexte erfordern unterschiedliche Formatierungen – akademische Arbeiten erfordern möglicherweise Großschreibung (Title Case), während Bankschecks spezifische Standards für Bruchteil-Cents haben. Dieser Konverter bietet eine genaue Kontrolle über die Groß-/Kleinschreibung und Ausgabeformate, um sicherzustellen, dass Ihr generierter Text den spezifischen Stilrichtlinien Ihrer Branche entspricht. Vom Ausstellen eines Schecks für die Miete bis zur Visualisierung der Größe eines Googol ($1 \\times 10^{100}$), dieses Tool stellt sicher, dass Ihre Zahlen so klar sprechen wie Ihre Worte.</p>",
+    "key_points_json": [
+      "<b>Prävention von Finanzbetrug:</b> Die Umwandlung von Zahlen in Worte ist eine Standard-Sicherheitsmaßnahme im Bankwesen. Während Ziffern leicht geändert werden können (z. B. Änderung von '1' in '7'), ist geschriebener Text weitaus schwieriger ohne Erkennung zu fälschen, was die Integrität von Schecks und Verträgen gewährleistet.",
+      "<b>Standard für das Ausstellen von Schecks:</b> Das Tool enthält einen speziellen Modus 'Scheck ausstellen', der die Ausgabe speziell für Bankstandards formatiert. Es wandelt Dezimalwerte automatisch in Bruchschreibweise um (z. B. 'und 50/100') und fügt den Währungsnamen hinzu, bereit für die Übertragung auf gesetzliche Zahlungsmittel.",
+      "<b>Erweiterte MwSt-Integration:</b> Einzigartig ist, dass dieser Konverter Steuerberechnungen handhabt. Durch Auswahl des Modus 'Währung + MwSt' und Eingabe eines Steuersatzes (z. B. 20 %) berechnet das Tool die Bruttosumme und wandelt die Endsumme in Worte um, ideal für Rechnungen und Quittungen.",
+      "<b>Unterstützung mehrerer Währungen:</b> Das Dienstprogramm ist nicht auf Dollar beschränkt. Es unterstützt fünf wichtige globale Währungen: US-Dollar (USD), Euro (EUR), Britisches Pfund (GBP), Polnischer Zloty (PLN) und Russischer Rubel (RUB), wobei die spezifischen sprachlichen Nuancen jeder Währung berücksichtigt werden.",
+      "<b>Verarbeitung wissenschaftlicher Notation:</b> Für wissenschaftliche und akademische Zwecke akzeptiert das Tool Eingaben in E-Notation (z. B. 1e100). Dies ermöglicht die Umwandlung astronomisch großer oder unendlich kleiner Zahlen, die Standardrechner nicht verarbeiten können.",
+      "<b>Flexible Textschreibung:</b> Benutzer können zwischen mehreren Textstilen wechseln, darunter 'kleinschreibung' für den beiläufigen Gebrauch, 'GROSSSCHREIBUNG' für Betonung oder Fernschreibkopfzeilen, 'Titel-Schreibweise' für Überschriften und 'Satz-Schreibweise' für Standardprosa.",
+      "<b>Verbesserung der Barrierefreiheit:</b> Die Umwandlung von Daten in Text verbessert die Web-Barrierefreiheit. Screenreader stolpern oft über komplexe Zahlenfolgen; die Bereitstellung einer Textalternative stellt sicher, dass sehbehinderte Benutzer genaue Informationen über Preise und Mengen erhalten.",
+      "<b>Zwischenablagen-Effizienz:</b> Die Schnittstelle wurde für Arbeitsabläufe mit hohem Volumen entwickelt und enthält eine Ein-Klick-'Kopieren'-Funktion, mit der Benutzer den konvertierten Text sofort in Word-Dokumente, Excel-Tabellen oder Banksoftware übertragen können, ohne manuell neu tippen zu müssen."
+    ],
+    "inputs_json": [
+      {
+        "name": "inputNumber",
+        "label": "Zahl zum Konvertieren",
+        "type": "text",
+        "unit": null,
+        "min": 0,
+        "max": null,
+        "description": "Der numerische Wert, den Sie konvertieren möchten. Akzeptiert Ganzzahlen, Dezimalzahlen (Gleitkommazahlen) und wissenschaftliche Notation (z. B. 1.5e6). Unterstützt Werte bis zu 300 Stellen."
+      },
+      {
+        "name": "conversionMode",
+        "label": "Konvertierungsmodus",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Definiert das Ausgabeformat. Optionen sind 'Wörter' (Standardtext), 'Scheck ausstellen' (Bankformat mit Brüchen), 'Währung' (Geldformat) oder 'Währung + MwSt' (Steuerberechnung)."
+      },
+      {
+        "name": "currency",
+        "label": "Zielwährung",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wählen Sie den Währungskontext für den Text. Unterstützte Optionen: USD, EUR, GBP, PLN, RUB. Dies fügt den korrekten Währungsnamen und die Unterteilung (z. B. Dollar/Cents) hinzu."
+      },
+      {
+        "name": "textCase",
+        "label": "Textschreibweise",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Steuert die Großschreibung des Ergebnisses. Wählen Sie 'Satz-Schreibweise' für Standardgrammatik, 'Titel-Schreibweise' für Überschriften, 'GROSSSCHREIBUNG' für rechtliche Betonung oder 'kleinschreibung'."
+      },
+      {
+        "name": "vatRate",
+        "label": "MwSt-Satz (%)",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "description": "Der anzuwendende Steuersatz. Nur aktiv, wenn der Modus 'Währung + MwSt' ausgewählt ist. Er berechnet die Steuer und addiert sie vor der Umwandlung zum Kapital."
+      }
+    ],
+    "outputs_json": [
+      {
+        "name": "textResult",
+        "label": "Konvertierter Text",
+        "unit": null,
+        "rounding": null,
+        "description": "Die endgültige schriftliche Darstellung der Zahl, formatiert gemäß dem ausgewählten Modus, der Währung und dem grammatikalischen Fall."
+      },
+      {
+        "name": "calculatedTotal",
+        "label": "Numerische Summe (MwSt-Modus)",
+        "unit": null,
+        "rounding": "2",
+        "description": "Wenn der MwSt-Modus aktiv ist, wird hier die numerische Gesamtsumme (Kapital + Steuer) angezeigt, bevor sie in Text umgewandelt wird."
+      }
+    ],
+    "examples_json": [
+      {
+        "input": {
+          "inputNumber": "1250.50",
+          "conversionMode": "Check Writing",
+          "currency": "USD"
+        },
+        "output": {
+          "textResult": "One thousand two hundred fifty and 50/100 dollars"
+        }
+      }
+    ],
+    "formula_md": "While linguistic conversion relies on dictionary mapping rather than a mathematical formula, the **VAT (Value Added Tax)** calculation uses standard percentage logic. \n\nWhen calculating the **Total Amount** including tax:\n\n$$ Total = Principal \\times \\left( 1 + \\frac{VAT\\_Rate}{100} \\right) $$\n\nWhere:\n* **Principal** is the input number.\n* **VAT_Rate** is the percentage tax.\n\nFor **Check Writing**, the fractional part is derived as:\n\n$$ Fraction = \\text{round}((Number - \\text{floor}(Number)) \\times 100) $$\n\nThe result is then formatted as \"XX/100\".",
+    "assumptions_md": "* **Skala:** Der Konverter verwendet das kurze Skalensystem (Standard im US-Englisch und modernen britischen Englisch), bei dem eine Milliarde $10^9$ ist, nicht $10^{12}$.\n* **Rundung:** Geldwerte werden vor der Umwandlung auf zwei Dezimalstellen (nächster Cent/Pfennig) gerundet.\n* **Sprache:** Die Ausgabe erfolgt strikt auf Englisch, unabhängig von der gewählten Währung (z. B. gibt 'RUB' 'rubles' aus, nicht 'рублей').\n* **Limit:** Die maximale Anzahl der unterstützten Ziffern beträgt 300.",
+    "howto_json": [
+      {
+        "question": "Wie verwende ich dieses Tool, um einen Bankscheck auszustellen?",
+        "answer": "<p>Das Ausstellen eines Schecks erfordert ein bestimmtes Format, um rechtsgültig und sicher zu sein. Befolgen Sie diese Schritte:</p><ol><li>Geben Sie den genauen Betrag (z. B. <b>1234,56</b>) in das Eingabefeld ein.</li><li>Wählen Sie <b>'Scheck ausstellen'</b> aus den Modusoptionen.</li><li>Stellen Sie sicher, dass die Währung auf <b>USD</b> (oder Ihre relevante Währung) eingestellt ist.</li><li>Klicken Sie auf <b>Berechnen</b>.</li></ol><p>Das Ergebnis erscheint als <i>'One thousand two hundred thirty-four and 56/100 dollars'</i>. Übertragen Sie diesen Text auf die gesetzliche Zeile Ihres Schecks. Das Format '56/100' ist eine übliche Bankpraxis, um Cents deutlich zu kennzeichnen.</p>"
+      },
+      {
+        "question": "Was ist der Unterschied zwischen Titel-Schreibweise und Satz-Schreibweise?",
+        "answer": "<p>Diese Optionen steuern die Großschreibung des Ausgabetextes, die sich je nach Verwendungszweck des Textes ändert:</p><ul><li><b>Satz-Schreibweise:</b> Großschreibung nur des ersten Buchstabens des ersten Wortes (z. B. <i>'Five hundred dollars'</i>). Dies eignet sich am besten für die Verwendung innerhalb eines normalen Absatzes oder Satzes.</li><li><b>Titel-Schreibweise:</b> Großschreibung des ersten Buchstabens jedes Hauptwortes (z. B. <i>'Five Hundred Dollars'</i>). Dies ist ideal für Überschriften, Titel oder formelle eigenständige Erklärungen auf Zertifikaten.</li></ul>"
+      },
+      {
+        "question": "Wie funktioniert die MwSt-Berechnungsfunktion?",
+        "answer": "<p>Der MwSt-Modus (Mehrwertsteuer) hilft Ihnen, den endgültigen Rechnungsbetrag einschließlich Steuer zu ermitteln, ohne einen separaten Taschenrechner zu benötigen. Wählen Sie den Modus <b>'Währung + MwSt'</b>, geben Sie Ihren Nettobetrag (Preis vor Steuern) ein und geben Sie den Steuersatz im Feld <b>MwSt-Satz</b> an. Das Tool addiert die Steuer mathematisch zu Ihrer Zahl ($Total = Net + Tax$) und wandelt diese Endsumme dann automatisch in Worte um.</p>"
+      }
+    ]
+  },
+  {
+    "id": 1001,
+    "type": "converter",
+    "lang": "es",
+    "slug": "conversor-de-numeros-a-texto",
+    "h1": "Conversor de Números a Texto",
+    "content_blocks_json": "...",
+    "title": "Conversor de Números a Letras - Cheques y Calculadora de IVA",
+    "meta_title": "Convertir Números a Texto: Herramienta de Cheques, Moneda e IVA",
+    "meta_description": "Convierta números en palabras al instante para cheques, documentos legales y facturas. Admite USD, EUR, GBP, cálculos de IVA y notación científica.",
+    "meta_robots": "index, follow",
+    "canonical_path": null,
+    "short_answer": "El Conversor de Números a Texto es una utilidad que traduce dígitos numéricos (por ejemplo, 150) a sus equivalentes en palabras escritas (por ejemplo, \"ciento cincuenta\"). Admite múltiples monedas, formato de cheques, cálculos de IVA y notación científica para precisión financiera y legal.",
+    "intro_text": "<p>En una era dominada por las transacciones digitales, la conversión precisa de valores numéricos en texto escrito sigue siendo una piedra angular de la seguridad financiera y la claridad legal. El <b>Conversor de Números a Texto</b> es una utilidad sofisticada diseñada para cerrar la brecha entre los datos brutos y la documentación formal. Ya sea que esté redactando un contrato legal, finalizando un cheque bancario o preparando una factura con implicaciones fiscales complejas, convertir dígitos en palabras elimina la ambigüedad. Un simple error tipográfico en un campo numérico puede provocar discrepancias financieras significativas; por ejemplo, un punto decimal mal colocado puede transformar $100.00 en $1000.00. Sin embargo, cuando el valor se refuerza con su equivalente textual (“cien dólares”), la intención se vuelve indiscutible, proporcionando una capa crítica de protección contra el fraude.</p><p>Esta herramienta va más allá de la simple traducción lingüística. Está diseñada con algoritmos avanzados capaces de manejar números enteros estándar, decimales e incluso notación científica (notación E) para valores extremos de hasta 300 dígitos. Admite una variedad de monedas globales, incluidas USD, EUR, GBP, PLN y RUB, lo que la convierte en un activo indispensable para los negocios internacionales. Además, la calculadora de IVA (Impuesto sobre el Valor Añadido) integrada permite a los usuarios calcular y articular automáticamente los totales con impuestos incluidos, agilizando el flujo de trabajo para contadores y profesionales administrativos.</p><p>La precisión en la documentación no se trata solo de corrección; se trata de profesionalismo y cumplimiento. Los diferentes contextos requieren diferentes formatos: los trabajos académicos pueden requerir mayúsculas en cada palabra (Title Case), mientras que los cheques bancarios tienen estándares específicos para los centavos fraccionarios. Este convertidor ofrece un control granular sobre las mayúsculas y minúsculas del texto y los formatos de salida, asegurando que su texto generado cumpla con las pautas estilísticas específicas de su industria. Desde escribir un cheque para el alquiler hasta visualizar la magnitud de un Googol ($1 \\times 10^{100}$), esta herramienta asegura que sus números hablen tan claramente como sus palabras.</p>",
+    "key_points_json": [
+      "<b>Prevención de Fraude Financiero:</b> Convertir números en palabras es una medida de seguridad estándar en la banca. Si bien los dígitos se pueden alterar fácilmente (por ejemplo, cambiando un '1' a un '7'), el texto escrito es mucho más difícil de falsificar sin detección, lo que garantiza la integridad de los cheques y contratos.",
+      "<b>Estándar de Escritura de Cheques:</b> La herramienta incluye un modo dedicado de 'Escritura de Cheques' que formatea la salida específicamente para los estándares bancarios. Convierte automáticamente los valores decimales en notación fraccionaria (por ejemplo, 'y 50/100') y agrega el nombre de la moneda, listo para su transcripción en moneda de curso legal.",
+      "<b>Integración Avanzada de IVA:</b> De manera única, este convertidor maneja cálculos de impuestos. Al seleccionar el modo 'Moneda + IVA' e ingresar una tasa impositiva (por ejemplo, 20%), la herramienta calcula el total bruto y convierte la suma final en palabras, ideal para facturas y recibos.",
+      "<b>Soporte Multi-Moneda:</b> La utilidad no se limita a dólares. Admite cinco monedas globales principales: Dólar estadounidense (USD), Euro (EUR), Libra esterlina (GBP), Zloty polaco (PLN) y Rublo ruso (RUB), manejando los matices lingüísticos específicos de cada una.",
+      "<b>Manejo de Notación Científica:</b> Para uso científico y académico, la herramienta acepta entrada de notación E (por ejemplo, 1e100). Esto permite la conversión de números astronómicamente grandes o infinitesimalmente pequeños que las calculadoras estándar no pueden procesar.",
+      "<b>Capitalización de Texto Flexible:</b> Los usuarios pueden alternar entre múltiples estilos de texto, incluidos 'minúsculas' para uso informal, 'MAYÚSCULAS' para énfasis o encabezados de télex, 'Tipo Título' para encabezados y 'Tipo Oración' para prosa estándar.",
+      "<b>Mejora de la Accesibilidad:</b> Convertir datos a texto mejora la accesibilidad web. Los lectores de pantalla a menudo tropiezan con cadenas numéricas complejas; proporcionar una alternativa de texto garantiza que los usuarios con discapacidad visual reciban información precisa sobre precios y cantidades.",
+      "<b>Eficiencia del Portapapeles:</b> Diseñada para flujos de trabajo de alto volumen, la interfaz incluye una función de 'Copiar' con un solo clic, lo que permite a los usuarios transferir instantáneamente el texto convertido a documentos de Word, hojas de Excel o software bancario sin tener que volver a escribir manualmente."
+    ],
+    "inputs_json": [
+      {
+        "name": "inputNumber",
+        "label": "Número a Convertir",
+        "type": "text",
+        "unit": null,
+        "min": 0,
+        "max": null,
+        "description": "El valor numérico que desea convertir. Acepta enteros, decimales (flotantes) y notación científica (por ejemplo, 1.5e6). Admite valores de hasta 300 dígitos."
+      },
+      {
+        "name": "conversionMode",
+        "label": "Modo de Conversión",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Define el formato de salida. Las opciones incluyen 'Palabras' (texto estándar), 'Escritura de Cheques' (formato bancario con fracciones), 'Moneda' (formato monetario) o 'Moneda + IVA' (cálculo de impuestos)."
+      },
+      {
+        "name": "currency",
+        "label": "Moneda Objetivo",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleccione el contexto de moneda para el texto. Opciones admitidas: USD, EUR, GBP, PLN, RUB. Esto agrega el nombre de moneda y la subdivisión correctos (por ejemplo, dólares/centavos)."
+      },
+      {
+        "name": "textCase",
+        "label": "Tipo de Texto",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Controla la capitalización del resultado. Elija 'Tipo Oración' para gramática estándar, 'Tipo Título' para titulares, 'MAYÚSCULAS' para énfasis legal o 'minúsculas'."
+      },
+      {
+        "name": "vatRate",
+        "label": "Tasa de IVA (%)",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "description": "El porcentaje de impuesto a aplicar. Solo activo cuando se selecciona el modo 'Moneda + IVA'. Calcula el impuesto y lo suma al principal antes de la conversión."
+      }
+    ],
+    "outputs_json": [
+      {
+        "name": "textResult",
+        "label": "Texto Convertido",
+        "unit": null,
+        "rounding": null,
+        "description": "La representación escrita final del número, formateada según el modo, la moneda y el caso gramatical seleccionados."
+      },
+      {
+        "name": "calculatedTotal",
+        "label": "Total Numérico (Modo IVA)",
+        "unit": null,
+        "rounding": "2",
+        "description": "Si el modo IVA está activo, muestra el total numérico (Principal + Impuesto) antes de convertirlo a texto."
+      }
+    ],
+    "examples_json": [
+      {
+        "input": {
+          "inputNumber": "1250.50",
+          "conversionMode": "Check Writing",
+          "currency": "USD"
+        },
+        "output": {
+          "textResult": "One thousand two hundred fifty and 50/100 dollars"
+        }
+      }
+    ],
+    "formula_md": "While linguistic conversion relies on dictionary mapping rather than a mathematical formula, the **VAT (Value Added Tax)** calculation uses standard percentage logic. \n\nWhen calculating the **Total Amount** including tax:\n\n$$ Total = Principal \\times \\left( 1 + \\frac{VAT\\_Rate}{100} \\right) $$\n\nWhere:\n* **Principal** is the input number.\n* **VAT_Rate** is the percentage tax.\n\nFor **Check Writing**, the fractional part is derived as:\n\n$$ Fraction = \\text{round}((Number - \\text{floor}(Number)) \\times 100) $$\n\nThe result is then formatted as \"XX/100\".",
+    "assumptions_md": "* **Escala:** El convertidor utiliza el sistema de escala corta (estándar en inglés de EE. UU. y el Reino Unido moderno) donde mil millones son $10^9$, no $10^{12}$.\n* **Redondeo:** Los valores monetarios se redondean a dos decimales (al centavo más cercano) antes de la conversión.\n* **Idioma:** La salida es estrictamente en inglés, independientemente de la moneda seleccionada (por ejemplo, 'RUB' genera 'rubles', no 'рублей').\n* **Límite:** El número máximo de dígitos admitidos es 300.",
+    "howto_json": [
+      {
+        "question": "¿Cómo uso esta herramienta para escribir un cheque bancario?",
+        "answer": "<p>Escribir un cheque requiere un formato específico para ser legalmente válido y seguro. Siga estos pasos:</p><ol><li>Ingrese la cantidad exacta (por ejemplo, <b>1234.56</b>) en el campo de entrada.</li><li>Seleccione <b>'Escritura de Cheques'</b> en las opciones de Modo.</li><li>Asegúrese de que la moneda esté configurada en <b>USD</b> (o su moneda relevante).</li><li>Haga clic en <b>Calcular</b>.</li></ol><p>El resultado aparecerá como <i>'One thousand two hundred thirty-four and 56/100 dollars'</i>. Transcriba este texto en la línea legal de su cheque. El formato '56/100' es una práctica bancaria estándar para denotar claramente los centavos.</p>"
+      },
+      {
+        "question": "¿Cuál es la diferencia entre Tipo Título y Tipo Oración?",
+        "answer": "<p>Estas opciones controlan la capitalización del texto de salida, que cambia según dónde pretenda usar el texto:</p><ul><li><b>Tipo Oración:</b> Escribe en mayúscula solo la primera letra de la primera palabra (por ejemplo, <i>'Five hundred dollars'</i>). Esto es mejor para usar dentro de un párrafo u oración estándar.</li><li><b>Tipo Título:</b> Escribe en mayúscula la primera letra de cada palabra importante (por ejemplo, <i>'Five Hundred Dollars'</i>). Esto es ideal para encabezados, títulos o declaraciones formales independientes en certificados.</li></ul>"
+      },
+      {
+        "question": "¿Cómo funciona la función de cálculo de IVA?",
+        "answer": "<p>El modo IVA (Impuesto sobre el Valor Añadido) le ayuda a determinar el monto final de la factura, incluidos los impuestos, sin necesidad de una calculadora separada. Seleccione el modo <b>'Moneda + IVA'</b>, ingrese su monto neto (precio antes de impuestos) y especifique el porcentaje de impuestos en el campo <b>Tasa de IVA</b>. La herramienta sumará matemáticamente el impuesto a su número ($Total = Net + Tax$) y luego convertirá ese total final en palabras automáticamente.</p>"
+      }
+    ]
+  },
+  {
+    "id": 1001,
+    "type": "converter",
+    "lang": "fr",
+    "slug": "convertisseur-de-nombres-en-lettres",
+    "h1": "Convertisseur de Nombres en Lettres",
+    "content_blocks_json": "...",
+    "title": "Convertisseur Chiffres en Lettres - Chèques et Calcul TVA",
+    "meta_title": "Convertir Nombres en Texte: Outil Chèques, Devise et TVA",
+    "meta_description": "Convertissez instantanément des nombres en mots pour chèques, documents légaux et factures. Prend en charge USD, EUR, GBP, calculs TVA et notation scientifique.",
+    "meta_robots": "index, follow",
+    "canonical_path": null,
+    "short_answer": "Le Convertisseur de Nombres en Lettres est un utilitaire qui traduit les chiffres numériques (par ex. 150) en leur équivalent écrit (par ex. \"cent cinquante\"). Il prend en charge plusieurs devises, le formatage des chèques, les calculs de TVA et la notation scientifique pour une précision financière et légale.",
+    "intro_text": "<p>À une époque dominée par les transactions numériques, la conversion précise des valeurs numériques en texte écrit reste une pierre angulaire de la sécurité financière et de la clarté juridique. Le <b>Convertisseur de Nombres en Lettres</b> est un utilitaire sophistiqué conçu pour combler le fossé entre les données brutes et la documentation formelle. Que vous rédigiez un contrat légal, finalisiez un chèque bancaire ou prépariez une facture avec des implications fiscales complexes, convertir les chiffres en mots élimine toute ambiguïté. Une simple erreur de frappe dans un champ numérique peut entraîner des écarts financiers importants — par exemple, une virgule mal placée peut transformer 100,00 $ en 1000,00 $. Cependant, lorsque la valeur est renforcée par son équivalent textuel (« cent dollars »), l'intention devient indiscutable, offrant une couche critique de protection contre la fraude.</p><p>Cet outil va au-delà de la simple traduction linguistique. Il est conçu avec des algorithmes avancés capables de gérer des entiers standard, des décimales et même la notation scientifique (notation E) pour des valeurs extrêmes jusqu'à 300 chiffres. Il prend en charge une variété de devises mondiales, notamment USD, EUR, GBP, PLN et RUB, ce qui en fait un atout indispensable pour le commerce international. De plus, le calculateur de TVA (Taxe sur la Valeur Ajoutée) intégré permet aux utilisateurs de calculer et d'articuler automatiquement les totaux taxes comprises, rationalisant ainsi le flux de travail pour les comptables et les professionnels administratifs.</p><p>La précision dans la documentation n'est pas seulement une question d'exactitude ; c'est une question de professionnalisme et de conformité. Différents contextes nécessitent différents formatages — les documents universitaires peuvent nécessiter une casse de titre (Title Case), tandis que les chèques bancaires ont des normes spécifiques pour les centimes fractionnaires. Ce convertisseur offre un contrôle granulaire sur la casse du texte et les formats de sortie, garantissant que votre texte généré respecte les directives stylistiques spécifiques de votre secteur. De la rédaction d'un chèque de loyer à la visualisation de l'ampleur d'un Googol ($1 \\times 10^{100}$), cet outil garantit que vos chiffres parlent aussi clairement que vos mots.</p>",
+    "key_points_json": [
+      "<b>Prévention de la Fraude Financière :</b> Convertir les nombres en mots est une mesure de sécurité standard dans le secteur bancaire. Alors que les chiffres peuvent être facilement modifiés (par exemple, changer un '1' en '7'), le texte écrit est beaucoup plus difficile à falsifier sans détection, garantissant l'intégrité des chèques et des contrats.",
+      "<b>Standard de Rédaction de Chèques :</b> L'outil comprend un mode dédié 'Rédaction de Chèques' qui formate la sortie spécifiquement pour les normes bancaires. Il convertit automatiquement les valeurs décimales en notation fractionnaire (par exemple, 'et 50/100') et ajoute le nom de la devise, prêt pour la transcription sur un moyen de paiement légal.",
+      "<b>Intégration Avancée de la TVA :</b> De manière unique, ce convertisseur gère les calculs de taxes. En sélectionnant le mode 'Devise + TVA' et en saisissant un taux de taxe (par exemple, 20 %), l'outil calcule le total brut et convertit la somme finale en mots, idéal pour les factures et les reçus.",
+      "<b>Support Multi-Devises :</b> L'utilitaire ne se limite pas aux dollars. Il prend en charge cinq grandes devises mondiales : Dollar américain (USD), Euro (EUR), Livre sterling (GBP), Zloty polonais (PLN) et Rouble russe (RUB), gérant les nuances linguistiques spécifiques de chacune.",
+      "<b>Gestion de la Notation Scientifique :</b> Pour un usage scientifique et académique, l'outil accepte la saisie en notation E (par exemple, 1e100). Cela permet la conversion de nombres astronomiquement grands ou infinitésimalement petits que les calculatrices standard ne peuvent pas traiter.",
+      "<b>Casse de Texte Flexible :</b> Les utilisateurs peuvent basculer entre plusieurs styles de texte, notamment 'minuscules' pour un usage occasionnel, 'MAJUSCULES' pour l'emphase ou les en-têtes télex, 'Casse de Titre' pour les en-têtes et 'Casse de phrase' pour la prose standard.",
+      "<b>Amélioration de l'Accessibilité :</b> La conversion des données en texte améliore l'accessibilité du Web. Les lecteurs d'écran trébuchent souvent sur des chaînes numériques complexes ; fournir une alternative textuelle garantit que les utilisateurs malvoyants reçoivent des informations précises concernant les prix et les quantités.",
+      "<b>Efficacité du Presse-papiers :</b> Conçue pour les flux de travail à volume élevé, l'interface comprend une fonction 'Copier' en un clic, permettant aux utilisateurs de transférer instantanément le texte converti dans des documents Word, des feuilles Excel ou des logiciels bancaires sans retaper manuellement."
+    ],
+    "inputs_json": [
+      {
+        "name": "inputNumber",
+        "label": "Nombre à Convertir",
+        "type": "text",
+        "unit": null,
+        "min": 0,
+        "max": null,
+        "description": "La valeur numérique que vous souhaitez convertir. Accepte les entiers, les décimales (flottants) et la notation scientifique (par exemple, 1.5e6). Prend en charge des valeurs jusqu'à 300 chiffres."
+      },
+      {
+        "name": "conversionMode",
+        "label": "Mode de Conversion",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Définit le format de sortie. Les options incluent 'Mots' (texte standard), 'Rédaction de Chèques' (format bancaire avec fractions), 'Devise' (format monétaire) ou 'Devise + TVA' (calcul de taxe)."
+      },
+      {
+        "name": "currency",
+        "label": "Devise Cible",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Sélectionnez le contexte de devise pour le texte. Options prises en charge : USD, EUR, GBP, PLN, RUB. Cela ajoute le nom correct de la devise et de la subdivision (par exemple, dollars/centimes)."
+      },
+      {
+        "name": "textCase",
+        "label": "Casse du Texte",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Contrôle la capitalisation du résultat. Choisissez 'Casse de phrase' pour la grammaire standard, 'Casse de Titre' pour les titres, 'MAJUSCULES' pour l'emphase légale, ou 'minuscules'."
+      },
+      {
+        "name": "vatRate",
+        "label": "Taux de TVA (%)",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "description": "Le pourcentage de taxe à appliquer. Actif uniquement lorsque le mode 'Devise + TVA' est sélectionné. Il calcule la taxe et l'ajoute au principal avant la conversion."
+      }
+    ],
+    "outputs_json": [
+      {
+        "name": "textResult",
+        "label": "Texte Converti",
+        "unit": null,
+        "rounding": null,
+        "description": "La représentation écrite finale du nombre, formatée selon le mode, la devise et le cas grammatical sélectionnés."
+      },
+      {
+        "name": "calculatedTotal",
+        "label": "Total Numérique (Mode TVA)",
+        "unit": null,
+        "rounding": "2",
+        "description": "Si le mode TVA est actif, cela affiche le total numérique (Principal + Taxe) avant qu'il ne soit converti en texte."
+      }
+    ],
+    "examples_json": [
+      {
+        "input": {
+          "inputNumber": "1250.50",
+          "conversionMode": "Check Writing",
+          "currency": "USD"
+        },
+        "output": {
+          "textResult": "One thousand two hundred fifty and 50/100 dollars"
+        }
+      }
+    ],
+    "formula_md": "While linguistic conversion relies on dictionary mapping rather than a mathematical formula, the **VAT (Value Added Tax)** calculation uses standard percentage logic. \n\nWhen calculating the **Total Amount** including tax:\n\n$$ Total = Principal \\times \\left( 1 + \\frac{VAT\\_Rate}{100} \\right) $$\n\nWhere:\n* **Principal** is the input number.\n* **VAT_Rate** is the percentage tax.\n\nFor **Check Writing**, the fractional part is derived as:\n\n$$ Fraction = \\text{round}((Number - \\text{floor}(Number)) \\times 100) $$\n\nThe result is then formatted as \"XX/100\".",
+    "assumptions_md": "* **Échelle :** Le convertisseur utilise le système d'échelle courte (standard en anglais américain et britannique moderne) où un milliard est $10^9$, et non $10^{12}$.\n* **Arrondi :** Les valeurs monétaires sont arrondies à deux décimales (au centime le plus proche) avant la conversion.\n* **Langue :** La sortie est strictement en anglais, quelle que soit la devise sélectionnée (par exemple, 'RUB' donne 'rubles', et non 'рублей').\n* **Limite :** Le nombre maximum de chiffres pris en charge est de 300.",
+    "howto_json": [
+      {
+        "question": "Comment utiliser cet outil pour rédiger un chèque bancaire ?",
+        "answer": "<p>Rédiger un chèque nécessite un format spécifique pour être légalement valide et sécurisé. Suivez ces étapes :</p><ol><li>Entrez le montant exact (par exemple, <b>1234.56</b>) dans le champ de saisie.</li><li>Sélectionnez <b>'Rédaction de Chèques'</b> dans les options de Mode.</li><li>Assurez-vous que la devise est réglée sur <b>USD</b> (ou votre devise pertinente).</li><li>Cliquez sur <b>Calculer</b>.</li></ol><p>Le résultat apparaîtra comme <i>'One thousand two hundred thirty-four and 56/100 dollars'</i>. Transcrivez ce texte sur la ligne légale de votre chèque. Le format '56/100' est une pratique bancaire standard pour indiquer clairement les centimes.</p>"
+      },
+      {
+        "question": "Quelle est la différence entre la Casse de Titre et la Casse de Phrase ?",
+        "answer": "<p>Ces options contrôlent la capitalisation du texte de sortie, qui change en fonction de l'endroit où vous avez l'intention d'utiliser le texte :</p><ul><li><b>Casse de phrase :</b> Met en majuscule uniquement la première lettre du premier mot (par exemple, <i>'Five hundred dollars'</i>). C'est le mieux pour une utilisation dans un paragraphe ou une phrase standard.</li><li><b>Casse de Titre :</b> Met en majuscule la première lettre de chaque mot important (par exemple, <i>'Five Hundred Dollars'</i>). C'est idéal pour les en-têtes, les titres ou les déclarations formelles autonomes sur des certificats.</li></ul>"
+      },
+      {
+        "question": "Comment fonctionne la fonction de calcul de la TVA ?",
+        "answer": "<p>Le mode TVA (Taxe sur la Valeur Ajoutée) vous aide à déterminer le montant final de la facture, taxes comprises, sans avoir besoin d'une calculatrice séparée. Sélectionnez le mode <b>'Devise + TVA'</b>, entrez votre montant net (prix hors taxes) et spécifiez le pourcentage de taxe dans le champ <b>Taux de TVA</b>. L'outil ajoutera mathématiquement la taxe à votre nombre ($Total = Net + Taxe$) puis convertira automatiquement ce total final en mots.</p>"
+      }
+    ]
+  },
+  {
+    "id": 1001,
+    "type": "converter",
+    "lang": "it",
+    "slug": "convertitore-da-numeri-a-testo",
+    "h1": "Convertitore da Numeri a Testo",
+    "content_blocks_json": "...",
+    "title": "Convertitore Numeri in Lettere - Assegni e Calcolo IVA",
+    "meta_title": "Convertire Numeri in Testo: Strumento Assegni, Valuta e IVA",
+    "meta_description": "Converti istantaneamente numeri in parole per assegni, documenti legali e fatture. Supporta USD, EUR, GBP, calcoli IVA e notazione scientifica.",
+    "meta_robots": "index, follow",
+    "canonical_path": null,
+    "short_answer": "Il Convertitore da Numeri a Testo è un'utilità che traduce le cifre numeriche (es. 150) nei loro equivalenti scritti in parole (es. \"centocinquanta\"). Supporta diverse valute, la formattazione degli assegni, i calcoli dell'IVA e la notazione scientifica per la precisione finanziaria e legale.",
+    "intro_text": "<p>In un'era dominata dalle transazioni digitali, la conversione precisa dei valori numerici in testo scritto rimane una pietra miliare della sicurezza finanziaria e della chiarezza legale. Il <b>Convertitore da Numeri a Testo</b> è un'utilità sofisticata progettata per colmare il divario tra dati grezzi e documentazione formale. Che tu stia redigendo un contratto legale, finalizzando un assegno bancario o preparando una fattura con implicazioni fiscali complesse, convertire le cifre in parole elimina l'ambiguità. Un semplice errore di battitura in un campo numerico può portare a discrepanze finanziarie significative; ad esempio, una virgola decimale fuori posto può trasformare 100,00 $ in 1000,00 $. Tuttavia, quando il valore è rafforzato dal suo equivalente testuale (\"cento dollari\"), l'intento diventa indiscutibile, fornendo un livello critico di protezione contro le frodi.</p><p>Questo strumento va oltre la semplice traduzione linguistica. È progettato con algoritmi avanzati in grado di gestire numeri interi standard, decimali e persino la notazione scientifica (notazione E) per valori estremi fino a 300 cifre. Supporta una varietà di valute globali tra cui USD, EUR, GBP, PLN e RUB, rendendolo una risorsa indispensabile per il business internazionale. Inoltre, il calcolatore IVA (Imposta sul Valore Aggiunto) integrato consente agli utenti di calcolare e articolare automaticamente i totali comprensivi di imposte, semplificando il flusso di lavoro per contabili e professionisti amministrativi.</p><p>L'accuratezza nella documentazione non riguarda solo la correttezza; riguarda la professionalità e la conformità. Contesti diversi richiedono formattazioni diverse: i documenti accademici possono richiedere il maiuscolo per le iniziali (Title Case), mentre gli assegni bancari hanno standard specifici per i centesimi frazionari. Questo convertitore offre un controllo granulare sulla maiuscola/minuscola del testo e sui formati di output, garantendo che il testo generato aderisca alle linee guida stilistiche specifiche del tuo settore. Dallo scrivere un assegno per l'affitto alla visualizzazione della grandezza di un Googol ($1 \\times 10^{100}$), questo strumento assicura che i tuoi numeri parlino chiaramente come le tue parole.</p>",
+    "key_points_json": [
+      "<b>Prevenzione delle Frodi Finanziarie:</b> Convertire i numeri in parole è una misura di sicurezza standard nel settore bancario. Mentre le cifre possono essere facilmente alterate (ad es. cambiando '1' in '7'), il testo scritto è molto più difficile da falsificare senza essere rilevato, garantendo l'integrità di assegni e contratti.",
+      "<b>Standard per la Scrittura di Assegni:</b> Lo strumento include una modalità dedicata 'Scrittura Assegni' che formatta l'output specificamente per gli standard bancari. Converte automaticamente i valori decimali in notazione frazionaria (ad es. 'e 50/100') e aggiunge il nome della valuta, pronto per la trascrizione su corso legale.",
+      "<b>Integrazione IVA Avanzata:</b> Unicamente, questo convertitore gestisce i calcoli fiscali. Selezionando la modalità 'Valuta + IVA' e inserendo un'aliquota fiscale (ad es. 20%), lo strumento calcola il totale lordo e converte la somma finale in parole, ideale per fatture e ricevute.",
+      "<b>Supporto Multi-Valuta:</b> L'utilità non è limitata ai dollari. Supporta cinque principali valute globali: Dollaro statunitense (USD), Euro (EUR), Sterlina britannica (GBP), Zloty polacco (PLN) e Rublo russo (RUB), gestendo le sfumature linguistiche specifiche di ciascuna.",
+      "<b>Gestione Notazione Scientifica:</b> Per uso scientifico e accademico, lo strumento accetta l'input in notazione E (ad es. 1e100). Ciò consente la conversione di numeri astronomicamente grandi o infinitesimamente piccoli che le calcolatrici standard non possono elaborare.",
+      "<b>Maiuscole/Minuscole Flessibili:</b> Gli utenti possono passare tra più stili di testo, tra cui 'minuscolo' per uso occasionale, 'MAIUSCOLO' per enfasi o intestazioni telex, 'Title Case' per intestazioni e 'Frase standard' per prosa normale.",
+      "<b>Miglioramento dell'Accessibilità:</b> La conversione dei dati in testo migliora l'accessibilità web. Gli screen reader spesso inciampano su stringhe numeriche complesse; fornire un'alternativa testuale garantisce che gli utenti ipovedenti ricevano informazioni accurate su prezzi e quantità.",
+      "<b>Efficienza Appunti:</b> Progettata per flussi di lavoro ad alto volume, l'interfaccia include una funzione 'Copia' con un clic, che consente agli utenti di trasferire istantaneamente il testo convertito in documenti Word, fogli Excel o software bancari senza dover digitare nuovamente manualmente."
+    ],
+    "inputs_json": [
+      {
+        "name": "inputNumber",
+        "label": "Numero da Convertire",
+        "type": "text",
+        "unit": null,
+        "min": 0,
+        "max": null,
+        "description": "Il valore numerico che desideri convertire. Accetta numeri interi, decimali (float) e notazione scientifica (ad es. 1.5e6). Supporta valori fino a 300 cifre."
+      },
+      {
+        "name": "conversionMode",
+        "label": "Modalità di Conversione",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Definisce il formato di output. Le opzioni includono 'Parole' (testo standard), 'Scrittura Assegni' (formato bancario con frazioni), 'Valuta' (formato monetario) o 'Valuta + IVA' (calcolo imposte)."
+      },
+      {
+        "name": "currency",
+        "label": "Valuta di Destinazione",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleziona il contesto valuta per il testo. Opzioni supportate: USD, EUR, GBP, PLN, RUB. Questo aggiunge il nome corretto della valuta e la suddivisione (ad es. dollari/centesimi)."
+      },
+      {
+        "name": "textCase",
+        "label": "Maiuscole/Minuscole",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Controlla la capitalizzazione del risultato. Scegli 'Frase standard' per grammatica normale, 'Title Case' per titoli, 'MAIUSCOLO' per enfasi legale o 'minuscolo'."
+      },
+      {
+        "name": "vatRate",
+        "label": "Aliquota IVA (%)",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "description": "La percentuale di imposta da applicare. Attivo solo quando è selezionata la modalità 'Valuta + IVA'. Calcola l'imposta e la aggiunge al capitale prima della conversione."
+      }
+    ],
+    "outputs_json": [
+      {
+        "name": "textResult",
+        "label": "Testo Convertito",
+        "unit": null,
+        "rounding": null,
+        "description": "La rappresentazione scritta finale del numero, formattata secondo la modalità, la valuta e il caso grammaticale selezionati."
+      },
+      {
+        "name": "calculatedTotal",
+        "label": "Totale Numerico (Modalità IVA)",
+        "unit": null,
+        "rounding": "2",
+        "description": "Se la modalità IVA è attiva, visualizza il totale numerico (Capitale + Imposta) prima che venga convertito in testo."
+      }
+    ],
+    "examples_json": [
+      {
+        "input": {
+          "inputNumber": "1250.50",
+          "conversionMode": "Check Writing",
+          "currency": "USD"
+        },
+        "output": {
+          "textResult": "One thousand two hundred fifty and 50/100 dollars"
+        }
+      }
+    ],
+    "formula_md": "While linguistic conversion relies on dictionary mapping rather than a mathematical formula, the **VAT (Value Added Tax)** calculation uses standard percentage logic. \n\nWhen calculating the **Total Amount** including tax:\n\n$$ Total = Principal \\times \\left( 1 + \\frac{VAT\\_Rate}{100} \\right) $$\n\nWhere:\n* **Principal** is the input number.\n* **VAT_Rate** is the percentage tax.\n\nFor **Check Writing**, the fractional part is derived as:\n\n$$ Fraction = \\text{round}((Number - \\text{floor}(Number)) \\times 100) $$\n\nThe result is then formatted as \"XX/100\".",
+    "assumptions_md": "* **Scala:** Il convertitore utilizza il sistema di scala corta (standard nell'inglese USA e britannico moderno) dove un miliardo è $10^9$, non $10^{12}$.\n* **Arrotondamento:** I valori monetari vengono arrotondati a due cifre decimali (al centesimo più vicino) prima della conversione.\n* **Lingua:** L'output è rigorosamente in inglese, indipendentemente dalla valuta selezionata (ad es. 'RUB' restituisce 'rubles', non 'рублей').\n* **Limite:** Il numero massimo di cifre supportate è 300.",
+    "howto_json": [
+      {
+        "question": "Come uso questo strumento per compilare un assegno bancario?",
+        "answer": "<p>Scrivere un assegno richiede un formato specifico per essere legalmente valido e sicuro. Segui questi passaggi:</p><ol><li>Inserisci l'importo esatto (ad es. <b>1234,56</b>) nel campo di input.</li><li>Seleziona <b>'Scrittura Assegni'</b> dalle opzioni Modalità.</li><li>Assicurati che la valuta sia impostata su <b>USD</b> (o la tua valuta pertinente).</li><li>Clicca su <b>Calcola</b>.</li></ol><p>Il risultato apparirà come <i>'One thousand two hundred thirty-four and 56/100 dollars'</i>. Trascrivi questo testo sulla riga legale del tuo assegno. Il formato '56/100' è una pratica bancaria standard per denotare chiaramente i centesimi.</p>"
+      },
+      {
+        "question": "Qual è la differenza tra Title Case e Frase standard?",
+        "answer": "<p>Queste opzioni controllano la capitalizzazione del testo di output, che cambia in base a dove intendi utilizzare il testo:</p><ul><li><b>Frase standard:</b> Mette in maiuscolo solo la prima lettera della prima parola (ad es. <i>'Five hundred dollars'</i>). È meglio per l'uso all'interno di un paragrafo o di una frase standard.</li><li><b>Title Case:</b> Mette in maiuscolo la prima lettera di ogni parola principale (ad es. <i>'Five Hundred Dollars'</i>). È ideale per intestazioni, titoli o dichiarazioni formali autonome sui certificati.</li></ul>"
+      },
+      {
+        "question": "Come funziona la funzione di calcolo IVA?",
+        "answer": "<p>La modalità IVA (Imposta sul Valore Aggiunto) ti aiuta a determinare l'importo finale della fattura comprensivo di imposte senza bisogno di una calcolatrice separata. Seleziona la modalità <b>'Valuta + IVA'</b>, inserisci il tuo importo netto (prezzo al netto delle imposte) e specifica la percentuale di imposta nel campo <b>Aliquota IVA</b>. Lo strumento aggiungerà matematicamente l'imposta al tuo numero ($Totale = Netto + Imposta$) e poi convertirà automaticamente quel totale finale in parole.</p>"
+      }
+    ]
+  },
+  {
+    "id": 1001,
+    "type": "converter",
+    "lang": "pl",
+    "slug": "konwerter-liczb-na-tekst",
+    "h1": "Konwerter Liczb na Tekst",
+    "content_blocks_json": "...",
+    "title": "Konwerter Liczb na Słowa - Czeki i Kalkulator VAT",
+    "meta_title": "Zamiana Liczb na Tekst: Narzędzie do Czeków, Walut i VAT",
+    "meta_description": "Błyskawicznie zamieniaj liczby na słowa dla czeków, dokumentów prawnych i faktur. Obsługuje USD, EUR, GBP, obliczenia VAT i notację naukową.",
+    "meta_robots": "index, follow",
+    "canonical_path": null,
+    "short_answer": "Konwerter Liczb na Tekst to narzędzie, które tłumaczy cyfry (np. 150) na ich słowne odpowiedniki (np. „sto pięćdziesiąt”). Obsługuje wiele walut, formatowanie czeków, obliczenia VAT i notację naukową dla precyzji finansowej i prawnej.",
+    "intro_text": "<p>W erze zdominowanej przez transakcje cyfrowe, precyzyjna konwersja wartości liczbowych na tekst pisany pozostaje kamieniem węgielnym bezpieczeństwa finansowego i jasności prawnej. <b>Konwerter Liczb na Tekst</b> to zaawansowane narzędzie zaprojektowane, aby wypełnić lukę między surowymi danymi a formalną dokumentacją. Niezależnie od tego, czy sporządzasz umowę prawną, finalizujesz czek bankowy, czy przygotowujesz fakturę ze złożonymi implikacjami podatkowymi, zamiana cyfr na słowa eliminuje dwuznaczność. Prosta literówka w polu numerycznym może prowadzić do znacznych rozbieżności finansowych — na przykład źle postawiony przecinek może zmienić 100,00 $ w 1000,00 $. Jednak gdy wartość jest wzmocniona jej odpowiednikiem tekstowym („sto dolarów”), intencja staje się bezdyskusyjna, zapewniając krytyczną warstwę ochrony przed oszustwami.</p><p>To narzędzie wykracza poza proste tłumaczenie językowe. Zostało zaprojektowane z wykorzystaniem zaawansowanych algorytmów zdolnych do obsługi standardowych liczb całkowitych, ułamków dziesiętnych, a nawet notacji naukowej (notacja E) dla ekstremalnych wartości do 300 cyfr. Obsługuje szereg walut globalnych, w tym USD, EUR, GBP, PLN i RUB, co czyni go niezbędnym atutem w biznesie międzynarodowym. Ponadto zintegrowany kalkulator VAT (Podatek od Towarów i Usług) pozwala użytkownikom automatycznie obliczać i wyrażać sumy brutto, usprawniając przepływ pracy dla księgowych i pracowników administracyjnych.</p><p>Dokładność w dokumentacji to nie tylko poprawność; to profesjonalizm i zgodność. Różne konteksty wymagają różnego formatowania — prace akademickie mogą wymagać wielkich liter w każdym słowie (Title Case), podczas gdy czeki bankowe mają określone standardy dla ułamkowych centów. Ten konwerter oferuje szczegółową kontrolę nad wielkością liter i formatami wyjściowymi, zapewniając, że wygenerowany tekst jest zgodny z określonymi wytycznymi stylistycznymi Twojej branży. Od wypisania czeku na czynsz po wizualizację wielkości Googola ($1 \\times 10^{100}$), to narzędzie zapewnia, że Twoje liczby mówią tak wyraźnie, jak Twoje słowa.</p>",
+    "key_points_json": [
+      "<b>Zapobieganie Oszustwom Finansowym:</b> Zamiana liczb na słowa jest standardowym środkiem bezpieczeństwa w bankowości. Podczas gdy cyfry można łatwo zmienić (np. zmieniając „1” na „7”), tekst pisany jest znacznie trudniejszy do sfałszowania bez wykrycia, co zapewnia integralność czeków i umów.",
+      "<b>Standard Wypisywania Czeków:</b> Narzędzie zawiera dedykowany tryb „Wypisywanie Czeków”, który formatuje wynik specjalnie dla standardów bankowych. Automatycznie konwertuje wartości dziesiętne na notację ułamkową (np. „i 50/100”) i dodaje nazwę waluty, gotową do przepisania na prawny środek płatniczy.",
+      "<b>Zaawansowana Integracja VAT:</b> Unikalną cechą tego konwertera jest obsługa obliczeń podatkowych. Wybierając tryb „Waluta + VAT” i wprowadzając stawkę podatku (np. 20%), narzędzie oblicza sumę brutto i zamienia ostateczną kwotę na słowa, co jest idealne dla faktur i paragonów.",
+      "<b>Obsługa Wielu Walut:</b> Narzędzie nie ogranicza się do dolarów. Obsługuje pięć głównych walut światowych: Dolar amerykański (USD), Euro (EUR), Funt brytyjski (GBP), Polski Złoty (PLN) i Rubel rosyjski (RUB), obsługując specyficzne niuanse językowe każdej z nich.",
+      "<b>Obsługa Notacji Naukowej:</b> Do użytku naukowego i akademickiego narzędzie akceptuje dane wejściowe w notacji E (np. 1e100). Pozwala to na konwersję astronomicznie dużych lub nieskończenie małych liczb, których standardowe kalkulatory nie są w stanie przetworzyć.",
+      "<b>Elastyczna Wielkość Liter:</b> Użytkownicy mogą przełączać się między wieloma stylami tekstu, w tym „małe litery” do użytku codziennego, „WIELKIE LITERY” dla podkreślenia lub nagłówków teleksowych, „Title Case” dla nagłówków i „Sentence case” dla standardowej prozy.",
+      "<b>Poprawa Dostępności:</b> Konwersja danych na tekst poprawia dostępność sieci. Czytniki ekranu często potykają się o złożone ciągi liczbowe; zapewnienie alternatywy tekstowej gwarantuje, że użytkownicy niedowidzący otrzymają dokładne informacje dotyczące cen i ilości.",
+      "<b>Wydajność Schowka:</b> Zaprojektowany z myślą o pracy z dużą ilością danych, interfejs zawiera funkcję „Kopiuj” jednym kliknięciem, umożliwiającą użytkownikom natychmiastowe przeniesienie przekonwertowanego tekstu do dokumentów Word, arkuszy Excel lub oprogramowania bankowego bez konieczności ręcznego przepisywania."
+    ],
+    "inputs_json": [
+      {
+        "name": "inputNumber",
+        "label": "Liczba do Konwersji",
+        "type": "text",
+        "unit": null,
+        "min": 0,
+        "max": null,
+        "description": "Wartość liczbowa, którą chcesz przekonwertować. Akceptuje liczby całkowite, ułamki dziesiętne (zmiennoprzecinkowe) i notację naukową (np. 1.5e6). Obsługuje wartości do 300 cyfr."
+      },
+      {
+        "name": "conversionMode",
+        "label": "Tryb Konwersji",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Definiuje format wyjściowy. Opcje obejmują „Słowa” (standardowy tekst), „Wypisywanie Czeków” (format bankowy z ułamkami), „Waluta” (format pieniężny) lub „Waluta + VAT” (obliczenie podatku)."
+      },
+      {
+        "name": "currency",
+        "label": "Waluta Docelowa",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wybierz kontekst walutowy dla tekstu. Obsługiwane opcje: USD, EUR, GBP, PLN, RUB. Dodaje to poprawną nazwę waluty i podjednostki (np. dolary/centy)."
+      },
+      {
+        "name": "textCase",
+        "label": "Wielkość Liter",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Kontroluje kapitalizację wyniku. Wybierz „Sentence case” dla standardowej gramatyki, „Title Case” dla nagłówków, „WIELKIE LITERY” dla prawnego podkreślenia lub „małe litery”."
+      },
+      {
+        "name": "vatRate",
+        "label": "Stawka VAT (%)",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "description": "Procent podatku do zastosowania. Aktywny tylko po wybraniu trybu „Waluta + VAT”. Oblicza podatek i dodaje go do kwoty głównej przed konwersją."
+      }
+    ],
+    "outputs_json": [
+      {
+        "name": "textResult",
+        "label": "Przekonwertowany Tekst",
+        "unit": null,
+        "rounding": null,
+        "description": "Ostateczna reprezentacja pisemna liczby, sformatowana zgodnie z wybranym trybem, walutą i przypadkiem gramatycznym."
+      },
+      {
+        "name": "calculatedTotal",
+        "label": "Suma Liczbowa (Tryb VAT)",
+        "unit": null,
+        "rounding": "2",
+        "description": "Jeśli tryb VAT jest aktywny, wyświetla sumę liczbową (Kwota Główna + Podatek) przed jej konwersją na tekst."
+      }
+    ],
+    "examples_json": [
+      {
+        "input": {
+          "inputNumber": "1250.50",
+          "conversionMode": "Check Writing",
+          "currency": "USD"
+        },
+        "output": {
+          "textResult": "One thousand two hundred fifty and 50/100 dollars"
+        }
+      }
+    ],
+    "formula_md": "While linguistic conversion relies on dictionary mapping rather than a mathematical formula, the **VAT (Value Added Tax)** calculation uses standard percentage logic. \n\nWhen calculating the **Total Amount** including tax:\n\n$$ Total = Principal \\times \\left( 1 + \\frac{VAT\\_Rate}{100} \\right) $$\n\nWhere:\n* **Principal** is the input number.\n* **VAT_Rate** is the percentage tax.\n\nFor **Check Writing**, the fractional part is derived as:\n\n$$ Fraction = \\text{round}((Number - \\text{floor}(Number)) \\times 100) $$\n\nThe result is then formatted as \"XX/100\".",
+    "assumptions_md": "* **Skala:** Konwerter używa systemu krótkiej skali (standard w amerykańskim i współczesnym brytyjskim angielskim), gdzie miliard to $10^9$, a nie $10^{12}$.\n* **Zaokrąglanie:** Wartości pieniężne są zaokrąglane do dwóch miejsc po przecinku (do najbliższego centa/grosza) przed konwersją.\n* **Język:** Dane wyjściowe są ściśle w języku angielskim, niezależnie od wybranej waluty (np. „RUB” zwraca „rubles”, a nie „rubli”).\n* **Limit:** Maksymalna liczba obsługiwanych cyfr wynosi 300.",
+    "howto_json": [
+      {
+        "question": "Jak używać tego narzędzia do wypisania czeku bankowego?",
+        "answer": "<p>Wypisanie czeku wymaga określonego formatu, aby był on prawnie ważny i bezpieczny. Wykonaj następujące kroki:</p><ol><li>Wprowadź dokładną kwotę (np. <b>1234.56</b>) w polu wprowadzania.</li><li>Wybierz <b>„Wypisywanie Czeków”</b> z opcji Trybu.</li><li>Upewnij się, że waluta jest ustawiona na <b>USD</b> (lub inną odpowiednią walutę).</li><li>Kliknij <b>Oblicz</b>.</li></ol><p>Wynik pojawi się jako <i>„One thousand two hundred thirty-four and 56/100 dollars”</i>. Przepisz ten tekst w linii prawnej czeku. Format „56/100” to standardowa praktyka bankowa oznaczająca centy.</p>"
+      },
+      {
+        "question": "Jaka jest różnica między Title Case a Sentence Case?",
+        "answer": "<p>Te opcje kontrolują kapitalizację tekstu wyjściowego, co zmienia się w zależności od tego, gdzie zamierzasz użyć tekstu:</p><ul><li><b>Sentence case:</b> Wielką literą pisana jest tylko pierwsza litera pierwszego słowa (np. <i>„Five hundred dollars”</i>). Najlepiej sprawdza się w standardowym akapicie lub zdaniu.</li><li><b>Title Case:</b> Wielką literą pisana jest pierwsza litera każdego ważnego słowa (np. <i>„Five Hundred Dollars”</i>). Jest to idealne dla nagłówków, tytułów lub formalnych, samodzielnych oświadczeń na certyfikatach.</li></ul>"
+      },
+      {
+        "question": "Jak działa funkcja obliczania VAT?",
+        "answer": "<p>Tryb VAT (Podatek od Towarów i Usług) pomaga ustalić ostateczną kwotę faktury, w tym podatek, bez konieczności używania oddzielnego kalkulatora. Wybierz tryb <b>„Waluta + VAT”</b>, wprowadź kwotę netto (cena przed opodatkowaniem) i określ procent podatku w polu <b>Stawka VAT</b>. Narzędzie matematycznie doda podatek do Twojej liczby ($Suma = Netto + Podatek$), a następnie automatycznie przekonwertuje tę ostateczną sumę na słowa.</p>"
+      }
+    ]
+  },
+  {
+    "id": 1001,
+    "type": "converter",
+    "lang": "ru",
+    "slug": "konverter-chisel-v-tekst",
+    "h1": "Конвертер Чисел в Текст",
+    "content_blocks_json": "...",
+    "title": "Число Прописью Онлайн - Чеки и НДС Калькулятор",
+    "meta_title": "Конвертер Чисел в Текст: Для Чеков, Валют и НДС",
+    "meta_description": "Мгновенно переводите числа в слова для чеков, юридических документов и счетов. Поддержка USD, EUR, GBP, расчета НДС и научной нотации.",
+    "meta_robots": "index, follow",
+    "canonical_path": null,
+    "short_answer": "Конвертер Чисел в Текст — это утилита, которая переводит цифровые значения (например, 150) в их письменные эквиваленты (например, «сто пятьдесят»). Он поддерживает несколько валют, форматирование чеков, расчеты НДС и научную нотацию для финансовой и юридической точности.",
+    "intro_text": "<p>В эпоху цифровых транзакций точное преобразование числовых значений в письменный текст остается краеугольным камнем финансовой безопасности и юридической ясности. <b>Конвертер Чисел в Текст</b> — это сложный инструмент, разработанный для устранения разрыва между необработанными данными и официальной документацией. Независимо от того, составляете ли вы юридический договор, оформляете банковский чек или готовите счет со сложными налоговыми последствиями, преобразование цифр в слова исключает двусмысленность. Простая опечатка в числовом поле может привести к значительным финансовым расхождениям — например, неправильно поставленная запятая может превратить 100,00 $ в 1000,00 $. Однако, когда значение подкреплено его текстовым эквивалентом («сто долларов»), намерение становится неоспоримым, обеспечивая критический уровень защиты от мошенничества.</p><p>Этот инструмент выходит за рамки простого лингвистического перевода. Он разработан с использованием передовых алгоритмов, способных обрабатывать стандартные целые числа, десятичные дроби и даже научную нотацию (E-нотация) для экстремальных значений до 300 цифр. Он поддерживает множество мировых валют, включая USD, EUR, GBP, PLN и RUB, что делает его незаменимым активом для международного бизнеса. Кроме того, встроенный калькулятор НДС (Налог на Добавленную Стоимость) позволяет пользователям автоматически рассчитывать и формулировать итоговые суммы с учетом налогов, оптимизируя рабочий процесс для бухгалтеров и административных специалистов.</p><p>Точность в документации — это не только правильность; это профессионализм и соблюдение требований. Разные контексты требуют разного форматирования — научные работы могут требовать Заглавных Букв (Title Case), в то время как банковские чеки имеют особые стандарты для дробных центов. Этот конвертер предлагает детальный контроль над регистром текста и форматами вывода, гарантируя, что ваш сгенерированный текст соответствует конкретным стилистическим рекомендациям вашей отрасли. От выписывания чека за аренду до визуализации величины Гугола ($1 \\times 10^{100}$), этот инструмент гарантирует, что ваши цифры говорят так же ясно, как и ваши слова.</p>",
+    "key_points_json": [
+      "<b>Предотвращение Финансового Мошенничества:</b> Преобразование чисел в слова — стандартная мера безопасности в банковском деле. В то время как цифры легко изменить (например, исправив «1» на «7»), написанный текст гораздо сложнее подделать незаметно, что обеспечивает целостность чеков и контрактов.",
+      "<b>Стандарт Выписывания Чеков:</b> Инструмент включает специальный режим «Выписывание Чеков», который форматирует вывод специально для банковских стандартов. Он автоматически преобразует десятичные значения в дробную нотацию (например, «и 50/100») и добавляет название валюты, готовое для переписывания на платежное средство.",
+      "<b>Расширенная Интеграция НДС:</b> Уникально то, что этот конвертер обрабатывает налоговые расчеты. Выбрав режим «Валюта + НДС» и введя налоговую ставку (например, 20%), инструмент рассчитывает валовую сумму и преобразует итоговую сумму в слова, что идеально подходит для счетов-фактур и квитанций.",
+      "<b>Мультивалютная Поддержка:</b> Утилита не ограничивается долларами. Она поддерживает пять основных мировых валют: Доллар США (USD), Евро (EUR), Британский фунт (GBP), Польский злотый (PLN) и Российский рубль (RUB), учитывая специфические лингвистические нюансы каждой из них.",
+      "<b>Обработка Научной Нотации:</b> Для научного и академического использования инструмент принимает ввод в E-нотации (например, 1e100). Это позволяет преобразовывать астрономически большие или бесконечно малые числа, которые стандартные калькуляторы не могут обработать.",
+      "<b>Гибкий Регистр Текста:</b> Пользователи могут переключаться между несколькими стилями текста, включая «строчные» для обычного использования, «ЗАГЛАВНЫЕ» для акцента или телексных заголовков, «Title Case» для заголовков и «Sentence case» для стандартной прозы.",
+      "<b>Улучшение Доступности:</b> Преобразование данных в текст улучшает веб-доступность. Программы чтения с экрана часто спотыкаются о сложные числовые строки; предоставление текстовой альтернативы гарантирует, что пользователи с нарушениями зрения получат точную информацию о ценах и количествах.",
+      "<b>Эффективность Буфера Обмена:</b> Интерфейс, разработанный для рабочих процессов с большим объемом данных, включает функцию «Копировать» в один клик, позволяющую пользователям мгновенно переносить преобразованный текст в документы Word, таблицы Excel или банковское ПО без ручного перепечатывания."
+    ],
+    "inputs_json": [
+      {
+        "name": "inputNumber",
+        "label": "Число для Конвертации",
+        "type": "text",
+        "unit": null,
+        "min": 0,
+        "max": null,
+        "description": "Числовое значение, которое вы хотите преобразовать. Принимает целые числа, десятичные дроби (float) и научную нотацию (например, 1.5e6). Поддерживает значения до 300 цифр."
+      },
+      {
+        "name": "conversionMode",
+        "label": "Режим Конвертации",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Определяет формат вывода. Опции включают «Слова» (стандартный текст), «Выписывание Чеков» (банковский формат с дробями), «Валюта» (денежный формат) или «Валюта + НДС» (расчет налога)."
+      },
+      {
+        "name": "currency",
+        "label": "Целевая Валюта",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Выберите валютный контекст для текста. Поддерживаемые опции: USD, EUR, GBP, PLN, RUB. Это добавляет правильное название валюты и разменной монеты (например, доллары/центы)."
+      },
+      {
+        "name": "textCase",
+        "label": "Регистр Текста",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Управляет капитализацией результата. Выберите «Sentence case» для стандартной грамматики, «Title Case» для заголовков, «ЗАГЛАВНЫЕ» для юридического акцента или «строчные»."
+      },
+      {
+        "name": "vatRate",
+        "label": "Ставка НДС (%)",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "description": "Процент налога для применения. Активен только при выборе режима «Валюта + НДС». Рассчитывает налог и добавляет его к основной сумме перед конвертацией."
+      }
+    ],
+    "outputs_json": [
+      {
+        "name": "textResult",
+        "label": "Преобразованный Текст",
+        "unit": null,
+        "rounding": null,
+        "description": "Окончательное письменное представление числа, отформатированное в соответствии с выбранным режимом, валютой и грамматическим падежом."
+      },
+      {
+        "name": "calculatedTotal",
+        "label": "Числовой Итог (Режим НДС)",
+        "unit": null,
+        "rounding": "2",
+        "description": "Если режим НДС активен, отображает числовой итог (Основная сумма + Налог) перед его преобразованием в текст."
+      }
+    ],
+    "examples_json": [
+      {
+        "input": {
+          "inputNumber": "1250.50",
+          "conversionMode": "Check Writing",
+          "currency": "USD"
+        },
+        "output": {
+          "textResult": "One thousand two hundred fifty and 50/100 dollars"
+        }
+      }
+    ],
+    "formula_md": "While linguistic conversion relies on dictionary mapping rather than a mathematical formula, the **VAT (Value Added Tax)** calculation uses standard percentage logic. \n\nWhen calculating the **Total Amount** including tax:\n\n$$ Total = Principal \\times \\left( 1 + \\frac{VAT\\_Rate}{100} \\right) $$\n\nWhere:\n* **Principal** is the input number.\n* **VAT_Rate** is the percentage tax.\n\nFor **Check Writing**, the fractional part is derived as:\n\n$$ Fraction = \\text{round}((Number - \\text{floor}(Number)) \\times 100) $$\n\nThe result is then formatted as \"XX/100\".",
+    "assumptions_md": "* **Шкала:** Конвертер использует короткую шкалу (стандарт в США и современном британском английском), где миллиард — это $10^9$, а не $10^{12}$.\n* **Округление:** Денежные значения округляются до двух знаков после запятой (до ближайшего цента/копейки) перед конвертацией.\n* **Язык:** Вывод строго на английском языке, независимо от выбранной валюты (например, «RUB» выдает «rubles», а не «рублей»).\n* **Лимит:** Максимальное количество поддерживаемых цифр составляет 300.",
+    "howto_json": [
+      {
+        "question": "Как использовать этот инструмент для выписывания банковского чека?",
+        "answer": "<p>Выписывание чека требует определенного формата, чтобы он был юридически действительным и безопасным. Следуйте этим шагам:</p><ol><li>Введите точную сумму (например, <b>1234.56</b>) в поле ввода.</li><li>Выберите <b>«Выписывание Чеков»</b> в опциях Режима.</li><li>Убедитесь, что валюта установлена на <b>USD</b> (или вашу соответствующую валюту).</li><li>Нажмите <b>Рассчитать</b>.</li></ol><p>Результат появится как <i>«One thousand two hundred thirty-four and 56/100 dollars»</i>. Перепишите этот текст в юридическую строку вашего чека. Формат «56/100» — это стандартная банковская практика для четкого обозначения центов.</p>"
+      },
+      {
+        "question": "В чем разница между Title Case и Sentence Case?",
+        "answer": "<p>Эти опции управляют капитализацией выходного текста, которая меняется в зависимости от того, где вы собираетесь использовать текст:</p><ul><li><b>Sentence case:</b> Пишет с большой буквы только первую букву первого слова (например, <i>«Five hundred dollars»</i>). Лучше всего подходит для использования внутри стандартного абзаца или предложения.</li><li><b>Title Case:</b> Пишет с большой буквы первую букву каждого значимого слова (например, <i>«Five Hundred Dollars»</i>). Идеально подходит для заголовков, названий или официальных отдельных заявлений в сертификатах.</li></ul>"
+      },
+      {
+        "question": "Как работает функция расчета НДС?",
+        "answer": "<p>Режим НДС (Налог на Добавленную Стоимость) помогает вам определить окончательную сумму счета, включая налог, без необходимости в отдельном калькуляторе. Выберите режим <b>«Валюта + НДС»</b>, введите сумму нетто (цена без налога) и укажите процент налога в поле <b>Ставка НДС</b>. Инструмент математически добавит налог к вашему числу ($Итог = Нетто + Налог$), а затем автоматически преобразует эту итоговую сумму в слова.</p>"
+      }
+    ]
+  },
+  {
+    "id": 1001,
+    "type": "converter",
+    "lang": "lv",
+    "slug": "skaitlu-parveidotajs-teksta",
+    "h1": "Skaitļu Pārveidotājs Tekstā",
+    "content_blocks_json": "...",
+    "title": "Skaitļu Pārveidotājs Vārdos - Čeki un PVN Kalkulators",
+    "meta_title": "Pārveidot Skaitļus Tekstā: Čeku, Valūtas un PVN Rīks",
+    "meta_description": "Nekavējoties pārveidojiet skaitļus vārdos čekiem, juridiskajiem dokumentiem un rēķiniem. Atbalsta USD, EUR, GBP, PVN aprēķinus un zinātnisko notāciju.",
+    "meta_robots": "index, follow",
+    "canonical_path": null,
+    "short_answer": "Skaitļu Pārveidotājs Tekstā ir rīks, kas tulko skaitliskos ciparus (piemēram, 150) to rakstiskajos vārdu ekvivalentos (piemēram, \"viens simts piecdesmit\"). Tas atbalsta vairākas valūtas, čeku formatēšanu, PVN aprēķinus un zinātnisko notāciju finansiālai un juridiskai precizitātei.",
+    "intro_text": "<p>Digitālo darījumu laikmetā precīza skaitlisko vērtību pārveidošana rakstītā tekstā joprojām ir finansiālās drošības un juridiskās skaidrības stūrakmens. <b>Skaitļu Pārveidotājs Tekstā</b> ir sarežģīts rīks, kas paredzēts, lai mazinātu plaisu starp neapstrādātiem datiem un formālu dokumentāciju. Neatkarīgi no tā, vai sastādāt juridisku līgumu, noformējat bankas čeku vai sagatavojat rēķinu ar sarežģītām nodokļu sekām, ciparu pārveidošana vārdos novērš divdomību. Vienkārša drukas kļūda skaitliskajā laukā var radīt ievērojamas finansiālas neatbilstības — piemēram, nepareizi novietots komats var pārvērst 100,00 $ par 1000,00 $. Tomēr, ja vērtība tiek pastiprināta ar tās tekstuālo ekvivalentu (“viens simts dolāru”), nodoms kļūst neapstrīdams, nodrošinot kritisku aizsardzības slāni pret krāpšanu.</p><p>Šis rīks pārsniedz vienkāršu lingvistisko tulkojumu. Tas ir izstrādāts ar uzlabotiem algoritmiem, kas spēj apstrādāt standarta veselos skaitļus, decimāldaļas un pat zinātnisko notāciju (E-notāciju) ekstremālām vērtībām līdz 300 cipariem. Tas atbalsta dažādas pasaules valūtas, tostarp USD, EUR, GBP, PLN un RUB, padarot to par neaizstājamu līdzekli starptautiskajā biznesā. Turklāt integrētais PVN (Pievienotās Vērtības Nodokļa) kalkulators ļauj lietotājiem automātiski aprēķināt un formulēt kopsummas ar nodokļiem, racionalizējot darbplūsmu grāmatvežiem un administratīvajiem darbiniekiem.</p><p>Dokumentācijas precizitāte ir ne tikai pareizība; tas ir profesionālisms un atbilstība. Dažādiem kontekstiem nepieciešams atšķirīgs formatējums — akadēmiskiem darbiem var būt nepieciešams Virsraksta Režīms (Title Case), savukārt bankas čekiem ir īpaši standarti daļveida centiem. Šis pārveidotājs piedāvā detalizētu kontroli pār teksta reģistru un izvades formātiem, nodrošinot, ka jūsu ģenerētais teksts atbilst jūsu nozares īpašajām stilistiskajām vadlīnijām. No īres čeka izrakstīšanas līdz Googol ($1 \\times 10^{100}$) lieluma vizualizēšanai, šis rīks nodrošina, ka jūsu skaitļi runā tikpat skaidri kā jūsu vārdi.</p>",
+    "key_points_json": [
+      "<b>Finanšu Krāpšanas Novēršana:</b> Skaitļu pārveidošana vārdos ir standarta drošības pasākums banku nozarē. Lai gan ciparus var viegli mainīt (piemēram, mainot '1' uz '7'), rakstītu tekstu ir daudz grūtāk viltot bez atklāšanas, nodrošinot čeku un līgumu integritāti.",
+      "<b>Čeku Rakstīšanas Standarts:</b> Rīks ietver īpašu 'Čeku Rakstīšanas' režīmu, kas formatē izvadi tieši banku standartiem. Tas automātiski pārvērš decimālvērtības daļskaitļu notācijā (piemēram, 'un 50/100') un pievieno valūtas nosaukumu, kas ir gatavs pārrakstīšanai uz maksāšanas līdzekļa.",
+      "<b>Uzlabota PVN Integrācija:</b> Unikāli, ka šis pārveidotājs apstrādā nodokļu aprēķinus. Izvēloties režīmu 'Valūta + PVN' un ievadot nodokļa likmi (piemēram, 20%), rīks aprēķina bruto summu un pārvērš galīgo summu vārdos, kas ir ideāli piemērots rēķiniem un kvītīm.",
+      "<b>Vairāku Valūtu Atbalsts:</b> Lietderība neaprobežojas tikai ar dolāriem. Tā atbalsta piecas galvenās pasaules valūtas: ASV dolāru (USD), Eiro (EUR), Lielbritānijas mārciņu (GBP), Polijas zlotu (PLN) un Krievijas rubli (RUB), apstrādājot katras valūtas specifiskās lingvistiskās nianses.",
+      "<b>Zinātniskās Notācijas Apstrāde:</b> Zinātniskai un akadēmiskai lietošanai rīks pieņem ievadi E-notācijā (piemēram, 1e100). Tas ļauj pārveidot astronomiski lielus vai bezgalīgi mazus skaitļus, kurus standarta kalkulatori nespēj apstrādāt.",
+      "<b>Elastīgs Teksta Reģistrs:</b> Lietotāji var pārslēgties starp vairākiem teksta stiliem, tostarp 'mazie burti' ikdienas lietošanai, 'LIELIE BURTI' uzsvaram vai teleksa virsrakstiem, 'Virsraksta Režīms' virsrakstiem un 'Teikuma režīms' standarta prozai.",
+      "<b>Pieejamības Uzlabošana:</b> Datu pārveidošana tekstā uzlabo tīmekļa pieejamību. Ekrāna lasītāji bieži klūp pie sarežģītām skaitļu virknēm; teksta alternatīvas nodrošināšana garantē, ka vājredzīgi lietotāji saņem precīzu informāciju par cenām un daudzumiem.",
+      "<b>Starpliktuves Efektivitāte:</b> Izstrādāta liela apjoma darbplūsmām, saskarne ietver viena klikšķa 'Kopēt' funkciju, kas ļauj lietotājiem nekavējoties pārsūtīt pārveidoto tekstu uz Word dokumentiem, Excel izklājlapām vai banku programmatūru bez manuālas pārrakstīšanas."
+    ],
+    "inputs_json": [
+      {
+        "name": "inputNumber",
+        "label": "Skaitlis Pārveidošanai",
+        "type": "text",
+        "unit": null,
+        "min": 0,
+        "max": null,
+        "description": "Skaitliskā vērtība, kuru vēlaties pārveidot. Pieņem veselus skaitļus, decimāldaļas (float) un zinātnisko notāciju (piemēram, 1.5e6). Atbalsta vērtības līdz 300 cipariem."
+      },
+      {
+        "name": "conversionMode",
+        "label": "Pārveidošanas Režīms",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Definē izvades formātu. Iespējas ietver 'Vārdi' (standarta teksts), 'Čeku Rakstīšana' (bankas formāts ar daļām), 'Valūta' (naudas formāts) vai 'Valūta + PVN' (nodokļu aprēķins)."
+      },
+      {
+        "name": "currency",
+        "label": "Mērķa Valūta",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Izvēlieties valūtas kontekstu tekstam. Atbalstītās iespējas: USD, EUR, GBP, PLN, RUB. Tas pievieno pareizo valūtas nosaukumu un apakšvienību (piemēram, dolāri/centi)."
+      },
+      {
+        "name": "textCase",
+        "label": "Teksta Reģistrs",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Kontrolē rezultāta kapitalizāciju. Izvēlieties 'Teikuma režīms' standarta gramatikai, 'Virsraksta Režīms' virsrakstiem, 'LIELIE BURTI' juridiskam uzsvaram vai 'mazie burti'."
+      },
+      {
+        "name": "vatRate",
+        "label": "PVN Likme (%)",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "description": "Piemērojamais nodokļa procents. Aktīvs tikai tad, ja ir izvēlēts režīms 'Valūta + PVN'. Aprēķina nodokli un pievieno to pamatsummai pirms pārveidošanas."
+      }
+    ],
+    "outputs_json": [
+      {
+        "name": "textResult",
+        "label": "Pārveidotais Teksts",
+        "unit": null,
+        "rounding": null,
+        "description": "Galīgais skaitļa rakstiskais attēlojums, formatēts atbilstoši izvēlētajam režīmam, valūtai un gramatiskajam locījumam."
+      },
+      {
+        "name": "calculatedTotal",
+        "label": "Skaitliskā Kopsumma (PVN Režīms)",
+        "unit": null,
+        "rounding": "2",
+        "description": "Ja ir aktīvs PVN režīms, tas parāda skaitlisko kopsummu (Pamatsumma + Nodoklis) pirms tās pārveidošanas tekstā."
+      }
+    ],
+    "examples_json": [
+      {
+        "input": {
+          "inputNumber": "1250.50",
+          "conversionMode": "Check Writing",
+          "currency": "USD"
+        },
+        "output": {
+          "textResult": "One thousand two hundred fifty and 50/100 dollars"
+        }
+      }
+    ],
+    "formula_md": "While linguistic conversion relies on dictionary mapping rather than a mathematical formula, the **VAT (Value Added Tax)** calculation uses standard percentage logic. \n\nWhen calculating the **Total Amount** including tax:\n\n$$ Total = Principal \\times \\left( 1 + \\frac{VAT\\_Rate}{100} \\right) $$\n\nWhere:\n* **Principal** is the input number.\n* **VAT_Rate** is the percentage tax.\n\nFor **Check Writing**, the fractional part is derived as:\n\n$$ Fraction = \\text{round}((Number - \\text{floor}(Number)) \\times 100) $$\n\nThe result is then formatted as \"XX/100\".",
+    "assumptions_md": "* **Mērogs:** Pārveidotājs izmanto īso skalu sistēmu (standarts ASV un mūsdienu britu angļu valodā), kur miljards ir $10^9$, nevis $10^{12}$.\n* **Noapaļošana:** Naudas vērtības pirms pārveidošanas tiek noapaļotas līdz divām zīmēm aiz komata (līdz tuvākajam centam).\n* **Valoda:** Izvade ir stingri angļu valodā, neatkarīgi no izvēlētās valūtas (piemēram, 'RUB' izvada 'rubles', nevis 'rubļu').\n* **Ierobežojums:** Maksimālais atbalstīto ciparu skaits ir 300.",
+    "howto_json": [
+      {
+        "question": "Kā izmantot šo rīku, lai izrakstītu bankas čeku?",
+        "answer": "<p>Čeka izrakstīšanai nepieciešams īpašs formāts, lai tas būtu juridiski derīgs un drošs. Sekojiet šiem soļiem:</p><ol><li>Ievadiet precīzu summu (piemēram, <b>1234.56</b>) ievades laukā.</li><li>Izvēlieties <b>'Čeku Rakstīšana'</b> no Režīma iespējām.</li><li>Pārliecinieties, vai valūta ir iestatīta uz <b>USD</b> (vai jūsu attiecīgo valūtu).</li><li>Noklikšķiniet uz <b>Aprēķināt</b>.</li></ol><p>Rezultāts parādīsies kā <i>'One thousand two hundred thirty-four and 56/100 dollars'</i>. Pārrakstiet šo tekstu sava čeka juridiskajā rindā. Formāts '56/100' ir standarta banku prakse, lai skaidri apzīmētu centus.</p>"
+      },
+      {
+        "question": "Kāda ir atšķirība starp Virsraksta Režīmu un Teikuma Režīmu?",
+        "answer": "<p>Šīs opcijas kontrolē izvades teksta kapitalizāciju, kas mainās atkarībā no tā, kur plānojat izmantot tekstu:</p><ul><li><b>Teikuma režīms:</b> Ar lielo burtu raksta tikai pirmā vārda pirmo burtu (piemēram, <i>'Five hundred dollars'</i>). Vislabāk izmantot standarta rindkopā vai teikumā.</li><li><b>Virsraksta Režīms:</b> Ar lielo burtu raksta katra nozīmīgā vārda pirmo burtu (piemēram, <i>'Five Hundred Dollars'</i>). Tas ir ideāli piemērots virsrakstiem, nosaukumiem vai formāliem atsevišķiem paziņojumiem sertifikātos.</li></ul>"
+      },
+      {
+        "question": "Kā darbojas PVN aprēķināšanas funkcija?",
+        "answer": "<p>PVN (Pievienotās Vērtības Nodokļa) režīms palīdz noteikt rēķina galīgo summu, ieskaitot nodokļus, bez atsevišķa kalkulatora. Izvēlieties režīmu <b>'Valūta + PVN'</b>, ievadiet neto summu (cena pirms nodokļiem) un norādiet nodokļa procentu laukā <b>PVN Likme</b>. Rīks matemātiski pieskaitīs nodokli jūsu skaitlim ($Kopsumma = Neto + Nodoklis$) un pēc tam automātiski pārveidos šo galīgo kopsummu vārdos.</p>"
+      }
+    ]
+  }
+]
