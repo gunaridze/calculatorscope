@@ -36,3 +36,20 @@ export async function getToolData(slug: string, lang: string) {
 
     return toolI18n
 }
+
+// Функция получения страницы по коду и языку (для ссылок на виджеты)
+export async function getPageByCode(code: string, lang: string) {
+    const pageI18n = await prisma.pageI18n.findFirst({
+        where: {
+            page: {
+                code: code
+            },
+            lang: lang
+        },
+        select: {
+            slug: true
+        }
+    })
+    
+    return pageI18n
+}

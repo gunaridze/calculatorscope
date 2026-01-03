@@ -1,10 +1,14 @@
 import { notFound } from 'next/navigation'
-import { getToolData } from '@/lib/db'
-import JsonCalculator from '@/components/JsonCalculator'
+import { getToolData, getPageByCode } from '@/lib/db'
+import CalculatorWidget from '@/components/CalculatorWidget'
 import { calculate, type JsonEngineConfig, type JsonEngineOutput } from '@/core/engines/json'
 import type { Metadata } from 'next'
 import Footer from '@/components/Footer'
 import { getTranslations } from '@/lib/translations'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import AdBanner from '@/components/AdBanner'
+import Header from '@/components/Header'
+import React from 'react'
 
 // Типы для параметров URL (в Next.js 15+ это Promise)
 type Props = {
@@ -53,9 +57,40 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     }
 }
 
+// Компонент для инъекции баннеров в мобильной версии
+function ContentWithAds({ 
+    content, 
+    lang 
+}: { 
+    content: React.ReactNode[], 
+    lang: string 
+}) {
+    const result: React.ReactNode[] = []
+    let h2Count = 0
+
+    content.forEach((node, idx) => {
+        // Проверяем, является ли элемент h2
+        if (React.isValidElement(node) && typeof node.type === 'string' && node.type === 'h2') {
+            h2Count++
+            // Добавляем баннер перед h2 (начиная со второго h2)
+            if (h2Count > 1) {
+                const adNumber = h2Count === 2 ? 2 : h2Count === 3 ? 3 : 4
+                result.push(
+                    <div key={`ad-before-${idx}`} className="my-5">
+                        <AdBanner lang={lang} adNumber={adNumber as 1 | 2 | 3 | 4} />
+                    </div>
+                )
+            }
+        }
+        result.push(<React.Fragment key={idx}>{node}</React.Fragment>)
+    })
+
+    return <>{result}</>
+}
+
 export default async function ToolPage({ params, searchParams }: Props) {
     // 1. ВАЖНО: Ждем разрешения параметров
-    const { lang, tool: slug } = await params
+    const { lang, tool: slug, category } = await params
     const search = await searchParams
 
     // 2. Запрашиваем данные из БД
@@ -68,6 +103,32 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
     // Получаем переводы для текущего языка
     const translations = getTranslations(lang)
+
+    // Получаем страницу виджета (id105)
+    const widgetPage = await getPageByCode('id105', lang)
+
+    // Строим breadcrumbs
+    const breadcrumbs = [
+        { name: 'Calculator Scope', href: `/${lang}` },
+    ]
+
+    // Добавляем категории
+    if (data.tool.categories && data.tool.categories.length > 0) {
+        const categoryData = data.tool.categories[0].category
+        if (categoryData.i18n && categoryData.i18n.length > 0) {
+            const catI18n = categoryData.i18n[0]
+            breadcrumbs.push({
+                name: catI18n.name || category,
+                href: `/${lang}/${catI18n.slug || category}`
+            })
+        }
+    }
+
+    // Добавляем текущий инструмент
+    breadcrumbs.push({
+        name: data.h1 || data.title,
+        href: `/${lang}/${category}/${slug}`
+    })
 
     // 4. Достаем конфиги из JSON полей
     // @ts-ignore (TypeScript не всегда корректно типизирует JSON из Prisma)
@@ -118,114 +179,208 @@ export default async function ToolPage({ params, searchParams }: Props) {
         }
     }
 
+    // Подготавливаем контент для мобильной версии
+    const contentSections: React.ReactNode[] = []
+
+    // Intro text
+    if (data.intro_text) {
+        contentSections.push(
+            <p key="intro" className="mb-4 text-gray-700">{data.intro_text}</p>
+        )
+    }
+
+    // Examples Section
+    if (examples.length > 0) {
+        contentSections.push(
+            <h2 key="examples-h2" className="text-3xl font-bold mb-6 mt-8">Examples</h2>
+        )
+        contentSections.push(
+            <section key="examples-section" id="examples" className="mb-12 prose lg:prose-xl">
+                <div className="space-y-6">
+                    {examples.map((ex, idx) => (
+                        <div key={idx} className="bg-gray-50 p-6 rounded-lg">
+                            <h3 className="text-xl font-semibold mb-3">Example {idx + 1}</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <h4 className="font-semibold mb-2">Inputs:</h4>
+                                    <ul className="list-disc list-inside">
+                                        {Object.entries(ex.inputs).map(([key, value]) => (
+                                            <li key={key}>{key}: {value}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold mb-2">Outputs:</h4>
+                                    <ul className="list-disc list-inside">
+                                        {Object.entries(ex.outputs).map(([key, value]) => (
+                                            <li key={key}>
+                                                {key}: {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        )
+    }
+
+    // Formula Section
+    if (data.formula_md) {
+        contentSections.push(
+            <h2 key="formula-h2" className="text-3xl font-bold mb-6 mt-8">Formula</h2>
+        )
+        contentSections.push(
+            <section key="formula-section" id="formula" className="mb-12 prose lg:prose-xl">
+                <div className="bg-gray-50 p-6 rounded-lg">
+                    <div dangerouslySetInnerHTML={{ __html: data.formula_md }} />
+                </div>
+            </section>
+        )
+    }
+
+    // Assumptions Section
+    if (data.assumptions_md) {
+        contentSections.push(
+            <h2 key="assumptions-h2" className="text-3xl font-bold mb-6 mt-8">Assumptions</h2>
+        )
+        contentSections.push(
+            <section key="assumptions-section" id="assumptions" className="mb-12 prose lg:prose-xl">
+                <div className="bg-gray-50 p-6 rounded-lg">
+                    <div dangerouslySetInnerHTML={{ __html: data.assumptions_md }} />
+                </div>
+            </section>
+        )
+    }
+
+    // FAQ Section
+    if (data.faq_json) {
+        contentSections.push(
+            <h2 key="faq-h2" className="text-3xl font-bold mb-6 mt-8">Frequently Asked Questions</h2>
+        )
+        contentSections.push(
+            <section key="faq-section" id="faq" className="mb-12 prose lg:prose-xl">
+                <div className="space-y-4">
+                    {(() => {
+                        try {
+                            // @ts-ignore
+                            const faqs = typeof data.faq_json === 'string' 
+                                ? JSON.parse(data.faq_json) 
+                                : data.faq_json
+                            if (Array.isArray(faqs)) {
+                                return faqs.map((faq: any, idx: number) => (
+                                    <div key={idx} className="bg-gray-50 p-6 rounded-lg">
+                                        <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
+                                        <p>{faq.answer}</p>
+                                    </div>
+                                ))
+                            }
+                        } catch (e) {
+                            console.error('Error parsing FAQ:', e)
+                        }
+                        return null
+                    })()}
+                </div>
+            </section>
+        )
+    }
+
     return (
         <>
-            <main className="container mx-auto px-4 py-12 max-w-4xl">
-                {/* Заголовок и описание (SEO) */}
-                <header className="mb-8 text-center">
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{data.h1 || data.title}</h1>
-                    {data.intro_text && (
-                        <p className="text-lg text-gray-600">{data.intro_text}</p>
-                    )}
-                    {data.short_answer && (
-                        <p className="text-xl text-gray-700 mt-4 font-medium">{data.short_answer}</p>
-                    )}
-                </header>
+            <Header 
+                lang={lang} 
+                h1={translations.header_h1}
+                metaDescription={translations.header_text}
+                translations={{
+                    burger_button: translations.burger_button,
+                    header_search_placeholder: translations.header_search_placeholder,
+                }}
+            />
+            <main className="container mx-auto px-4 py-12">
+                {/* Breadcrumbs */}
+                <Breadcrumbs items={breadcrumbs} />
 
-                {/* Сам калькулятор (Клиентский компонент) */}
-                <div className="flex justify-center mb-12">
-                    {config && (
-                        <JsonCalculator 
-                            config={config} 
-                            interface={interfaceData}
-                            initialValues={initialValues}
-                        />
-                    )}
+                {/* Page Title (H1) */}
+                <h1 className="text-4xl font-extrabold text-gray-900 mb-8">{data.h1 || data.title}</h1>
+
+                {/* Desktop Layout: Float Layout */}
+                <div className="hidden lg:block">
+                    {/* Clear float */}
+                    <div className="overflow-hidden">
+                        {/* Виджет Калькулятора (Left Float) */}
+                        {config && (
+                            <CalculatorWidget
+                                config={config}
+                                interface={interfaceData}
+                                initialValues={initialValues}
+                                h1={data.h1 || data.title}
+                                lang={lang}
+                                translations={{
+                                    clear: translations.widget_clear,
+                                    calculate: translations.widget_calculate,
+                                    result: translations.widget_result,
+                                    copy: translations.widget_copy,
+                                    suggest: translations.widget_suggest,
+                                    getWidget: translations.widget_get_widget,
+                                }}
+                                widgetPageSlug={widgetPage?.slug}
+                            />
+                        )}
+
+                        {/* Сайдбар с рекламой (Right Float) */}
+                        <div className="float-right w-[300px] space-y-5 ml-5">
+                            <AdBanner lang={lang} adNumber={1} />
+                            <AdBanner lang={lang} adNumber={2} />
+                            <AdBanner lang={lang} adNumber={3} />
+                            <AdBanner lang={lang} adNumber={4} />
+                        </div>
+
+                        {/* Текстовый контент (обтекает виджет и сайдбар) */}
+                        <div className="prose lg:prose-xl max-w-none">
+                            {contentSections}
+                        </div>
+
+                        {/* Clear float в конце */}
+                        <div className="clear-both"></div>
+                    </div>
                 </div>
 
-                {/* AI-friendly секции для парсинга LLM */}
-                
-                {/* Examples Section */}
-                {examples.length > 0 && (
-                    <section id="examples" className="mb-12 prose lg:prose-xl mx-auto">
-                        <h2 className="text-3xl font-bold mb-6">Examples</h2>
-                        <div className="space-y-6">
-                            {examples.map((ex, idx) => (
-                                <div key={idx} className="bg-gray-50 p-6 rounded-lg">
-                                    <h3 className="text-xl font-semibold mb-3">Example {idx + 1}</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <h4 className="font-semibold mb-2">Inputs:</h4>
-                                            <ul className="list-disc list-inside">
-                                                {Object.entries(ex.inputs).map(([key, value]) => (
-                                                    <li key={key}>{key}: {value}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold mb-2">Outputs:</h4>
-                                            <ul className="list-disc list-inside">
-                                                {Object.entries(ex.outputs).map(([key, value]) => (
-                                                    <li key={key}>
-                                                        {key}: {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                {/* Mobile Layout */}
+                <div className="lg:hidden">
+                    {/* Виджет Калькулятора */}
+                    {config && (
+                        <div className="mb-8">
+                            <CalculatorWidget
+                                config={config}
+                                interface={interfaceData}
+                                initialValues={initialValues}
+                                h1={data.h1 || data.title}
+                                lang={lang}
+                                translations={{
+                                    clear: translations.widget_clear,
+                                    calculate: translations.widget_calculate,
+                                    result: translations.widget_result,
+                                    copy: translations.widget_copy,
+                                    suggest: translations.widget_suggest,
+                                    getWidget: translations.widget_get_widget,
+                                }}
+                                widgetPageSlug={widgetPage?.slug}
+                            />
                         </div>
-                    </section>
-                )}
+                    )}
 
-                {/* Formula Section */}
-                {data.formula_md && (
-                    <section id="formula" className="mb-12 prose lg:prose-xl mx-auto">
-                        <h2 className="text-3xl font-bold mb-6">Formula</h2>
-                        <div className="bg-gray-50 p-6 rounded-lg">
-                            <div dangerouslySetInnerHTML={{ __html: data.formula_md }} />
-                        </div>
-                    </section>
-                )}
+                    {/* Баннер 1: Сразу после калькулятора, перед началом текста */}
+                    <div className="mb-5">
+                        <AdBanner lang={lang} adNumber={1} />
+                    </div>
 
-                {/* Assumptions Section */}
-                {data.assumptions_md && (
-                    <section id="assumptions" className="mb-12 prose lg:prose-xl mx-auto">
-                        <h2 className="text-3xl font-bold mb-6">Assumptions</h2>
-                        <div className="bg-gray-50 p-6 rounded-lg">
-                            <div dangerouslySetInnerHTML={{ __html: data.assumptions_md }} />
-                        </div>
-                    </section>
-                )}
-
-                {/* FAQ Section */}
-                {data.faq_json && (
-                    <section id="faq" className="mb-12 prose lg:prose-xl mx-auto">
-                        <h2 className="text-3xl font-bold mb-6">Frequently Asked Questions</h2>
-                        <div className="space-y-4">
-                            {(() => {
-                                try {
-                                    // @ts-ignore
-                                    const faqs = typeof data.faq_json === 'string' 
-                                        ? JSON.parse(data.faq_json) 
-                                        : data.faq_json
-                                    if (Array.isArray(faqs)) {
-                                        return faqs.map((faq: any, idx: number) => (
-                                            <div key={idx} className="bg-gray-50 p-6 rounded-lg">
-                                                <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
-                                                <p>{faq.answer}</p>
-                                            </div>
-                                        ))
-                                    }
-                                } catch (e) {
-                                    console.error('Error parsing FAQ:', e)
-                                }
-                                return null
-                            })()}
-                        </div>
-                    </section>
-                )}
+                    {/* Контент с инъекцией баннеров */}
+                    <div className="prose lg:prose-xl max-w-none">
+                        <ContentWithAds content={contentSections} lang={lang} />
+                    </div>
+                </div>
             </main>
             <Footer 
                 lang={lang} 

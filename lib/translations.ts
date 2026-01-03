@@ -11,6 +11,12 @@ type TranslationKey =
   | 'footer_link_2'
   | 'footer_link_3'
   | 'footer_copyright'
+  | 'widget_clear'
+  | 'widget_calculate'
+  | 'widget_result'
+  | 'widget_copy'
+  | 'widget_suggest'
+  | 'widget_get_widget'
 
 type Lang = 'en' | 'de' | 'es' | 'fr' | 'it' | 'pl' | 'ru' | 'lv'
 
@@ -24,6 +30,12 @@ interface TranslationRow {
   footer_link_2: string
   footer_link_3: string
   footer_copyright: string
+  widget_clear: string
+  widget_calculate: string
+  widget_result: string
+  widget_copy: string
+  widget_suggest: string
+  widget_get_widget: string
 }
 
 let translationsCache: Map<Lang, TranslationRow> | null = null
@@ -71,6 +83,12 @@ const fallbackTranslations: Record<TranslationKey, string> = {
   footer_link_2: 'Legal Information & Terms of Use',
   footer_link_3: 'Contact Us',
   footer_copyright: 'CalculatorScope. All Rights Reserved.',
+  widget_clear: 'Clear',
+  widget_calculate: 'Calculate',
+  widget_result: 'Result',
+  widget_copy: 'Copy',
+  widget_suggest: 'Suggest an improvement or request a new calculator.',
+  widget_get_widget: 'Get a Free Widget for this Calculator',
 }
 
 export function t(lang: string, key: TranslationKey): string {
@@ -95,5 +113,11 @@ export function getTranslations(lang: string): Record<TranslationKey, string> {
     footer_link_2: t(lang, 'footer_link_2'),
     footer_link_3: t(lang, 'footer_link_3'),
     footer_copyright: t(lang, 'footer_copyright'),
+    widget_clear: t(lang, 'widget_clear'),
+    widget_calculate: t(lang, 'widget_calculate'),
+    widget_result: t(lang, 'widget_result'),
+    widget_copy: t(lang, 'widget_copy'),
+    widget_suggest: t(lang, 'widget_suggest'),
+    widget_get_widget: t(lang, 'widget_get_widget'),
   }
 }
