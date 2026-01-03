@@ -10,6 +10,13 @@ import AdBanner from '@/components/AdBanner'
 import Header from '@/components/Header'
 import React from 'react'
 
+// Интерфейс для content_blocks_json
+interface ContentBlock {
+    type: 'h2' | 'paragraph' | 'html' | 'section'
+    content: string
+    id?: string  // Опциональный id для секции
+}
+
 // Типы для параметров URL (в Next.js 15+ это Promise)
 type Props = {
     params: Promise<{
@@ -179,6 +186,23 @@ export default async function ToolPage({ params, searchParams }: Props) {
         }
     }
 
+    // Парсим content_blocks_json
+    let contentBlocks: ContentBlock[] = []
+    if (data.content_blocks_json) {
+        try {
+            // @ts-ignore
+            const parsed = typeof data.content_blocks_json === 'string'
+                ? JSON.parse(data.content_blocks_json)
+                : data.content_blocks_json
+            
+            if (Array.isArray(parsed)) {
+                contentBlocks = parsed as ContentBlock[]
+            }
+        } catch (e) {
+            console.error('Error parsing content_blocks_json:', e)
+        }
+    }
+
     // Подготавливаем контент для мобильной версии
     const contentSections: React.ReactNode[] = []
 
@@ -187,6 +211,52 @@ export default async function ToolPage({ params, searchParams }: Props) {
         contentSections.push(
             <p key="intro" className="mb-4 text-gray-700">{data.intro_text}</p>
         )
+    }
+
+    // Рендерим content_blocks_json (если есть)
+    if (contentBlocks.length > 0) {
+        contentBlocks.forEach((block, idx) => {
+            switch (block.type) {
+                case 'h2':
+                    contentSections.push(
+                        <h2 
+                            key={`content-block-h2-${idx}`} 
+                            className="text-3xl font-bold mb-6 mt-8"
+                            id={block.id}
+                        >
+                            {block.content}
+                        </h2>
+                    )
+                    break
+                case 'paragraph':
+                    contentSections.push(
+                        <p key={`content-block-p-${idx}`} className="mb-4 text-gray-700">
+                            {block.content}
+                        </p>
+                    )
+                    break
+                case 'html':
+                    contentSections.push(
+                        <div 
+                            key={`content-block-html-${idx}`} 
+                            className="mb-4 prose lg:prose-xl"
+                            dangerouslySetInnerHTML={{ __html: block.content }}
+                        />
+                    )
+                    break
+                case 'section':
+                    contentSections.push(
+                        <section 
+                            key={`content-block-section-${idx}`} 
+                            className="mb-12 prose lg:prose-xl"
+                            id={block.id}
+                        >
+                            <div dangerouslySetInnerHTML={{ __html: block.content }} />
+                        </section>
+                    )
+                    break
+            }
+        })
     }
 
     // Examples Section
