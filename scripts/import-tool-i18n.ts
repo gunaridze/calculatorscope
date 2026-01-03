@@ -1,24 +1,32 @@
 /**
  * Скрипт для импорта/обновления записей tool_i18n из JSON файла
  * 
+ * ВАЖНО: Перед запуском убедитесь, что миграция применена:
+ *   npx prisma migrate deploy
+ * 
  * Использование:
  *   npx tsx scripts/import-tool-i18n.ts
  * 
  * Файл: scripts/tool_i18n (JSON массив)
  * 
  * Логика:
- * 1. Группирует записи по полю `id` (внешний идентификатор инструмента)
- * 2. Для каждого уникального `id` создает или находит существующий `tool`
+ * 1. Группирует записи по полю `id` (ID инструмента в таблице tools)
+ * 2. Для каждого уникального `id` создает или находит существующий `tool` с таким ID
  * 3. Для каждой записи проверяет существование по комбинации `lang + slug`
  * 4. Если запись существует - обновляет её
- * 5. Если запись не существует - создает новую
+ * 5. Если запись не существует - создает новую (id будет автоинкремент, начиная с 1000)
  * 
  * Поля в JSON:
- * - id: число (внешний идентификатор инструмента, используется для группировки)
- * - type: строка (тип инструмента: converter, calculator и т.д.)
- * - lang: строка (язык: en, ru, de и т.д.)
- * - slug: строка (уникальный slug для языка)
+ * - id: string | number (ID инструмента в таблице tools - используется как кастомный ID)
+ * - type: string (тип инструмента в таблице tools: converter, calculator и т.д.)
+ * - lang: string (язык: en, ru, de и т.д.)
+ * - slug: string (уникальный slug для языка)
  * - остальные поля соответствуют полям таблицы tool_i18n
+ * 
+ * Структура БД:
+ * - tools.id: String (кастомный ID из JSON)
+ * - tool_i18n.id: Int (автоинкремент, начинается с 1000)
+ * - tool_i18n.tool_id: String (ссылка на tools.id)
  */
 
 import { PrismaClient } from '@prisma/client'
@@ -28,8 +36,8 @@ import * as path from 'path'
 const prisma = new PrismaClient()
 
 interface ToolI18nRow {
-  id: number  // Внешний ID инструмента (может быть tool_id или внешний идентификатор)
-  type?: string  // Тип инструмента (converter, calculator и т.д.)
+  id: string | number  // ID инструмента в таблице tools (из JSON)
+  type?: string  // Тип инструмента в таблице tools (converter, calculator и т.д.)
   lang: string
   slug: string
   title: string
@@ -89,53 +97,49 @@ async function importToolI18n() {
   let errors = 0
   let toolsCreated = 0
 
-  // Группируем записи по id (внешний идентификатор) для создания инструментов
+  // Группируем записи по id (ID инструмента в таблице tools)
   const toolIds = Array.from(new Set(records.map(r => r.id.toString())))
   console.log(`🔍 Найдено ${toolIds.length} уникальных инструментов\n`)
 
   // Создаем или находим инструменты
-  // Map: внешний ID -> UUID tool_id
+  // Map: ID из JSON -> ID в таблице tools (String)
   const toolIdMap = new Map<string, string>()
 
-  for (const externalId of toolIds) {
+  for (const toolIdFromJson of toolIds) {
     try {
-      // Ищем любую существующую запись tool_i18n с таким slug (в любом языке)
-      // чтобы найти tool_id, если инструмент уже существует
-      const recordsWithThisId = records.filter(r => r.id.toString() === externalId)
+      const recordsWithThisId = records.filter(r => r.id.toString() === toolIdFromJson)
       if (recordsWithThisId.length === 0) continue
 
       const firstRecord = recordsWithThisId[0]
+      const toolType = firstRecord.type || 'calculator'
       
-      // Пытаемся найти tool через существующий tool_i18n с таким slug
-      const existingToolI18n = await prisma.toolI18n.findFirst({
+      // Проверяем, существует ли tool с таким ID
+      const existingTool = await prisma.tool.findUnique({
         where: {
-          slug: firstRecord.slug
-        },
-        include: {
-          tool: true
+          id: toolIdFromJson
         }
       })
 
-      if (existingToolI18n) {
+      if (existingTool) {
         // Используем существующий tool
-        toolIdMap.set(externalId, existingToolI18n.tool_id)
-        console.log(`✅ Найден существующий tool для ID ${externalId}: ${existingToolI18n.tool_id}`)
+        toolIdMap.set(toolIdFromJson, existingTool.id)
+        console.log(`✅ Найден существующий tool с ID ${toolIdFromJson}`)
       } else {
-        // Создаем новый tool
-        const toolType = firstRecord.type || 'calculator'
+        // Создаем новый tool с кастомным ID из JSON
         const newTool = await prisma.tool.create({
           data: {
+            id: toolIdFromJson,  // Используем ID из JSON
             type: toolType,
             status: 'published',
             engine: 'json'
           }
         })
-        toolIdMap.set(externalId, newTool.id)
+        toolIdMap.set(toolIdFromJson, newTool.id)
         toolsCreated++
-        console.log(`✅ Создан новый tool для ID ${externalId}: ${newTool.id}`)
+        console.log(`✅ Создан новый tool с ID ${toolIdFromJson} (type: ${toolType})`)
       }
     } catch (error: any) {
-      console.error(`❌ Ошибка при обработке tool ID ${externalId}:`, error.message)
+      console.error(`❌ Ошибка при обработке tool ID ${toolIdFromJson}:`, error.message)
       errors++
     }
   }
@@ -145,11 +149,11 @@ async function importToolI18n() {
   // Импортируем tool_i18n записи
   for (const row of records) {
     try {
-      const externalId = row.id.toString()
-      const toolId = toolIdMap.get(externalId)
+      const toolIdFromJson = row.id.toString()
+      const toolId = toolIdMap.get(toolIdFromJson)
 
       if (!toolId) {
-        console.warn(`⚠️  Tool ID ${externalId} не найден, пропускаем запись ${row.lang}/${row.slug}`)
+        console.warn(`⚠️  Tool ID ${toolIdFromJson} не найден, пропускаем запись ${row.lang}/${row.slug}`)
         errors++
         continue
       }
@@ -164,6 +168,27 @@ async function importToolI18n() {
         }
       })
 
+      // Функция для валидации и нормализации JSON полей
+      const normalizeJsonField = (value: any): any => {
+        if (value === null || value === undefined) return null
+        if (typeof value === 'string') {
+          // Если это строка "..." или пустая строка, возвращаем null
+          if (value === '...' || value.trim() === '') return null
+          // Пытаемся распарсить как JSON
+          try {
+            return JSON.parse(value)
+          } catch {
+            // Если не JSON, возвращаем null
+            return null
+          }
+        }
+        // Если это уже объект/массив, возвращаем как есть
+        if (typeof value === 'object') {
+          return value
+        }
+        return null
+      }
+
       // Подготавливаем данные для создания/обновления
       const data: any = {
         tool_id: toolId,
@@ -177,16 +202,16 @@ async function importToolI18n() {
         canonical_path: row.canonical_path || null,
         short_answer: row.short_answer || null,
         intro_text: row.intro_text || null,
-        key_points_json: row.key_points_json || null,
-        inputs_json: row.inputs_json || null,
-        outputs_json: row.outputs_json || null,
-        examples_json: row.examples_json || null,
+        key_points_json: normalizeJsonField(row.key_points_json),
+        inputs_json: normalizeJsonField(row.inputs_json),
+        outputs_json: normalizeJsonField(row.outputs_json),
+        examples_json: normalizeJsonField(row.examples_json),
         formula_md: row.formula_md || null,
         assumptions_md: row.assumptions_md || null,
-        faq_json: row.faq_json || null,
-        howto_json: row.howto_json || null,
-        content_blocks_json: row.content_blocks_json || null,
-        schema_json: row.schema_json || null,
+        faq_json: normalizeJsonField(row.faq_json),
+        howto_json: normalizeJsonField(row.howto_json),
+        content_blocks_json: normalizeJsonField(row.content_blocks_json),
+        schema_json: normalizeJsonField(row.schema_json),
         og_title: row.og_title || null,
         og_description: row.og_description || null,
         og_image_url: row.og_image_url || null,
@@ -221,6 +246,9 @@ async function importToolI18n() {
       }
     } catch (error: any) {
       console.error(`❌ Ошибка при импорте ${row.lang}/${row.slug}:`, error.message)
+      if (error.meta) {
+        console.error(`   Детали:`, JSON.stringify(error.meta, null, 2))
+      }
       errors++
     }
   }

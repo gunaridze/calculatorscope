@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Tool {
-  id         String         @id @default(uuid())
+  id         String         @id // Кастомный ID из JSON
   type       String
   status     ToolStatus     @default(draft)
   engine     ToolEngine     @default(json)
@@ -22,7 +22,7 @@ model Tool {
 }
 
 model ToolI18n {
-  id                  String    @id @default(uuid())
+  id                  Int       @id @default(autoincrement())
   tool_id             String
   lang                String
   slug                String
