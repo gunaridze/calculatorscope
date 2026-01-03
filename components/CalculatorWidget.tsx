@@ -65,8 +65,25 @@ export default function CalculatorWidget({
     }, [config])
 
     // Обработка ввода
-    const handleChange = (key: string, val: string) => {
+    const handleChange = (key: string, val: string | number) => {
         setValues((prev) => ({ ...prev, [key]: val }))
+    }
+    
+    // Проверка условия отображения поля
+    const shouldShowField = (fieldConfig: any): boolean => {
+        if (!fieldConfig.showCondition) return true
+        
+        const { field, operator, value } = fieldConfig.showCondition
+        const fieldValue = values[field]
+        
+        switch (operator) {
+            case 'equals':
+                return String(fieldValue) === String(value)
+            case 'notEquals':
+                return String(fieldValue) !== String(value)
+            default:
+                return true
+        }
     }
 
     // Главная функция расчета через единый движок
@@ -123,20 +140,59 @@ export default function CalculatorWidget({
             <div className="bg-white border border-gray-200 border-t-0 p-5 mx-auto relative" style={{ width: '100%', maxWidth: '400px' }}>
                 {/* INPUTS */}
                 <div className="space-y-4 mb-4">
-                    {config.inputs.map((inp) => (
-                        <div key={inp.key}>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {ui?.inputs?.[inp.key]?.label || inp.key}
-                            </label>
-                            <input
-                                type="number"
-                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder={ui?.inputs?.[inp.key]?.placeholder || "0"}
-                                onChange={(e) => handleChange(inp.key, e.target.value)}
-                                value={values[inp.key] !== undefined ? String(values[inp.key]) : (inp.default !== undefined ? String(inp.default) : '')}
-                            />
-                        </div>
-                    ))}
+                    {config.inputs.map((inp) => {
+                        // Получаем конфигурацию поля из inputs_json
+                        const fieldConfig = Array.isArray(ui?.inputs) 
+                            ? ui.inputs.find((f: any) => f.name === inp.key)
+                            : ui?.inputs?.[inp.key]
+                        
+                        // Проверяем условие отображения
+                        if (!shouldShowField(fieldConfig || {})) {
+                            return null
+                        }
+                        
+                        const fieldType = fieldConfig?.type || 'number'
+                        const label = fieldConfig?.label || inp.key
+                        const placeholder = fieldConfig?.placeholder || (fieldType === 'number' ? '0' : '')
+                        
+                        return (
+                            <div key={inp.key}>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {label}
+                                </label>
+                                
+                                {fieldType === 'select' && fieldConfig?.options ? (
+                                    <select
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                        onChange={(e) => handleChange(inp.key, e.target.value)}
+                                        value={values[inp.key] !== undefined ? String(values[inp.key]) : (inp.default !== undefined ? String(inp.default) : '')}
+                                    >
+                                        {fieldConfig.options.map((opt: any) => (
+                                            <option key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : fieldType === 'text' ? (
+                                    <input
+                                        type="text"
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder={placeholder}
+                                        onChange={(e) => handleChange(inp.key, e.target.value)}
+                                        value={values[inp.key] !== undefined ? String(values[inp.key]) : (inp.default !== undefined ? String(inp.default) : '')}
+                                    />
+                                ) : (
+                                    <input
+                                        type="number"
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder={placeholder}
+                                        onChange={(e) => handleChange(inp.key, e.target.value)}
+                                        value={values[inp.key] !== undefined ? String(values[inp.key]) : (inp.default !== undefined ? String(inp.default) : '')}
+                                    />
+                                )}
+                            </div>
+                        )
+                    })}
                 </div>
 
                 {/* Action Row */}

@@ -1,4 +1,5 @@
 import * as math from 'mathjs'
+import { numberToWords, type NumberToWordsOptions } from '@/lib/tools/numberToWords'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -11,13 +12,34 @@ export interface JsonEngineOutput {
 export interface JsonEngineConfig {
     inputs: Array<{
         key: string
-        default?: number
+        default?: number | string
     }>
-    formulas: Record<string, string>
+    formulas?: Record<string, string>
+    functions?: Record<string, {
+        type: 'function'
+        functionName: string
+        params: Record<string, string>  // Маппинг: имя параметра функции -> ключ input
+    }>
     outputs: Array<{
         key: string
         precision?: number
     }>
+}
+
+/**
+ * Реестр кастомных функций
+ */
+const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = {
+    numberToWords: (params: Record<string, any>) => {
+        const { value, mode, currency, vatRate, textCase } = params
+        const options: NumberToWordsOptions = {
+            mode: mode || 'words',
+            currency: currency || 'USD',
+            vatRate: vatRate ? parseFloat(String(vatRate)) : undefined,
+            textCase: textCase || 'Sentence case'
+        }
+        return numberToWords(value, options)
+    }
 }
 
 /**
@@ -28,33 +50,81 @@ export function calculate(
     config: JsonEngineConfig,
     inputValues: JsonEngineInput
 ): JsonEngineOutput {
-    // 1. Подготавливаем переменные (превращаем строки в числа)
-    const scope: Record<string, number> = {}
+    // 1. Подготавливаем переменные (превращаем строки в числа где нужно)
+    const scope: Record<string, number | string> = {}
     config.inputs.forEach((inp) => {
-        const val = typeof inputValues[inp.key] === 'number'
-            ? inputValues[inp.key] as number
-            : parseFloat(String(inputValues[inp.key])) || inp.default || 0
-        scope[inp.key] = val
-    })
-
-    // 2. Считаем формулы через mathjs
-    const results: JsonEngineOutput = {}
-
-    Object.entries(config.formulas).forEach(([outKey, formula]) => {
-        try {
-            const rawResult = math.evaluate(formula as string, scope)
-            // Проверяем, что результат валидный
-            if (typeof rawResult === 'number' && !isNaN(rawResult) && isFinite(rawResult)) {
-                results[outKey] = rawResult
-            } else {
-                console.error(`Invalid result for ${outKey}:`, rawResult)
-                results[outKey] = 0
-            }
-        } catch (e) {
-            console.error(`Ошибка вычисления формулы ${outKey}:`, e)
-            results[outKey] = 0
+        const inputValue = inputValues[inp.key]
+        if (inputValue !== undefined && inputValue !== null && inputValue !== '') {
+            scope[inp.key] = inputValue
+        } else if (inp.default !== undefined) {
+            scope[inp.key] = inp.default
         }
     })
+
+    // 2. Обрабатываем результаты
+    const results: JsonEngineOutput = {}
+
+    // 2a. Обрабатываем формулы (если есть)
+    if (config.formulas) {
+        Object.entries(config.formulas).forEach(([outKey, formula]) => {
+            try {
+                // Для формул конвертируем все в числа
+                const numericScope: Record<string, number> = {}
+                Object.entries(scope).forEach(([key, val]) => {
+                    numericScope[key] = typeof val === 'number' ? val : parseFloat(String(val)) || 0
+                })
+                
+                const rawResult = math.evaluate(formula as string, numericScope)
+                // Проверяем, что результат валидный
+                if (typeof rawResult === 'number' && !isNaN(rawResult) && isFinite(rawResult)) {
+                    results[outKey] = rawResult
+                } else {
+                    console.error(`Invalid result for ${outKey}:`, rawResult)
+                    results[outKey] = 0
+                }
+            } catch (e) {
+                console.error(`Ошибка вычисления формулы ${outKey}:`, e)
+                results[outKey] = 0
+            }
+        })
+    }
+
+    // 2b. Обрабатываем кастомные функции (если есть)
+    if (config.functions) {
+        Object.entries(config.functions).forEach(([outKey, funcConfig]) => {
+            try {
+                if (funcConfig.type === 'function' && FUNCTION_REGISTRY[funcConfig.functionName]) {
+                    // Подготавливаем параметры для функции
+                    const params: Record<string, any> = {}
+                    Object.entries(funcConfig.params).forEach(([paramName, inputKey]) => {
+                        const value = scope[inputKey]
+                        // Для числовых параметров конвертируем в число
+                        if (paramName === 'vatRate' && value !== undefined && value !== null) {
+                            params[paramName] = typeof value === 'number' ? value : parseFloat(String(value)) || 0
+                        } else {
+                            params[paramName] = value
+                        }
+                    })
+                    
+                    // Вызываем функцию
+                    const functionResult = FUNCTION_REGISTRY[funcConfig.functionName](params)
+                    
+                    // Обрабатываем результат
+                    if (typeof functionResult === 'object' && functionResult !== null) {
+                        // Если функция возвращает объект (например, { textResult, calculatedTotal })
+                        // Извлекаем все поля из объекта в results
+                        Object.entries(functionResult).forEach(([key, value]) => {
+                            results[key] = value as string | number
+                        })
+                    } else {
+                        results[outKey] = functionResult as string | number
+                    }
+                }
+            } catch (e) {
+                console.error(`Ошибка выполнения функции ${outKey}:`, e)
+            }
+        })
+    }
 
     return results
 }
