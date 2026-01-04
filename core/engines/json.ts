@@ -24,6 +24,7 @@ export interface JsonEngineConfig {
         key: string
         precision?: number
     }>
+    language?: string  // Язык для локализации (en, ru, de, es, fr, it, pl, lv)
 }
 
 /**
@@ -31,12 +32,13 @@ export interface JsonEngineConfig {
  */
 const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = {
     numberToWords: (params: Record<string, any>) => {
-        const { value, mode, currency, vatRate, textCase } = params
+        const { value, mode, currency, vatRate, textCase, language } = params
         const options: NumberToWordsOptions = {
             mode: mode || 'words',
             currency: currency || 'USD',
             vatRate: vatRate ? parseFloat(String(vatRate)) : undefined,
-            textCase: textCase || 'Sentence case'
+            textCase: textCase || 'Sentence case',
+            language: language || 'en'
         }
         return numberToWords(value, options)
     }
@@ -96,6 +98,10 @@ export function calculate(
                 if (funcConfig.type === 'function' && FUNCTION_REGISTRY[funcConfig.functionName]) {
                     // Подготавливаем параметры для функции
                     const params: Record<string, any> = {}
+                    // Добавляем язык из конфига, если он не передан явно
+                    if (config.language && !params.language) {
+                        params.language = config.language
+                    }
                     Object.entries(funcConfig.params).forEach(([paramName, inputKey]) => {
                         const value = scope[inputKey]
                         // Для числовых параметров конвертируем в число

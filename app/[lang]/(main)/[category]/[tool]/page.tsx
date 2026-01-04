@@ -147,6 +147,10 @@ export default async function ToolPage({ params, searchParams }: Props) {
     // 4. Достаем конфиги из JSON полей
     // @ts-ignore (TypeScript не всегда корректно типизирует JSON из Prisma)
     const config: JsonEngineConfig = data.tool.config?.config_json
+    // Добавляем язык в конфиг для локализации
+    if (config) {
+        config.language = lang
+    }
     // @ts-ignore
     const interfaceData = data.inputs_json || {} // Используем inputs_json вместо interface_json
 
