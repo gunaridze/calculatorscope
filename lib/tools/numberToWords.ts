@@ -74,7 +74,7 @@ function getKopekDeclension(amount: number): string {
  * Парсит число из строки, поддерживая научную нотацию и большие числа
  */
 function parseNumber(input: string | number): { integer: string; decimal: string; isNegative: boolean } {
-  let str = String(input).trim().replace(/,/g, '')
+  let str = String(input).trim().replace(/,/g, '').replace(/\s/g, '') // Удаляем пробелы
   const isNegative = str.startsWith('-')
   if (isNegative) str = str.substring(1)
   
@@ -258,8 +258,16 @@ export function numberToWords(
     if (decimal && parseInt(decimal) > 0) {
       // Удаляем ведущие нули из дробной части
       const decimalClean = decimal.replace(/^0+/, '') || '0'
+      // Для режима Words дробная часть как "hundredths"
+      const decimalNum = parseInt(decimalClean, 10)
       const decimalWords = convertIntegerToWords(decimalClean).toLowerCase()
-      result = result + ` point ${decimalWords}`
+      
+      // Определяем правильную форму "hundredth/hundredths"
+      if (decimalNum === 1) {
+        result = result + ` and ${decimalWords} hundredth`
+      } else {
+        result = result + ` and ${decimalWords} hundredths`
+      }
     }
     // Применяем регистр ко всему результату
     result = applyTextCase(result, textCase)

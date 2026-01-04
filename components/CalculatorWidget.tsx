@@ -45,7 +45,17 @@ export default function CalculatorWidget({
     widgetPageSlug
 }: Props) {
     // Храним значения всех инпутов
-    const [values, setValues] = useState<JsonEngineInput>(initialValues || {})
+    // Инициализируем с default значениями из config
+    const getInitialValues = (): JsonEngineInput => {
+        const defaults: JsonEngineInput = {}
+        config.inputs.forEach((inp) => {
+            if (inp.default !== undefined) {
+                defaults[inp.key] = inp.default
+            }
+        })
+        return { ...defaults, ...(initialValues || {}) }
+    }
+    const [values, setValues] = useState<JsonEngineInput>(getInitialValues())
     const [result, setResult] = useState<JsonEngineOutput>({})
     const [copied, setCopied] = useState(false)
 
@@ -76,15 +86,21 @@ export default function CalculatorWidget({
 
     // Обработка ввода
     const handleChange = (key: string, val: string | number) => {
-        const newValues = { ...values, [key]: val }
-        setValues(newValues)
-        // Radio button обновляется сразу через checked={conversionMode === 'currency'}
-        // Не нужно ждать нажатия Calculate для визуального отклика
+        setValues((prev) => {
+            const newValues = { ...prev, [key]: val }
+            return newValues
+        })
     }
 
     // Главная функция расчета через единый движок
     const handleCalculate = () => {
-        const calculated = calculate(config, values)
+        // Удаляем пробелы из inputNumber перед расчетом
+        const cleanedValues = { ...values }
+        if (cleanedValues.inputNumber) {
+            cleanedValues.inputNumber = String(cleanedValues.inputNumber).replace(/\s/g, '')
+            setValues(cleanedValues)
+        }
+        const calculated = calculate(config, cleanedValues)
         setResult(calculated)
     }
 
@@ -110,7 +126,10 @@ export default function CalculatorWidget({
     }
 
     // Получаем текущий режим конвертации
-    const conversionMode = values.conversionMode || config.inputs.find(i => i.key === 'conversionMode')?.default || 'words'
+    // Используем значение из state, если его нет - из default, иначе 'words'
+    const conversionMode = values.conversionMode !== undefined && values.conversionMode !== null && values.conversionMode !== ''
+        ? String(values.conversionMode)
+        : (config.inputs.find(i => i.key === 'conversionMode')?.default || 'words')
     
     // Получаем конфигурацию полей из inputs_json
     const getFieldConfig = (key: string) => {
