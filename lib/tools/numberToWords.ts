@@ -37,8 +37,8 @@ interface CurrencyInfo {
 // Интерфейс для процессора локализации
 interface LocaleProcessor {
   // Конвертация чисел
-  convertHundreds(num: number): string
-  convertIntegerToWords(integerStr: string): string
+  convertHundreds(num: number, gender?: 'masculine' | 'feminine'): string
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string
   convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string
   
   // Валюты
@@ -167,7 +167,7 @@ const enProcessor: LocaleProcessor = {
     return result
   },
   
-  convertIntegerToWords(integerStr: string): string {
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     if (integerStr === '0') return 'zero'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
@@ -490,7 +490,7 @@ const ruProcessor: LocaleProcessor = {
     return result
   },
   
-  convertIntegerToWords(integerStr: string): string {
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     if (integerStr === '0') return 'ноль'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
@@ -853,7 +853,7 @@ const deProcessor: LocaleProcessor = {
     return result
   },
   
-  convertIntegerToWords(integerStr: string): string {
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     if (integerStr === '0') return 'null'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
@@ -1124,7 +1124,7 @@ const esProcessor: LocaleProcessor = {
     return result
   },
   
-  convertIntegerToWords(integerStr: string): string {
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     if (integerStr === '0') return 'cero'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
@@ -1406,7 +1406,7 @@ const frProcessor: LocaleProcessor = {
     return result
   },
   
-  convertIntegerToWords(integerStr: string): string {
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     if (integerStr === '0') return 'zéro'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
@@ -1661,7 +1661,7 @@ const itProcessor: LocaleProcessor = {
     return result
   },
   
-  convertIntegerToWords(integerStr: string): string {
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     if (integerStr === '0') return 'zero'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
@@ -1920,7 +1920,7 @@ const plProcessor: LocaleProcessor = {
     return result
   },
   
-  convertIntegerToWords(integerStr: string): string {
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     if (integerStr === '0') return 'zero'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
@@ -2140,13 +2140,16 @@ const LV_SCALES_PLURAL = [
   'unnonagintiljoni', 'duononagintiljoni', 'trenonagintiljoni', 'kvatuornonagintiljoni', 'kvinnonagintiljoni', 'seksnonagintiljoni', 'septennonagintiljoni', 'oktononagintiljoni', 'novemnonagintiljoni'
 ]
 
-function getLvDeclension(num: number, forms: [string, string, string]): string {
+function getLvDeclension(num: number, forms: [string, string]): string {
   const mod10 = num % 10
   const mod100 = num % 100
-  if (mod100 >= 11 && mod100 <= 19) return forms[2]
-  if (mod10 === 1) return forms[0]
-  if (mod10 >= 2 && mod10 <= 4) return forms[1]
-  return forms[2]
+  
+  // Если число заканчивается на 1 (но не 11), используется единственное число
+  if (mod10 === 1 && mod100 !== 11) {
+    return forms[0] // Singular
+  }
+  // Во всех остальных случаях - множественное число
+  return forms[1] // Plural
 }
 
 // Определяет правильное склонение для больших чисел (miljons, miljards - мужской род)
@@ -2168,16 +2171,51 @@ function getLvScaleDeclension(scaleIndex: number, group: number): string {
   return LV_SCALES_PLURAL[scaleIndex] || LV_SCALES[scaleIndex] + 'i'
 }
 
-const LV_CURRENCIES: Record<Currency, CurrencyInfo> = {
-  USD: { name: 'ASV dolārs', plural: 'ASV dolāri', fractional: 'cents', fractionalPlural: 'centi' },
-  GBP: { name: 'Lielbritānijas mārciņa', plural: 'Lielbritānijas mārciņas', fractional: 'penss', fractionalPlural: 'pensi' },
-  EUR: { name: 'eiro', plural: 'eiro', fractional: 'cents', fractionalPlural: 'centi' },
-  PLN: { name: 'zloti', plural: 'zloti', fractional: 'grosz', fractionalPlural: 'groszi' },
-  RUB: { name: 'krievijas rublis', plural: 'krievijas rubļi', fractional: 'kapeika', fractionalPlural: 'kapeikas' }
+const LV_CURRENCIES: Record<Currency, CurrencyInfo & { gender?: 'masculine' | 'feminine'; fractionalGender?: 'masculine' | 'feminine' }> = {
+  USD: { 
+    name: 'ASV dolārs', 
+    plural: 'ASV dolāri', 
+    fractional: 'cents', 
+    fractionalPlural: 'centi',
+    gender: 'masculine',
+    fractionalGender: 'masculine'
+  },
+  GBP: { 
+    name: 'Lielbritānijas mārciņa', 
+    plural: 'Lielbritānijas mārciņas', 
+    fractional: 'penss', 
+    fractionalPlural: 'pensi',
+    gender: 'feminine',
+    fractionalGender: 'masculine'
+  },
+  EUR: { 
+    name: 'eiro', 
+    plural: 'eiro', 
+    fractional: 'cents', 
+    fractionalPlural: 'centi',
+    gender: 'masculine',
+    fractionalGender: 'masculine'
+  },
+  PLN: { 
+    name: 'zlots', 
+    plural: 'zloti', 
+    fractional: 'grošs', 
+    fractionalPlural: 'groši',
+    gender: 'masculine',
+    fractionalGender: 'masculine'
+  },
+  RUB: { 
+    name: 'Krievijas rublis', 
+    plural: 'Krievijas rubļi', 
+    fractional: 'kapeika', 
+    fractionalPlural: 'kapeikas',
+    gender: 'masculine',
+    fractionalGender: 'feminine'
+  }
 }
 
 const lvProcessor: LocaleProcessor = {
-  convertHundreds(num: number): string {
+  convertHundreds(num: number, gender?: 'masculine' | 'feminine'): string {
     if (num === 0) return ''
     
     let result = ''
@@ -2199,14 +2237,19 @@ const lvProcessor: LocaleProcessor = {
         if (ones > 0) result += ' '
       }
       if (ones > 0) {
-        result += LV_ONES[ones]
+        // Используем правильный род для 1 и 2
+        if (ones === 1 || ones === 2) {
+          result += gender === 'feminine' ? LV_ONES_FEMININE[ones] : LV_ONES[ones]
+        } else {
+          result += LV_ONES[ones]
+        }
       }
     }
     
     return result
   },
   
-  convertIntegerToWords(integerStr: string): string {
+  convertIntegerToWords(integerStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     if (integerStr === '0') return 'nulle'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
@@ -2249,8 +2292,8 @@ const lvProcessor: LocaleProcessor = {
           }
         }
       } else {
-        // Для единиц используем обычную логику
-        groupWords = this.convertHundreds(group)
+        // Для единиц используем gender из options
+        groupWords = this.convertHundreds(group, options?.gender)
       }
       
       if (groupWords) {
@@ -2268,23 +2311,23 @@ const lvProcessor: LocaleProcessor = {
   
   convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
-    return this.convertIntegerToWords(decimalClean)
+    return this.convertIntegerToWords(decimalClean, options)
   },
   
   getCurrencyName(currency: Currency, amount: number): string {
     const info = LV_CURRENCIES[currency]
-    return getLvDeclension(amount, [info.name, info.name, info.plural])
+    return getLvDeclension(amount, [info.name, info.plural])
   },
   
   getFractionalName(currency: Currency, amount: number): string {
     const info = LV_CURRENCIES[currency]
-    return getLvDeclension(amount, [info.fractional, info.fractional, info.fractionalPlural])
+    return getLvDeclension(amount, [info.fractional, info.fractionalPlural])
   },
   
   getMinusWord(): string { return 'mīnus' },
   getAndWord(): string { return 'un' },
   getVatPhrase(vatRate: number, vatAmount: string): string {
-    return `, ieskaitot PVN (${vatRate}%) summu ${vatAmount}`
+    return `, ieskaitot PVN (${vatRate}%), kura summa ir ${vatAmount}`
   },
   getZeroWord(): string { return 'nulle' },
   getHundredthWord(singular: boolean): string {
@@ -2413,9 +2456,29 @@ const lvProcessor: LocaleProcessor = {
       word = closest ? fractionalWords[closest] : ['simtdaļa', 'simtdaļas']
     }
     
-    // Используем склонение: 1 - единственное, 2-4 - единственное, 5+ - множественное
-    return getLvDeclension(decimalNum, [word[0], word[0], word[1]])
+    // Используем правильное склонение для латышского языка (2 формы)
+    return getLvDeclension(decimalNum, [word[0], word[1]])
   }
+}
+
+// ============================================================================
+// ЗАЩИТА РЕГИСТРА АББРЕВИАТУР
+// ============================================================================
+
+/**
+ * Восстанавливает правильный регистр для известных аббревиатур после применения textCase
+ */
+function restoreAbbreviationCase(text: string): string {
+  const abbreviations = ['VAT', 'НДС', 'PVN', 'MwSt', 'IVA', 'TVA']
+  
+  let result = text
+  for (const abbr of abbreviations) {
+    // Создаем регулярное выражение для поиска аббревиатуры без учета регистра
+    const regex = new RegExp(`\\b${abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
+    result = result.replace(regex, abbr)
+  }
+  
+  return result
 }
 
 // ============================================================================
@@ -2474,7 +2537,12 @@ export function numberToWords(
   }
   
   // Конвертируем целую часть (всегда в нижнем регистре)
-  let result = processor.convertIntegerToWords(integer).toLowerCase()
+  // Для латышского языка в режиме currency нужно учитывать род валюты
+  let integerGender: 'masculine' | 'feminine' | undefined = undefined
+  if ((mode === 'currency' || mode === 'currency_vat') && language === 'lv') {
+    integerGender = LV_CURRENCIES[currency]?.gender
+  }
+  let result = processor.convertIntegerToWords(integer, integerGender ? { gender: integerGender } : undefined).toLowerCase()
   
   // Обрабатываем отрицательные числа
   if (isNegative) {
@@ -2490,8 +2558,9 @@ export function numberToWords(
       const decimalClean = decimal.replace(/^0+/, '') || '0'
       const decimalNum = parseInt(decimalClean, 10)
       
-      // Для режима 'words' всегда используем женский род (доли)
-      const decimalWords = processor.convertDecimalToWords(decimalClean, { gender: 'feminine' }).toLowerCase()
+      // Для режима 'words' всегда используем женский род (доли) для латышского и русского
+      const decimalGender = (language === 'lv' || language === 'ru') ? 'feminine' : undefined
+      const decimalWords = processor.convertDecimalToWords(decimalClean, decimalGender ? { gender: decimalGender } : undefined).toLowerCase()
       
       const andWord = processor.getAndWord()
       // Используем правильное название дробной части в зависимости от количества знаков
@@ -2500,6 +2569,7 @@ export function numberToWords(
       result = result + ` ${andWord} ${decimalWords} ${fractionalWord}`
     }
     result = applyTextCase(result, textCase)
+    result = restoreAbbreviationCase(result)
     return { textResult: result, calculatedTotal }
   }
   
@@ -2523,6 +2593,7 @@ export function numberToWords(
     }
     
     result = applyTextCase(result, textCase)
+    result = restoreAbbreviationCase(result)
     return { textResult: result, calculatedTotal }
   }
   
@@ -2538,8 +2609,13 @@ export function numberToWords(
       const cents = decimal.substring(0, 2).padEnd(2, '0').substring(0, 2)
       const centsNum = parseInt(cents, 10)
       const fractionalName = processor.getFractionalName(currency, centsNum).toLowerCase()
-      // Определяем род дробной части для русского языка
-      const fractionalGender = language === 'ru' && RU_CURRENCIES[currency]?.fractionalGender
+      // Определяем род дробной части для русского и латышского языков
+      let fractionalGender: 'masculine' | 'feminine' | undefined = undefined
+      if (language === 'ru') {
+        fractionalGender = RU_CURRENCIES[currency]?.fractionalGender
+      } else if (language === 'lv') {
+        fractionalGender = LV_CURRENCIES[currency]?.fractionalGender
+      }
       const centsWords = processor.convertDecimalToWords(cents, fractionalGender ? { gender: fractionalGender } : undefined).toLowerCase()
       
       result += ` ${processor.getAndWord()} ${centsWords} ${fractionalName}`
@@ -2556,7 +2632,12 @@ export function numberToWords(
       const vatInteger = vatParts[0]
       const vatDecimal = vatParts[1] || '00'
       
-      let vatWords = processor.convertIntegerToWords(vatInteger).toLowerCase()
+      // Для латышского языка в режиме currency_vat нужно учитывать род валюты
+      let vatIntegerGender: 'masculine' | 'feminine' | undefined = undefined
+      if (language === 'lv') {
+        vatIntegerGender = LV_CURRENCIES[currency]?.gender
+      }
+      let vatWords = processor.convertIntegerToWords(vatInteger, vatIntegerGender ? { gender: vatIntegerGender } : undefined).toLowerCase()
       const vatIntegerNum = parseInt(vatInteger) || 0
       const vatCurrencyName = processor.getCurrencyName(currency, vatIntegerNum).toLowerCase()
       
@@ -2566,8 +2647,13 @@ export function numberToWords(
         const vatCents = vatDecimal.substring(0, 2).padEnd(2, '0').substring(0, 2)
         const vatCentsNum = parseInt(vatCents, 10)
         const vatFractionalName = processor.getFractionalName(currency, vatCentsNum).toLowerCase()
-        // Определяем род дробной части для русского языка
-        const vatFractionalGender = language === 'ru' && RU_CURRENCIES[currency]?.fractionalGender
+        // Определяем род дробной части для русского и латышского языков
+        let vatFractionalGender: 'masculine' | 'feminine' | undefined = undefined
+        if (language === 'ru') {
+          vatFractionalGender = RU_CURRENCIES[currency]?.fractionalGender
+        } else if (language === 'lv') {
+          vatFractionalGender = LV_CURRENCIES[currency]?.fractionalGender
+        }
         const vatCentsWords = processor.convertDecimalToWords(vatCents, vatFractionalGender ? { gender: vatFractionalGender } : undefined).toLowerCase()
         vatWords += ` ${processor.getAndWord()} ${vatCentsWords} ${vatFractionalName}`
       } else {
@@ -2580,8 +2666,11 @@ export function numberToWords(
     }
     
     result = applyTextCase(result, textCase)
+    result = restoreAbbreviationCase(result)
     return { textResult: result, calculatedTotal, vatAmount, principalAmount }
   }
   
+  result = applyTextCase(result, textCase)
+  result = restoreAbbreviationCase(result)
   return { textResult: result, calculatedTotal, vatAmount, principalAmount }
 }
