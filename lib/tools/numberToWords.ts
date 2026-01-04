@@ -1939,10 +1939,13 @@ const itProcessor: LocaleProcessor = {
 // ============================================================================
 
 const PL_ONES = ['', 'jeden', 'dwa', 'trzy', 'cztery', 'pięć', 'sześć', 'siedem', 'osiem', 'dziewięć']
+const PL_ONES_FEMININE = ['', 'jedna', 'dwie', 'trzy', 'cztery', 'pięć', 'sześć', 'siedem', 'osiem', 'dziewięć']
 const PL_TEENS = ['dziesięć', 'jedenaście', 'dwanaście', 'trzynaście', 'czternaście', 'piętnaście', 'szesnaście', 'siedemnaście', 'osiemnaście', 'dziewiętnaście']
 const PL_TENS = ['', '', 'dwadzieścia', 'trzydzieści', 'czterdzieści', 'pięćdziesiąt', 'sześćdziesiąt', 'siedemdziesiąt', 'osiemdziesiąt', 'dziewięćdziesiąt']
 const PL_HUNDREDS = ['', 'sto', 'dwieście', 'trzysta', 'czterysta', 'pięćset', 'sześćset', 'siedemset', 'osiemset', 'dziewięćset']
-const PL_SCALES = [
+
+// PL_SCALES теперь содержит только базовые формы, склонение происходит динамически
+const PL_SCALES_BASE = [
   '', 'tysiąc', 'milion', 'miliard', 'bilion', 'biliard', 'trylion', 'tryliard', 'kwadrylion', 'kwadryliard', 'kwintylion', 'kwintyliard',
   'sekstylion', 'sekstyliard', 'septylion', 'septyliard', 'oktylion', 'oktyliard', 'nonylion', 'nonyliard', 'decylion', 'decyliard',
   'undecylion', 'duodecylion', 'tredecylion', 'kwatuordecylion', 'kwindecylion', 'seksdecylion', 'septendecylion', 'oktodecylion', 'nowemdecylion', 'wigintylion',
@@ -1956,25 +1959,84 @@ const PL_SCALES = [
   'unnonagintylion', 'duononagintylion', 'trenonagintylion', 'kwatuornonagintylion', 'kwinnonagintylion', 'seksnonagintylion', 'septennonagintylion', 'oktononagintylion', 'nowemnonagintylion'
 ]
 
+// Специальные формы для тысяч, миллионов, миллиардов
+const PL_SCALES_SPECIAL: Record<number, [string, string, string]> = {
+  1: ['tysiąc', 'tysiące', 'tysięcy'], // Тысячи
+  2: ['milion', 'miliony', 'milionów'], // Миллионы
+  3: ['miliard', 'miliardy', 'miliardów'] // Миллиарды
+}
+
 function getPlDeclension(num: number, forms: [string, string, string]): string {
   const mod10 = num % 10
   const mod100 = num % 100
-  if (mod100 >= 11 && mod100 <= 19) return forms[2]
-  if (mod10 === 1) return forms[0]
-  if (mod10 >= 2 && mod10 <= 4) return forms[1]
+  
+  // 1 -> forms[0]
+  if (num === 1) return forms[0]
+  
+  // 2,3,4 (excl 12-14) -> forms[1]
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return forms[1]
+  }
+  
+  // остальные -> forms[2]
   return forms[2]
 }
 
-const PL_CURRENCIES: Record<Currency, CurrencyInfo> = {
-  USD: { name: 'dolar amerykański', plural: 'dolary amerykańskie', fractional: 'cent', fractionalPlural: 'centy' },
-  GBP: { name: 'funt szterling', plural: 'funty szterlingi', fractional: 'pens', fractionalPlural: 'pensy' },
-  EUR: { name: 'euro', plural: 'euro', fractional: 'cent', fractionalPlural: 'centy' },
-  PLN: { name: 'złoty', plural: 'złote', fractional: 'grosz', fractionalPlural: 'grosze' },
-  RUB: { name: 'rubel', plural: 'ruble', fractional: 'kopiejka', fractionalPlural: 'kopiejki' }
+const PL_CURRENCIES: Record<Currency, CurrencyInfo & { gender: 'masculine' | 'feminine'; fractionalGender: 'masculine' | 'feminine'; forms: [string, string, string]; fractionalForms: [string, string, string] }> = {
+  USD: { 
+    name: 'dolar amerykański', 
+    plural: 'dolary amerykańskie', 
+    fractional: 'cent', 
+    fractionalPlural: 'centy',
+    gender: 'masculine',
+    fractionalGender: 'masculine',
+    forms: ['dolar amerykański', 'dolary amerykańskie', 'dolarów amerykańskich'],
+    fractionalForms: ['cent', 'centy', 'centów']
+  },
+  GBP: { 
+    name: 'funt szterling', 
+    plural: 'funty szterlingi', 
+    fractional: 'pens', 
+    fractionalPlural: 'pensy',
+    gender: 'masculine',
+    fractionalGender: 'masculine',
+    forms: ['funt szterling', 'funty szterlingi', 'funtów szterlingów'],
+    fractionalForms: ['pens', 'pensy', 'pensów']
+  },
+  EUR: { 
+    name: 'euro', 
+    plural: 'euro', 
+    fractional: 'cent', 
+    fractionalPlural: 'centy',
+    gender: 'masculine',
+    fractionalGender: 'masculine',
+    forms: ['euro', 'euro', 'euro'], // Не склоняется
+    fractionalForms: ['cent', 'centy', 'centów']
+  },
+  PLN: { 
+    name: 'złoty', 
+    plural: 'złote', 
+    fractional: 'grosz', 
+    fractionalPlural: 'grosze',
+    gender: 'masculine',
+    fractionalGender: 'masculine',
+    forms: ['złoty', 'złote', 'złotych'],
+    fractionalForms: ['grosz', 'grosze', 'groszy']
+  },
+  RUB: { 
+    name: 'rubel', 
+    plural: 'ruble', 
+    fractional: 'kopiejka', 
+    fractionalPlural: 'kopiejki',
+    gender: 'masculine',
+    fractionalGender: 'feminine', // Kopiejka - женский!
+    forms: ['rubel', 'ruble', 'rubli'],
+    fractionalForms: ['kopiejka', 'kopiejki', 'kopiejek']
+  }
 }
 
 const plProcessor: LocaleProcessor = {
-  convertHundreds(num: number): string {
+  convertHundreds(num: number, gender?: 'masculine' | 'feminine'): string {
     if (num === 0) return ''
     
     let result = ''
@@ -1996,7 +2058,12 @@ const plProcessor: LocaleProcessor = {
         if (ones > 0) result += ' '
       }
       if (ones > 0) {
-        result += PL_ONES[ones]
+        // Используем правильный род для 1 и 2
+        if (ones === 1 || ones === 2) {
+          result += gender === 'feminine' ? PL_ONES_FEMININE[ones] : PL_ONES[ones]
+        } else {
+          result += PL_ONES[ones]
+        }
       }
     }
     
@@ -2019,14 +2086,31 @@ const plProcessor: LocaleProcessor = {
       if (group === 0) continue
       
       const scaleIndex = groups.length - 1 - i
-      const groupWords = this.convertHundreds(group)
+      
+      // Определяем род для текущей группы:
+      // Если это группа единиц (scaleIndex 0) -> используем gender из опций
+      // Для тысяч и выше -> используем мужской род (по умолчанию)
+      let groupGender = options?.gender
+      if (scaleIndex > 0) {
+        groupGender = 'masculine' // Тысячи, миллионы и выше - мужской род
+      }
+      
+      let groupWords = this.convertHundreds(group, groupGender)
       
       if (groupWords) {
         words.push(groupWords)
-        if (scaleIndex > 0 && PL_SCALES[scaleIndex]) {
-          const scale = PL_SCALES[scaleIndex]
-          const declension = getPlDeclension(group, [scale, scale + 'y', scale + 'ów'])
-          words.push(declension)
+        if (scaleIndex > 0) {
+          // Специальные формы для тысяч, миллионов, миллиардов
+          if (PL_SCALES_SPECIAL[scaleIndex]) {
+            const scaleForms = PL_SCALES_SPECIAL[scaleIndex]
+            const declension = getPlDeclension(group, scaleForms)
+            words.push(declension)
+          } else if (PL_SCALES_BASE[scaleIndex]) {
+            // Для остальных шкал используем базовую форму и добавляем окончания
+            const base = PL_SCALES_BASE[scaleIndex]
+            const declension = getPlDeclension(group, [base, base + 'y', base + 'ów'])
+            words.push(declension)
+          }
         }
       }
     }
@@ -2036,17 +2120,19 @@ const plProcessor: LocaleProcessor = {
   
   convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
-    return this.convertIntegerToWords(decimalClean)
+    // Если gender не передан (обычный режим Words), используем feminine (setna)
+    const gender = options?.gender || 'feminine'
+    return this.convertIntegerToWords(decimalClean, { gender })
   },
   
   getCurrencyName(currency: Currency, amount: number): string {
     const info = PL_CURRENCIES[currency]
-    return getPlDeclension(amount, [info.name, info.name, info.plural])
+    return getPlDeclension(amount, info.forms)
   },
   
   getFractionalName(currency: Currency, amount: number): string {
     const info = PL_CURRENCIES[currency]
-    return getPlDeclension(amount, [info.fractional, info.fractional, info.fractionalPlural])
+    return getPlDeclension(amount, info.fractionalForms)
   },
   
   getMinusWord(): string { return 'minus' },
@@ -2056,120 +2142,122 @@ const plProcessor: LocaleProcessor = {
   },
   getZeroWord(): string { return 'zero' },
   getHundredthWord(singular: boolean): string {
+    // Для польского языка используется правильное склонение с 3 формами
+    // Но эта функция используется только для английского, поэтому оставляем простую логику
     return singular ? 'setna' : 'setne'
   },
   getFractionalWord(decimalLength: number, decimalNum: number): string {
     // Массив дробных частей: индекс соответствует количеству знаков после запятой
-    // Формат: [единственное число, множественное число]
-    const fractionalWords: Record<number, [string, string]> = {
-      1: ['dziesiąta', 'dziesiąte'],
-      2: ['setna', 'setne'],
-      3: ['tysięczna', 'tysięczne'],
-      4: ['dziesięciotysięczna', 'dziesięciotysięczne'],
-      5: ['stutysięczna', 'stutysięczne'],
-      6: ['milionowa', 'milionowe'],
-      7: ['dziesięciomilionowa', 'dziesięciomilionowe'],
-      8: ['stumilionowa', 'stumilionowe'],
-      9: ['miliardowa', 'miliardowe'],
-      10: ['dziesięciomiliardowa', 'dziesięciomiliardowe'],
-      11: ['stumiliardowa', 'stumiliardowe'],
-      12: ['bilionowa', 'bilionowe'],
-      15: ['biliardowa', 'biliardowe'],
-      18: ['trylionowa', 'trylionowe'],
-      21: ['tryliardowa', 'tryliardowe'],
-      24: ['kwadrylionowa', 'kwadrylionowe'],
-      27: ['kwadryliardowa', 'kwadryliardowe'],
-      30: ['kwintylionowa', 'kwintylionowe'],
-      33: ['kwintyliardowa', 'kwintyliardowe'],
-      36: ['sekstylionowa', 'sekstylionowe'],
-      39: ['sekstyliardowa', 'sekstyliardowe'],
-      42: ['septylionowa', 'septylionowe'],
-      45: ['septyliardowa', 'septyliardowe'],
-      48: ['oktylionowa', 'oktylionowe'],
-      51: ['oktyliardowa', 'oktyliardowe'],
-      54: ['nonylionowa', 'nonylionowe'],
-      57: ['nonyliardowa', 'nonyliardowe'],
-      60: ['decylionowa', 'decylionowe'],
-      63: ['decyliardowa', 'decyliardowe'],
-      66: ['undecylionowa', 'undecylionowe'],
-      69: ['duodecylionowa', 'duodecylionowe'],
-      72: ['tredecylionowa', 'tredecylionowe'],
-      75: ['kwatuordecylionowa', 'kwatuordecylionowe'],
-      78: ['kwindecylionowa', 'kwindecylionowe'],
-      81: ['seksdecylionowa', 'seksdecylionowe'],
-      84: ['septendecylionowa', 'septendecylionowe'],
-      87: ['oktodecylionowa', 'oktodecylionowe'],
-      90: ['nowemdecylionowa', 'nowemdecylionowe'],
-      93: ['wigintylionowa', 'wigintylionowe'],
-      96: ['unwigintylionowa', 'unwigintylionowe'],
-      99: ['duowigintylionowa', 'duowigintylionowe'],
-      102: ['trewigintylionowa', 'trewigintylionowe'],
-      105: ['kwatuorwigintylionowa', 'kwatuorwigintylionowe'],
-      108: ['kwinwigintylionowa', 'kwinwigintylionowe'],
-      111: ['sekswigintylionowa', 'sekswigintylionowe'],
-      114: ['septenwigintylionowa', 'septenwigintylionowe'],
-      117: ['oktowigintylionowa', 'oktowigintylionowe'],
-      120: ['nowemwigintylionowa', 'nowemwigintylionowe'],
-      123: ['trigintylionowa', 'trigintylionowe'],
-      126: ['untrigintylionowa', 'untrigintylionowe'],
-      129: ['duotrigintylionowa', 'duotrigintylionowe'],
-      132: ['tretrigintylionowa', 'tretrigintylionowe'],
-      135: ['kwatuortrigintylionowa', 'kwatuortrigintylionowe'],
-      138: ['kwintrigintylionowa', 'kwintrigintylionowe'],
-      141: ['sekstrigintylionowa', 'sekstrigintylionowe'],
-      144: ['septentrigintylionowa', 'septentrigintylionowe'],
-      147: ['oktotrigintylionowa', 'oktotrigintylionowe'],
-      150: ['nowemtrigintylionowa', 'nowemtrigintylionowe'],
-      153: ['kwadragintylionowa', 'kwadragintylionowe'],
-      156: ['unkwadragintylionowa', 'unkwadragintylionowe'],
-      159: ['duokwadragintylionowa', 'duokwadragintylionowe'],
-      162: ['trekwadragintylionowa', 'trekwadragintylionowe'],
-      165: ['kwatuorkwadragintylionowa', 'kwatuorkwadragintylionowe'],
-      168: ['kwinkwadragintylionowa', 'kwinkwadragintylionowe'],
-      171: ['sekskwadragintylionowa', 'sekskwadragintylionowe'],
-      174: ['septenkwadragintylionowa', 'septenkwadragintylionowe'],
-      177: ['oktokwadragintylionowa', 'oktokwadragintylionowe'],
-      180: ['nowemkwadragintylionowa', 'nowemkwadragintylionowe'],
-      183: ['kwinkwagintylionowa', 'kwinkwagintylionowe'],
-      186: ['unkwinkwagintylionowa', 'unkwinkwagintylionowe'],
-      189: ['duokwinkwagintylionowa', 'duokwinkwagintylionowe'],
-      192: ['trekwinkwagintylionowa', 'trekwinkwagintylionowe'],
-      195: ['kwatuorkwinkwagintylionowa', 'kwatuorkwinkwagintylionowe'],
-      198: ['kwinkwinkwagintylionowa', 'kwinkwinkwagintylionowe'],
-      201: ['sekskwinkwagintylionowa', 'sekskwinkwagintylionowe'],
-      204: ['septenkwinkwagintylionowa', 'septenkwinkwagintylionowe'],
-      207: ['oktokwinkwagintylionowa', 'oktokwinkwagintylionowe'],
-      210: ['nowemkwinkwagintylionowa', 'nowemkwinkwagintylionowe'],
-      213: ['seksagintylionowa', 'seksagintylionowe'],
-      216: ['unseksagintylionowa', 'unseksagintylionowe'],
-      219: ['duoseksagintylionowa', 'duoseksagintylionowe'],
-      222: ['treseksagintylionowa', 'treseksagintylionowe'],
-      225: ['kwatuorseksagintylionowa', 'kwatuorseksagintylionowe'],
-      228: ['kwinseksagintylionowa', 'kwinseksagintylionowe'],
-      231: ['seksseksagintylionowa', 'seksseksagintylionowe'],
-      234: ['septenseksagintylionowa', 'septenseksagintylionowe'],
-      237: ['oktoseksagintylionowa', 'oktoseksagintylionowe'],
-      240: ['nowemseksagintylionowa', 'nowemseksagintylionowe'],
-      243: ['septuagintylionowa', 'septuagintylionowe'],
-      246: ['unseptuagintylionowa', 'unseptuagintylionowe'],
-      249: ['duoseptuagintylionowa', 'duoseptuagintylionowe'],
-      252: ['treseptuagintylionowa', 'treseptuagintylionowe'],
-      255: ['kwatuorseptuagintylionowa', 'kwatuorseptuagintylionowe'],
-      258: ['kwinseptuagintylionowa', 'kwinseptuagintylionowe'],
-      261: ['seksseptuagintylionowa', 'seksseptuagintylionowe'],
-      264: ['septenseptuagintylionowa', 'septenseptuagintylionowe'],
-      267: ['oktoseptuagintylionowa', 'oktoseptuagintylionowe'],
-      270: ['nowemseptuagintylionowa', 'nowemseptuagintylionowe'],
-      273: ['oktagintylionowa', 'oktagintylionowe'],
-      276: ['unoktagintylionowa', 'unoktagintylionowe'],
-      279: ['duoktagintylionowa', 'duoktagintylionowe'],
-      282: ['treoktagintylionowa', 'treoktagintylionowe'],
-      285: ['kwatuoroktagintylionowa', 'kwatuoroktagintylionowe'],
-      288: ['kwinoktagintylionowa', 'kwinoktagintylionowe'],
-      291: ['seksoktagintylionowa', 'seksoktagintylionowe'],
-      294: ['septenoktagintylionowa', 'septenoktagintylionowe'],
-      297: ['oktooktagintylionowa', 'oktooktagintylionowe'],
-      300: ['nowemoktagintylionowa', 'nowemoktagintylionowe']
+    // Формат: [единственное число (1), множественное число именительный (2-4), множественное число родительный (5+)]
+    const fractionalWords: Record<number, [string, string, string]> = {
+      1: ['dziesiąta', 'dziesiąte', 'dziesiątych'],
+      2: ['setna', 'setne', 'setnych'],
+      3: ['tysięczna', 'tysięczne', 'tysięcznych'],
+      4: ['dziesięciotysięczna', 'dziesięciotysięczne', 'dziesięciotysięcznych'],
+      5: ['stutysięczna', 'stutysięczne', 'stutysięcznych'],
+      6: ['milionowa', 'milionowe', 'milionowych'],
+      7: ['dziesięciomilionowa', 'dziesięciomilionowe', 'dziesięciomilionowych'],
+      8: ['stumilionowa', 'stumilionowe', 'stumilionowych'],
+      9: ['miliardowa', 'miliardowe', 'miliardowych'],
+      10: ['dziesięciomiliardowa', 'dziesięciomiliardowe', 'dziesięciomiliardowych'],
+      11: ['stumiliardowa', 'stumiliardowe', 'stumiliardowych'],
+      12: ['bilionowa', 'bilionowe', 'bilionowych'],
+      15: ['biliardowa', 'biliardowe', 'biliardowych'],
+      18: ['trylionowa', 'trylionowe', 'trylionowych'],
+      21: ['tryliardowa', 'tryliardowe', 'tryliardowych'],
+      24: ['kwadrylionowa', 'kwadrylionowe', 'kwadrylionowych'],
+      27: ['kwadryliardowa', 'kwadryliardowe', 'kwadryliardowych'],
+      30: ['kwintylionowa', 'kwintylionowe', 'kwintylionowych'],
+      33: ['kwintyliardowa', 'kwintyliardowe', 'kwintyliardowych'],
+      36: ['sekstylionowa', 'sekstylionowe', 'sekstylionowych'],
+      39: ['sekstyliardowa', 'sekstyliardowe', 'sekstyliardowych'],
+      42: ['septylionowa', 'septylionowe', 'septylionowych'],
+      45: ['septyliardowa', 'septyliardowe', 'septyliardowych'],
+      48: ['oktylionowa', 'oktylionowe', 'oktylionowych'],
+      51: ['oktyliardowa', 'oktyliardowe', 'oktyliardowych'],
+      54: ['nonylionowa', 'nonylionowe', 'nonylionowych'],
+      57: ['nonyliardowa', 'nonyliardowe', 'nonyliardowych'],
+      60: ['decylionowa', 'decylionowe', 'decylionowych'],
+      63: ['decyliardowa', 'decyliardowe', 'decyliardowych'],
+      66: ['undecylionowa', 'undecylionowe', 'undecylionowych'],
+      69: ['duodecylionowa', 'duodecylionowe', 'duodecylionowych'],
+      72: ['tredecylionowa', 'tredecylionowe', 'tredecylionowych'],
+      75: ['kwatuordecylionowa', 'kwatuordecylionowe', 'kwatuordecylionowych'],
+      78: ['kwindecylionowa', 'kwindecylionowe', 'kwindecylionowych'],
+      81: ['seksdecylionowa', 'seksdecylionowe', 'seksdecylionowych'],
+      84: ['septendecylionowa', 'septendecylionowe', 'septendecylionowych'],
+      87: ['oktodecylionowa', 'oktodecylionowe', 'oktodecylionowych'],
+      90: ['nowemdecylionowa', 'nowemdecylionowe', 'nowemdecylionowych'],
+      93: ['wigintylionowa', 'wigintylionowe', 'wigintylionowych'],
+      96: ['unwigintylionowa', 'unwigintylionowe', 'unwigintylionowych'],
+      99: ['duowigintylionowa', 'duowigintylionowe', 'duowigintylionowych'],
+      102: ['trewigintylionowa', 'trewigintylionowe', 'trewigintylionowych'],
+      105: ['kwatuorwigintylionowa', 'kwatuorwigintylionowe', 'kwatuorwigintylionowych'],
+      108: ['kwinwigintylionowa', 'kwinwigintylionowe', 'kwinwigintylionowych'],
+      111: ['sekswigintylionowa', 'sekswigintylionowe', 'sekswigintylionowych'],
+      114: ['septenwigintylionowa', 'septenwigintylionowe', 'septenwigintylionowych'],
+      117: ['oktowigintylionowa', 'oktowigintylionowe', 'oktowigintylionowych'],
+      120: ['nowemwigintylionowa', 'nowemwigintylionowe', 'nowemwigintylionowych'],
+      123: ['trigintylionowa', 'trigintylionowe', 'trigintylionowych'],
+      126: ['untrigintylionowa', 'untrigintylionowe', 'untrigintylionowych'],
+      129: ['duotrigintylionowa', 'duotrigintylionowe', 'duotrigintylionowych'],
+      132: ['tretrigintylionowa', 'tretrigintylionowe', 'tretrigintylionowych'],
+      135: ['kwatuortrigintylionowa', 'kwatuortrigintylionowe', 'kwatuortrigintylionowych'],
+      138: ['kwintrigintylionowa', 'kwintrigintylionowe', 'kwintrigintylionowych'],
+      141: ['sekstrigintylionowa', 'sekstrigintylionowe', 'sekstrigintylionowych'],
+      144: ['septentrigintylionowa', 'septentrigintylionowe', 'septentrigintylionowych'],
+      147: ['oktotrigintylionowa', 'oktotrigintylionowe', 'oktotrigintylionowych'],
+      150: ['nowemtrigintylionowa', 'nowemtrigintylionowe', 'nowemtrigintylionowych'],
+      153: ['kwadragintylionowa', 'kwadragintylionowe', 'kwadragintylionowych'],
+      156: ['unkwadragintylionowa', 'unkwadragintylionowe', 'unkwadragintylionowych'],
+      159: ['duokwadragintylionowa', 'duokwadragintylionowe', 'duokwadragintylionowych'],
+      162: ['trekwadragintylionowa', 'trekwadragintylionowe', 'trekwadragintylionowych'],
+      165: ['kwatuorkwadragintylionowa', 'kwatuorkwadragintylionowe', 'kwatuorkwadragintylionowych'],
+      168: ['kwinkwadragintylionowa', 'kwinkwadragintylionowe', 'kwinkwadragintylionowych'],
+      171: ['sekskwadragintylionowa', 'sekskwadragintylionowe', 'sekskwadragintylionowych'],
+      174: ['septenkwadragintylionowa', 'septenkwadragintylionowe', 'septenkwadragintylionowych'],
+      177: ['oktokwadragintylionowa', 'oktokwadragintylionowe', 'oktokwadragintylionowych'],
+      180: ['nowemkwadragintylionowa', 'nowemkwadragintylionowe', 'nowemkwadragintylionowych'],
+      183: ['kwinkwagintylionowa', 'kwinkwagintylionowe', 'kwinkwagintylionowych'],
+      186: ['unkwinkwagintylionowa', 'unkwinkwagintylionowe', 'unkwinkwagintylionowych'],
+      189: ['duokwinkwagintylionowa', 'duokwinkwagintylionowe', 'duokwinkwagintylionowych'],
+      192: ['trekwinkwagintylionowa', 'trekwinkwagintylionowe', 'trekwinkwagintylionowych'],
+      195: ['kwatuorkwinkwagintylionowa', 'kwatuorkwinkwagintylionowe', 'kwatuorkwinkwagintylionowych'],
+      198: ['kwinkwinkwagintylionowa', 'kwinkwinkwagintylionowe', 'kwinkwinkwagintylionowych'],
+      201: ['sekskwinkwagintylionowa', 'sekskwinkwagintylionowe', 'sekskwinkwagintylionowych'],
+      204: ['septenkwinkwagintylionowa', 'septenkwinkwagintylionowe', 'septenkwinkwagintylionowych'],
+      207: ['oktokwinkwagintylionowa', 'oktokwinkwagintylionowe', 'oktokwinkwagintylionowych'],
+      210: ['nowemkwinkwagintylionowa', 'nowemkwinkwagintylionowe', 'nowemkwinkwagintylionowych'],
+      213: ['seksagintylionowa', 'seksagintylionowe', 'seksagintylionowych'],
+      216: ['unseksagintylionowa', 'unseksagintylionowe', 'unseksagintylionowych'],
+      219: ['duoseksagintylionowa', 'duoseksagintylionowe', 'duoseksagintylionowych'],
+      222: ['treseksagintylionowa', 'treseksagintylionowe', 'treseksagintylionowych'],
+      225: ['kwatuorseksagintylionowa', 'kwatuorseksagintylionowe', 'kwatuorseksagintylionowych'],
+      228: ['kwinseksagintylionowa', 'kwinseksagintylionowe', 'kwinseksagintylionowych'],
+      231: ['seksseksagintylionowa', 'seksseksagintylionowe', 'seksseksagintylionowych'],
+      234: ['septenseksagintylionowa', 'septenseksagintylionowe', 'septenseksagintylionowych'],
+      237: ['oktoseksagintylionowa', 'oktoseksagintylionowe', 'oktoseksagintylionowych'],
+      240: ['nowemseksagintylionowa', 'nowemseksagintylionowe', 'nowemseksagintylionowych'],
+      243: ['septuagintylionowa', 'septuagintylionowe', 'septuagintylionowych'],
+      246: ['unseptuagintylionowa', 'unseptuagintylionowe', 'unseptuagintylionowych'],
+      249: ['duoseptuagintylionowa', 'duoseptuagintylionowe', 'duoseptuagintylionowych'],
+      252: ['treseptuagintylionowa', 'treseptuagintylionowe', 'treseptuagintylionowych'],
+      255: ['kwatuorseptuagintylionowa', 'kwatuorseptuagintylionowe', 'kwatuorseptuagintylionowych'],
+      258: ['kwinseptuagintylionowa', 'kwinseptuagintylionowe', 'kwinseptuagintylionowych'],
+      261: ['seksseptuagintylionowa', 'seksseptuagintylionowe', 'seksseptuagintylionowych'],
+      264: ['septenseptuagintylionowa', 'septenseptuagintylionowe', 'septenseptuagintylionowych'],
+      267: ['oktoseptuagintylionowa', 'oktoseptuagintylionowe', 'oktoseptuagintylionowych'],
+      270: ['nowemseptuagintylionowa', 'nowemseptuagintylionowe', 'nowemseptuagintylionowych'],
+      273: ['oktagintylionowa', 'oktagintylionowe', 'oktagintylionowych'],
+      276: ['unoktagintylionowa', 'unoktagintylionowe', 'unoktagintylionowych'],
+      279: ['duoktagintylionowa', 'duoktagintylionowe', 'duoktagintylionowych'],
+      282: ['treoktagintylionowa', 'treoktagintylionowe', 'treoktagintylionowych'],
+      285: ['kwatuoroktagintylionowa', 'kwatuoroktagintylionowe', 'kwatuoroktagintylionowych'],
+      288: ['kwinoktagintylionowa', 'kwinoktagintylionowe', 'kwinoktagintylionowych'],
+      291: ['seksoktagintylionowa', 'seksoktagintylionowe', 'seksoktagintylionowych'],
+      294: ['septenoktagintylionowa', 'septenoktagintylionowe', 'septenoktagintylionowych'],
+      297: ['oktooktagintylionowa', 'oktooktagintylionowe', 'oktooktagintylionowych'],
+      300: ['nowemoktagintylionowa', 'nowemoktagintylionowe', 'nowemoktagintylionowych']
     }
     
     // Находим ближайшее значение или используем дефолт
@@ -2178,11 +2266,11 @@ const plProcessor: LocaleProcessor = {
       // Если точного совпадения нет, ищем ближайшее меньшее значение
       const keys = Object.keys(fractionalWords).map(Number).sort((a, b) => b - a)
       const closest = keys.find(k => k <= decimalLength)
-      word = closest ? fractionalWords[closest] : ['setna', 'setne']
+      word = closest ? fractionalWords[closest] : ['setna', 'setne', 'setnych']
     }
     
-    // Используем склонение: 1 - единственное, 2-4 - единственное, 5+ - множественное
-    return getPlDeclension(decimalNum, [word[0], word[0], word[1]])
+    // Используем правильное склонение с 3 формами
+    return getPlDeclension(decimalNum, word)
   }
 }
 
@@ -2620,10 +2708,14 @@ export function numberToWords(
   }
   
   // Конвертируем целую часть (всегда в нижнем регистре)
-  // Для латышского языка в режиме currency нужно учитывать род валюты
+  // Для латышского и польского языков в режиме currency нужно учитывать род валюты
   let integerGender: 'masculine' | 'feminine' | undefined = undefined
-  if ((mode === 'currency' || mode === 'currency_vat') && language === 'lv') {
-    integerGender = LV_CURRENCIES[currency]?.gender
+  if ((mode === 'currency' || mode === 'currency_vat')) {
+    if (language === 'lv') {
+      integerGender = LV_CURRENCIES[currency]?.gender
+    } else if (language === 'pl') {
+      integerGender = PL_CURRENCIES[currency]?.gender
+    }
   }
   let result = processor.convertIntegerToWords(integer, integerGender ? { gender: integerGender } : undefined).toLowerCase()
   
@@ -2716,10 +2808,12 @@ export function numberToWords(
       const vatInteger = vatParts[0]
       const vatDecimal = vatParts[1] || '00'
       
-      // Для латышского языка в режиме currency_vat нужно учитывать род валюты
+      // Для латышского и польского языков в режиме currency_vat нужно учитывать род валюты
       let vatIntegerGender: 'masculine' | 'feminine' | undefined = undefined
       if (language === 'lv') {
         vatIntegerGender = LV_CURRENCIES[currency]?.gender
+      } else if (language === 'pl') {
+        vatIntegerGender = PL_CURRENCIES[currency]?.gender
       }
       let vatWords = processor.convertIntegerToWords(vatInteger, vatIntegerGender ? { gender: vatIntegerGender } : undefined).toLowerCase()
       const vatIntegerNum = parseInt(vatInteger) || 0
@@ -2731,7 +2825,7 @@ export function numberToWords(
         const vatCents = vatDecimal.substring(0, 2).padEnd(2, '0').substring(0, 2)
         const vatCentsNum = parseInt(vatCents, 10)
         const vatFractionalName = processor.getFractionalName(currency, vatCentsNum).toLowerCase()
-        // Определяем род дробной части для русского, латышского и испанского языков
+        // Определяем род дробной части для русского, латышского, испанского и польского языков
         let vatFractionalGender: 'masculine' | 'feminine' | undefined = undefined
         if (language === 'ru') {
           vatFractionalGender = RU_CURRENCIES[currency]?.fractionalGender
@@ -2740,6 +2834,8 @@ export function numberToWords(
         } else if (language === 'es') {
           // В испанском языке дробные части валют обычно мужского рода (centavos, céntimos)
           vatFractionalGender = 'masculine'
+        } else if (language === 'pl') {
+          vatFractionalGender = PL_CURRENCIES[currency]?.fractionalGender
         }
         const vatCentsWords = processor.convertDecimalToWords(vatCents, vatFractionalGender ? { gender: vatFractionalGender } : undefined).toLowerCase()
         vatWords += ` ${processor.getAndWord()} ${vatCentsWords} ${vatFractionalName}`
