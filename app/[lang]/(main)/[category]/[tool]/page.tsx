@@ -216,7 +216,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
     // Intro text
     if (data.intro_text) {
         contentSections.push({
-            node: <p key="intro" className="mb-4 text-gray-700">{data.intro_text}</p>
+            node: (
+                <div 
+                    key="intro" 
+                    className="mb-4 prose lg:prose-xl text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: data.intro_text }}
+                />
+            )
         })
     }
 
@@ -278,9 +284,11 @@ export default async function ToolPage({ params, searchParams }: Props) {
     if (data.short_answer) {
         contentSections.push({
             node: (
-                <div key="short-answer" className="mb-4">
-                    <p className="text-xl text-gray-700 font-medium">{data.short_answer}</p>
-                </div>
+                <div 
+                    key="short-answer" 
+                    className="mb-4 prose lg:prose-xl"
+                    dangerouslySetInnerHTML={{ __html: data.short_answer }}
+                />
             ),
             sectionType: 'short_answer'
         })
@@ -300,7 +308,11 @@ export default async function ToolPage({ params, searchParams }: Props) {
                         <section key="key-points" id="key-points" className="mb-12 prose lg:prose-xl">
                             <ul className="list-disc list-inside space-y-2">
                                 {keyPoints.map((point: string, idx: number) => (
-                                    <li key={idx} className="text-gray-700">{point}</li>
+                                    <li 
+                                        key={idx} 
+                                        className="text-gray-700"
+                                        dangerouslySetInnerHTML={{ __html: point }}
+                                    />
                                 ))}
                             </ul>
                         </section>
@@ -404,7 +416,10 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                         return faqs.map((faq: any, idx: number) => (
                                             <div key={idx} className="bg-gray-50 p-6 rounded-lg">
                                                 <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
-                                                <p>{faq.answer}</p>
+                                                <div 
+                                                    className="prose lg:prose-xl"
+                                                    dangerouslySetInnerHTML={{ __html: faq.answer }}
+                                                />
                                             </div>
                                         ))
                                     }
