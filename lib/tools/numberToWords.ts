@@ -1076,14 +1076,34 @@ const LV_TEENS = ['desmit', 'vienpadsmit', 'divpadsmit', 'trīspadsmit', 'četrp
 const LV_TENS = ['', '', 'divdesmit', 'trīsdesmit', 'četrdesmit', 'piecdesmit', 'sešdesmit', 'septiņdesmit', 'astoņdesmit', 'deviņdesmit']
 const LV_HUNDREDS = ['', 'simts', 'divi simti', 'trīs simti', 'četri simti', 'pieci simti', 'seši simti', 'septiņi simti', 'astoņi simti', 'deviņi simti']
 const LV_SCALES = ['', 'tūkstotis', 'miljons', 'miljards', 'biljons', 'biliards', 'triljons', 'triliards']
+const LV_SCALES_PLURAL = ['', 'tūkstoši', 'miljoni', 'miljardi', 'biljoni', 'biliardi', 'triljoni', 'triliardi']
 
 function getLvDeclension(num: number, forms: [string, string, string]): string {
   const mod10 = num % 10
   const mod100 = num % 100
   if (mod100 >= 11 && mod100 <= 19) return forms[2]
   if (mod10 === 1) return forms[0]
-  if (mod10 >= 2 && mod10 <= 9) return forms[1]
+  if (mod10 >= 2 && mod10 <= 4) return forms[1]
   return forms[2]
+}
+
+// Определяет правильное склонение для больших чисел (miljons, miljards - мужской род)
+function getLvScaleDeclension(scaleIndex: number, group: number): string {
+  if (scaleIndex === 0) return ''
+  const mod10 = group % 10
+  const mod100 = group % 100
+  
+  // Для больших чисел (miljons, miljards) всегда мужской род
+  if (mod100 >= 11 && mod100 <= 19) {
+    return LV_SCALES_PLURAL[scaleIndex] || LV_SCALES[scaleIndex] + 'i'
+  }
+  if (mod10 === 1) {
+    return LV_SCALES[scaleIndex]
+  }
+  if (mod10 >= 2 && mod10 <= 4) {
+    return LV_SCALES_PLURAL[scaleIndex] || LV_SCALES[scaleIndex] + 'i'
+  }
+  return LV_SCALES_PLURAL[scaleIndex] || LV_SCALES[scaleIndex] + 'i'
 }
 
 const LV_CURRENCIES: Record<Currency, CurrencyInfo> = {
@@ -1140,14 +1160,43 @@ const lvProcessor: LocaleProcessor = {
       if (group === 0) continue
       
       const scaleIndex = groups.length - 1 - i
-      let groupWords = this.convertHundreds(group)
+      let groupWords = ''
+      
+      if (scaleIndex > 0) {
+        // Для больших чисел (miljons, miljards) используем мужской род
+        const hundreds = Math.floor(group / 100)
+        const remainder = group % 100
+        
+        if (hundreds > 0) {
+          groupWords += LV_HUNDREDS[hundreds]
+          if (remainder > 0) groupWords += ' '
+        }
+        
+        if (remainder >= 10 && remainder < 20) {
+          groupWords += LV_TEENS[remainder - 10]
+        } else {
+          const tens = Math.floor(remainder / 10)
+          const ones = remainder % 10
+          if (tens > 0) {
+            groupWords += LV_TENS[tens]
+            if (ones > 0) groupWords += ' '
+          }
+          if (ones > 0) {
+            // Используем мужской род для больших чисел
+            groupWords += LV_ONES[ones]
+          }
+        }
+      } else {
+        // Для единиц используем обычную логику
+        groupWords = this.convertHundreds(group)
+      }
       
       if (groupWords) {
         words.push(groupWords)
         if (scaleIndex > 0 && LV_SCALES[scaleIndex]) {
-          const scale = LV_SCALES[scaleIndex]
-          const declension = getLvDeclension(group, [scale, scale, scale + 'i'])
-          words.push(declension)
+          // Правильное склонение для больших чисел
+          const scaleWord = getLvScaleDeclension(scaleIndex, group)
+          words.push(scaleWord)
         }
       }
     }
