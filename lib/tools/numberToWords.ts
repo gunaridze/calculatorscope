@@ -49,6 +49,7 @@ interface LocaleProcessor {
   getVatPhrase(vatRate: number, vatAmount: string): string
   getZeroWord(): string
   getHundredthWord(singular: boolean): string
+  getFractionalWord(decimalLength: number, decimalNum: number): string
 }
 
 // ============================================================================
@@ -205,6 +206,18 @@ const enProcessor: LocaleProcessor = {
   getZeroWord(): string { return 'zero' },
   getHundredthWord(singular: boolean): string {
     return singular ? 'hundredth' : 'hundredths'
+  },
+  getFractionalWord(decimalLength: number, decimalNum: number): string {
+    const words: Record<number, { singular: string; plural: string }> = {
+      1: { singular: 'tenth', plural: 'tenths' },
+      2: { singular: 'hundredth', plural: 'hundredths' },
+      3: { singular: 'thousandth', plural: 'thousandths' },
+      4: { singular: 'ten-thousandth', plural: 'ten-thousandths' },
+      5: { singular: 'hundred-thousandth', plural: 'hundred-thousandths' },
+      6: { singular: 'millionth', plural: 'millionths' }
+    }
+    const word = words[decimalLength] || words[2]
+    return decimalNum === 1 ? word.singular : word.plural
   }
 }
 
@@ -218,7 +231,8 @@ const RU_TEENS = ['десять', 'одиннадцать', 'двенадцат�
 const RU_TENS = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят', 'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто']
 const RU_HUNDREDS = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот', 'шестьсот', 'семьсот', 'восемьсот', 'девятьсот']
 const RU_SCALES = ['', 'тысяча', 'миллион', 'миллиард', 'триллион', 'квадриллион', 'квинтиллион', 'секстиллион', 'септиллион', 'октиллион', 'нониллион', 'дециллион']
-const RU_SCALES_GENITIVE = ['', 'тысяч', 'миллионов', 'миллиардов', 'триллионов', 'квадриллионов', 'квинтиллионов', 'секстиллионов', 'септиллионов', 'октиллионов', 'нониллионов', 'дециллионов']
+const RU_SCALES_GENITIVE_SINGULAR = ['', 'тысячи', 'миллиона', 'миллиарда', 'триллиона', 'квадриллиона', 'квинтиллиона', 'секстиллиона', 'септиллиона', 'октиллиона', 'нониллиона', 'дециллиона']
+const RU_SCALES_GENITIVE_PLURAL = ['', 'тысяч', 'миллионов', 'миллиардов', 'триллионов', 'квадриллионов', 'квинтиллионов', 'секстиллионов', 'септиллионов', 'октиллионов', 'нониллионов', 'дециллионов']
 
 const RU_CURRENCIES: Record<Currency, CurrencyInfo> = {
   USD: { name: 'доллар США', plural: 'долларов США', fractional: 'цент', fractionalPlural: 'центов' },
@@ -239,10 +253,11 @@ function getRuDeclension(num: number, forms: [string, string, string]): string {
 
 function getRuScaleDeclension(scaleIndex: number, num: number): string {
   if (scaleIndex === 0) return ''
+  // Для больших чисел используем правильные склонения
   const forms: [string, string, string] = [
-    RU_SCALES[scaleIndex],
-    RU_SCALES_GENITIVE[scaleIndex],
-    RU_SCALES_GENITIVE[scaleIndex]
+    RU_SCALES[scaleIndex],  // 1 (именительный)
+    RU_SCALES_GENITIVE_SINGULAR[scaleIndex],  // 2, 3, 4 (родительный единственного)
+    RU_SCALES_GENITIVE_PLURAL[scaleIndex]  // 5+ (родительный множественного)
   ]
   return getRuDeclension(num, forms)
 }
@@ -358,6 +373,18 @@ const ruProcessor: LocaleProcessor = {
   getZeroWord(): string { return 'ноль' },
   getHundredthWord(singular: boolean): string {
     return singular ? 'сотая' : 'сотых'
+  },
+  getFractionalWord(decimalLength: number, decimalNum: number): string {
+    const words: Record<number, { singular: string; plural: string }> = {
+      1: { singular: 'десятая', plural: 'десятых' },
+      2: { singular: 'сотая', plural: 'сотых' },
+      3: { singular: 'тысячная', plural: 'тысячных' },
+      4: { singular: 'десятитысячная', plural: 'десятитысячных' },
+      5: { singular: 'стотысячная', plural: 'стотысячных' },
+      6: { singular: 'миллионная', plural: 'миллионных' }
+    }
+    const word = words[decimalLength] || words[2]
+    return getRuDeclension(decimalNum, [word.singular, word.singular, word.plural])
   }
 }
 
@@ -473,6 +500,18 @@ const deProcessor: LocaleProcessor = {
   getZeroWord(): string { return 'null' },
   getHundredthWord(singular: boolean): string {
     return singular ? 'Hundertstel' : 'Hundertstel'
+  },
+  getFractionalWord(decimalLength: number, decimalNum: number): string {
+    const words: Record<number, { singular: string; plural: string }> = {
+      1: { singular: 'Zehntel', plural: 'Zehntel' },
+      2: { singular: 'Hundertstel', plural: 'Hundertstel' },
+      3: { singular: 'Tausendstel', plural: 'Tausendstel' },
+      4: { singular: 'Zehntausendstel', plural: 'Zehntausendstel' },
+      5: { singular: 'Hunderttausendstel', plural: 'Hunderttausendstel' },
+      6: { singular: 'Millionstel', plural: 'Millionstel' }
+    }
+    const word = words[decimalLength] || words[2]
+    return word.plural
   }
 }
 
@@ -599,6 +638,18 @@ const esProcessor: LocaleProcessor = {
   getZeroWord(): string { return 'cero' },
   getHundredthWord(singular: boolean): string {
     return singular ? 'centésima' : 'centésimas'
+  },
+  getFractionalWord(decimalLength: number, decimalNum: number): string {
+    const words: Record<number, { singular: string; plural: string }> = {
+      1: { singular: 'décima', plural: 'décimas' },
+      2: { singular: 'centésima', plural: 'centésimas' },
+      3: { singular: 'milésima', plural: 'milésimas' },
+      4: { singular: 'diezmilésima', plural: 'diezmilésimas' },
+      5: { singular: 'cienmilésima', plural: 'cienmilésimas' },
+      6: { singular: 'millonésima', plural: 'millonésimas' }
+    }
+    const word = words[decimalLength] || words[2]
+    return decimalNum === 1 ? word.singular : word.plural
   }
 }
 
@@ -745,6 +796,18 @@ const frProcessor: LocaleProcessor = {
   getZeroWord(): string { return 'zéro' },
   getHundredthWord(singular: boolean): string {
     return singular ? 'centième' : 'centièmes'
+  },
+  getFractionalWord(decimalLength: number, decimalNum: number): string {
+    const words: Record<number, { singular: string; plural: string }> = {
+      1: { singular: 'dixième', plural: 'dixièmes' },
+      2: { singular: 'centième', plural: 'centièmes' },
+      3: { singular: 'millième', plural: 'millièmes' },
+      4: { singular: 'dix-millième', plural: 'dix-millièmes' },
+      5: { singular: 'cent-millième', plural: 'cent-millièmes' },
+      6: { singular: 'millionième', plural: 'millionièmes' }
+    }
+    const word = words[decimalLength] || words[2]
+    return decimalNum === 1 ? word.singular : word.plural
   }
 }
 
@@ -862,6 +925,18 @@ const itProcessor: LocaleProcessor = {
   getZeroWord(): string { return 'zero' },
   getHundredthWord(singular: boolean): string {
     return singular ? 'centesimo' : 'centesimi'
+  },
+  getFractionalWord(decimalLength: number, decimalNum: number): string {
+    const words: Record<number, { singular: string; plural: string }> = {
+      1: { singular: 'decimo', plural: 'decimi' },
+      2: { singular: 'centesimo', plural: 'centesimi' },
+      3: { singular: 'millesimo', plural: 'millesimi' },
+      4: { singular: 'decimillesimo', plural: 'decimillesimi' },
+      5: { singular: 'centomillesimo', plural: 'centomillesimi' },
+      6: { singular: 'milionesimo', plural: 'milionesimi' }
+    }
+    const word = words[decimalLength] || words[2]
+    return decimalNum === 1 ? word.singular : word.plural
   }
 }
 
@@ -976,6 +1051,18 @@ const plProcessor: LocaleProcessor = {
   getZeroWord(): string { return 'zero' },
   getHundredthWord(singular: boolean): string {
     return singular ? 'setna' : 'setne'
+  },
+  getFractionalWord(decimalLength: number, decimalNum: number): string {
+    const words: Record<number, { singular: string; plural: string }> = {
+      1: { singular: 'dziesiąta', plural: 'dziesiąte' },
+      2: { singular: 'setna', plural: 'setne' },
+      3: { singular: 'tysięczna', plural: 'tysięczne' },
+      4: { singular: 'dziesięciotysięczna', plural: 'dziesięciotysięczne' },
+      5: { singular: 'stutysięczna', plural: 'stutysięczne' },
+      6: { singular: 'milionowa', plural: 'milionowe' }
+    }
+    const word = words[decimalLength] || words[2]
+    return getPlDeclension(decimalNum, [word.singular, word.singular, word.plural])
   }
 }
 
@@ -1091,6 +1178,18 @@ const lvProcessor: LocaleProcessor = {
   getZeroWord(): string { return 'nulle' },
   getHundredthWord(singular: boolean): string {
     return singular ? 'simtdaļa' : 'simtdaļas'
+  },
+  getFractionalWord(decimalLength: number, decimalNum: number): string {
+    const words: Record<number, { singular: string; plural: string }> = {
+      1: { singular: 'desmitdaļa', plural: 'desmitdaļas' },
+      2: { singular: 'simtdaļa', plural: 'simtdaļas' },
+      3: { singular: 'tūkstošdaļa', plural: 'tūkstošdaļas' },
+      4: { singular: 'desmittūkstošdaļa', plural: 'desmittūkstošdaļas' },
+      5: { singular: 'simttūkstošdaļa', plural: 'simttūkstošdaļas' },
+      6: { singular: 'miljonā daļa', plural: 'miljonā daļas' }
+    }
+    const word = words[decimalLength] || words[2]
+    return getLvDeclension(decimalNum, [word.singular, word.singular, word.plural])
   }
 }
 
@@ -1161,13 +1260,16 @@ export function numberToWords(
   if (mode === 'words') {
     // Просто слова, без валюты
     if (decimal && parseInt(decimal) > 0) {
+      // Определяем количество знаков после запятой (не удаляем ведущие нули для определения длины)
+      const decimalLength = decimal.length
       const decimalClean = decimal.replace(/^0+/, '') || '0'
       const decimalNum = parseInt(decimalClean, 10)
       const decimalWords = processor.convertDecimalToWords(decimalClean).toLowerCase()
       
       const andWord = processor.getAndWord()
-      const hundredthWord = processor.getHundredthWord(decimalNum === 1)
-      result = result + ` ${andWord} ${decimalWords} ${hundredthWord}`
+      // Используем правильное название дробной части в зависимости от количества знаков
+      const fractionalWord = processor.getFractionalWord(decimalLength, decimalNum)
+      result = result + ` ${andWord} ${decimalWords} ${fractionalWord}`
     }
     result = applyTextCase(result, textCase)
     return { textResult: result, calculatedTotal }
