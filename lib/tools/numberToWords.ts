@@ -186,7 +186,29 @@ function applyTextCase(text: string, textCase: TextCase): string {
         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
       ).join(' ')
     case 'Sentence case':
+      // Первая буква заглавная, остальные строчные
       return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
+    default:
+      return text
+  }
+}
+
+/**
+ * Применяет регистр к части текста (для дробной части в Sentence case)
+ */
+function applyTextCasePartial(text: string, textCase: TextCase): string {
+  switch (textCase) {
+    case 'UPPERCASE':
+      return text.toUpperCase()
+    case 'lowercase':
+      return text.toLowerCase()
+    case 'Title Case':
+      return text.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ')
+    case 'Sentence case':
+      // Для дробной части - все строчные
+      return text.toLowerCase()
     default:
       return text
   }
@@ -251,7 +273,8 @@ export function numberToWords(
       // Удаляем ведущие нули из дробной части
       const decimalClean = decimal.replace(/^0+/, '') || '0'
       const decimalWords = convertIntegerToWords(decimalClean)
-      result = applyTextCase(result, textCase) + ` point ${applyTextCase(decimalWords, textCase)}`
+      // Для дробной части используем applyTextCasePartial (для Sentence case - все строчные)
+      result = applyTextCase(result, textCase) + ` point ${applyTextCasePartial(decimalWords, textCase)}`
     } else {
       result = applyTextCase(result, textCase)
     }

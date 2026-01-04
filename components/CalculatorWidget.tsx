@@ -76,7 +76,10 @@ export default function CalculatorWidget({
 
     // Обработка ввода
     const handleChange = (key: string, val: string | number) => {
-        setValues((prev) => ({ ...prev, [key]: val }))
+        const newValues = { ...values, [key]: val }
+        setValues(newValues)
+        // Radio button обновляется сразу через checked={conversionMode === 'currency'}
+        // Не нужно ждать нажатия Calculate для визуального отклика
     }
 
     // Главная функция расчета через единый движок
@@ -204,24 +207,22 @@ export default function CalculatorWidget({
                         <label htmlFor="mode-currency" className="text-sm text-gray-700 mr-[15px]">
                             {translations.currencyOption}
                         </label>
-                        {conversionMode === 'currency' && (
-                            <select
-                                className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                style={{ width: '65px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
-                                onChange={(e) => handleChange('currency', e.target.value)}
-                                value={values.currency !== undefined ? String(values.currency) : (config.inputs.find(i => i.key === 'currency')?.default || 'USD')}
-                            >
-                                {currencies.map((curr: any) => (
-                                    <option key={curr.value} value={curr.value}>
-                                        {curr.label}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
+                        <select
+                            className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                            style={{ width: '65px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
+                            onChange={(e) => handleChange('currency', e.target.value)}
+                            value={values.currency !== undefined ? String(values.currency) : (config.inputs.find(i => i.key === 'currency')?.default || 'USD')}
+                        >
+                            {currencies.map((curr: any) => (
+                                <option key={curr.value} value={curr.value}>
+                                    {curr.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     {/* Currency + VAT */}
-                    <div className="flex items-center flex-wrap gap-[5px]">
+                    <div className="flex items-center">
                         <input
                             type="radio"
                             id="mode-currency-vat"
@@ -234,39 +235,35 @@ export default function CalculatorWidget({
                         <label htmlFor="mode-currency-vat" className="text-sm text-gray-700 mr-[15px]">
                             {translations.currencyOption}
                         </label>
-                        {conversionMode === 'currency_vat' && (
-                            <>
-                                <select
-                                    className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                    style={{ width: '65px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
-                                    onChange={(e) => handleChange('currency', e.target.value)}
-                                    value={values.currency !== undefined ? String(values.currency) : (config.inputs.find(i => i.key === 'currency')?.default || 'USD')}
-                                >
-                                    {currencies.map((curr: any) => (
-                                        <option key={curr.value} value={curr.value}>
-                                            {curr.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <span className="text-sm text-gray-700 mr-[5px]">{translations.plusVat}</span>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]{1,2}"
-                                    maxLength={2}
-                                    className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-right pr-6"
-                                    style={{ width: '65px', height: '29px', paddingLeft: '8px', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Ctext x=\'6\' y=\'9\' text-anchor=\'middle\' font-size=\'10\' fill=\'%23333\'%3E%25%3C/text%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
-                                    placeholder="0"
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/[^0-9]/g, '')
-                                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 100)) {
-                                            handleChange('vatRate', val === '' ? 0 : parseInt(val))
-                                        }
-                                    }}
-                                    value={values.vatRate !== undefined && values.vatRate !== 0 ? String(values.vatRate) : ''}
-                                />
-                            </>
-                        )}
+                        <select
+                            className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                            style={{ width: '65px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
+                            onChange={(e) => handleChange('currency', e.target.value)}
+                            value={values.currency !== undefined ? String(values.currency) : (config.inputs.find(i => i.key === 'currency')?.default || 'USD')}
+                        >
+                            {currencies.map((curr: any) => (
+                                <option key={curr.value} value={curr.value}>
+                                    {curr.label}
+                                </option>
+                            ))}
+                        </select>
+                        <span className="text-sm text-gray-700 mr-[5px] ml-[5px]">{translations.plusVat}</span>
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]{1,2}"
+                            maxLength={2}
+                            className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-right pr-6"
+                            style={{ width: '65px', height: '29px', paddingLeft: '8px', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Ctext x=\'6\' y=\'9\' text-anchor=\'middle\' font-size=\'10\' fill=\'%23333\'%3E%25%3C/text%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
+                            placeholder="0"
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, '')
+                                if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 100)) {
+                                    handleChange('vatRate', val === '' ? 0 : parseInt(val))
+                                }
+                            }}
+                            value={values.vatRate !== undefined && values.vatRate !== 0 ? String(values.vatRate) : ''}
+                        />
                     </div>
 
                     {/* Check Writing */}
