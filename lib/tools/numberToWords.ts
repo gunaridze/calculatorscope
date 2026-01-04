@@ -174,43 +174,29 @@ function convertIntegerToWords(integerStr: string): string {
 
 /**
  * Применяет регистр к тексту
+ * Предполагается, что входной текст уже в нижнем регистре
  */
 function applyTextCase(text: string, textCase: TextCase): string {
+  // Убеждаемся, что текст в нижнем регистре
+  const lowerText = text.toLowerCase()
+  
   switch (textCase) {
     case 'UPPERCASE':
-      return text.toUpperCase()
+      return lowerText.toUpperCase()
     case 'lowercase':
-      return text.toLowerCase()
+      return lowerText
     case 'Title Case':
-      return text.split(' ').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      ).join(' ')
+      // Каждое слово с заглавной буквы
+      return lowerText.split(' ').map(word => {
+        if (word.length === 0) return word
+        return word.charAt(0).toUpperCase() + word.slice(1)
+      }).join(' ')
     case 'Sentence case':
       // Первая буква заглавная, остальные строчные
-      return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
+      if (lowerText.length === 0) return lowerText
+      return lowerText.charAt(0).toUpperCase() + lowerText.slice(1)
     default:
-      return text
-  }
-}
-
-/**
- * Применяет регистр к части текста (для дробной части в Sentence case)
- */
-function applyTextCasePartial(text: string, textCase: TextCase): string {
-  switch (textCase) {
-    case 'UPPERCASE':
-      return text.toUpperCase()
-    case 'lowercase':
-      return text.toLowerCase()
-    case 'Title Case':
-      return text.split(' ').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      ).join(' ')
-    case 'Sentence case':
-      // Для дробной части - все строчные
-      return text.toLowerCase()
-    default:
-      return text
+      return lowerText
   }
 }
 
@@ -257,8 +243,8 @@ export function numberToWords(
     decimal = parts[1] || ''
   }
   
-  // Конвертируем целую часть
-  let result = convertIntegerToWords(integer)
+  // Конвертируем целую часть (всегда в нижнем регистре)
+  let result = convertIntegerToWords(integer).toLowerCase()
   
   // Обрабатываем отрицательные числа
   if (isNegative) {
@@ -272,28 +258,29 @@ export function numberToWords(
     if (decimal && parseInt(decimal) > 0) {
       // Удаляем ведущие нули из дробной части
       const decimalClean = decimal.replace(/^0+/, '') || '0'
-      const decimalWords = convertIntegerToWords(decimalClean)
-      // Для дробной части используем applyTextCasePartial (для Sentence case - все строчные)
-      result = applyTextCase(result, textCase) + ` point ${applyTextCasePartial(decimalWords, textCase)}`
-    } else {
-      result = applyTextCase(result, textCase)
+      const decimalWords = convertIntegerToWords(decimalClean).toLowerCase()
+      result = result + ` point ${decimalWords}`
     }
+    // Применяем регистр ко всему результату
+    result = applyTextCase(result, textCase)
     return { textResult: result, calculatedTotal }
   }
   
   if (mode === 'check_writing') {
     // Формат чека: "Five thousand... and 62/100 dollars"
     const currencyName = parseInt(integer) === 1 
-      ? CURRENCY_INFO[currency].name 
-      : CURRENCY_INFO[currency].plural
+      ? CURRENCY_INFO[currency].name.toLowerCase()
+      : CURRENCY_INFO[currency].plural.toLowerCase()
     
     if (decimal && parseInt(decimal) > 0) {
       const fraction = convertDecimalToFraction(decimal, currency)
-      result = applyTextCase(result, textCase) + ` and ${fraction} ${currencyName}`
+      result = result + ` and ${fraction} ${currencyName}`
     } else {
-      result = applyTextCase(result, textCase) + ` ${currencyName}`
+      result = result + ` ${currencyName}`
     }
     
+    // Применяем регистр ко всему результату
+    result = applyTextCase(result, textCase)
     return { textResult: result, calculatedTotal }
   }
   
@@ -303,14 +290,14 @@ export function numberToWords(
     const integerNum = parseInt(integer) || 0
     
     if (currency === 'RUB') {
-      currencyName = getRubDeclension(integerNum)
+      currencyName = getRubDeclension(integerNum).toLowerCase()
     } else {
       currencyName = integerNum === 1 
-        ? CURRENCY_INFO[currency].name 
-        : CURRENCY_INFO[currency].plural
+        ? CURRENCY_INFO[currency].name.toLowerCase()
+        : CURRENCY_INFO[currency].plural.toLowerCase()
     }
     
-    result = applyTextCase(result, textCase) + ` ${currencyName}`
+    result = result + ` ${currencyName}`
     
     // Добавляем дробную часть
     if (decimal && parseInt(decimal) > 0) {
@@ -319,45 +306,45 @@ export function numberToWords(
       
       let fractionalName: string
       if (currency === 'RUB') {
-        fractionalName = getKopekDeclension(centsNum)
+        fractionalName = getKopekDeclension(centsNum).toLowerCase()
       } else {
         fractionalName = centsNum === 1 
-          ? CURRENCY_INFO[currency].fractional 
-          : CURRENCY_INFO[currency].fractionalPlural
+          ? CURRENCY_INFO[currency].fractional.toLowerCase()
+          : CURRENCY_INFO[currency].fractionalPlural.toLowerCase()
       }
       
-      const centsWords = convertIntegerToWords(cents)
-      result += ` and ${applyTextCase(centsWords, textCase)} ${fractionalName}`
+      const centsWords = convertIntegerToWords(cents).toLowerCase()
+      result += ` and ${centsWords} ${fractionalName}`
     } else {
       // Если нет дробной части, добавляем "00 копеек/центов"
       if (currency === 'RUB') {
-        result += ` 00 ${getKopekDeclension(0)}`
+        result += ` 00 ${getKopekDeclension(0).toLowerCase()}`
       } else {
-        result += ` and zero ${CURRENCY_INFO[currency].fractionalPlural}`
+        result += ` and zero ${CURRENCY_INFO[currency].fractionalPlural.toLowerCase()}`
       }
     }
     
     // Для режима currency_vat добавляем информацию о НДС
     if (mode === 'currency_vat' && vatAmount !== undefined && principalAmount !== undefined && vatRate > 0) {
-      // Конвертируем сумму НДС в слова
+      // Конвертируем сумму НДС в слова (всегда в нижнем регистре)
       const vatStr = vatAmount.toFixed(2)
       const vatParts = vatStr.split('.')
       const vatInteger = vatParts[0]
       const vatDecimal = vatParts[1] || '00'
       
-      let vatWords = convertIntegerToWords(vatInteger)
+      let vatWords = convertIntegerToWords(vatInteger).toLowerCase()
       const vatIntegerNum = parseInt(vatInteger) || 0
       
       let vatCurrencyName: string
       if (currency === 'RUB') {
-        vatCurrencyName = getRubDeclension(vatIntegerNum)
+        vatCurrencyName = getRubDeclension(vatIntegerNum).toLowerCase()
       } else {
         vatCurrencyName = vatIntegerNum === 1 
-          ? CURRENCY_INFO[currency].name 
-          : CURRENCY_INFO[currency].plural
+          ? CURRENCY_INFO[currency].name.toLowerCase()
+          : CURRENCY_INFO[currency].plural.toLowerCase()
       }
       
-      vatWords = applyTextCase(vatWords, textCase) + ` ${vatCurrencyName}`
+      vatWords = vatWords + ` ${vatCurrencyName}`
       
       // Добавляем дробную часть для НДС
       if (parseInt(vatDecimal) > 0) {
@@ -366,31 +353,33 @@ export function numberToWords(
         
         let vatFractionalName: string
         if (currency === 'RUB') {
-          vatFractionalName = getKopekDeclension(vatCentsNum)
+          vatFractionalName = getKopekDeclension(vatCentsNum).toLowerCase()
         } else {
           vatFractionalName = vatCentsNum === 1 
-            ? CURRENCY_INFO[currency].fractional 
-            : CURRENCY_INFO[currency].fractionalPlural
+            ? CURRENCY_INFO[currency].fractional.toLowerCase()
+            : CURRENCY_INFO[currency].fractionalPlural.toLowerCase()
         }
         
-        const vatCentsWords = convertIntegerToWords(vatCents)
-        vatWords += ` and ${applyTextCase(vatCentsWords, textCase)} ${vatFractionalName}`
+        const vatCentsWords = convertIntegerToWords(vatCents).toLowerCase()
+        vatWords += ` and ${vatCentsWords} ${vatFractionalName}`
       } else {
         if (currency === 'RUB') {
-          vatWords += ` 00 ${getKopekDeclension(0)}`
+          vatWords += ` 00 ${getKopekDeclension(0).toLowerCase()}`
         } else {
-          vatWords += ` and zero ${CURRENCY_INFO[currency].fractionalPlural}`
+          vatWords += ` and zero ${CURRENCY_INFO[currency].fractionalPlural.toLowerCase()}`
         }
       }
       
-      // Формируем полный результат с информацией о НДС
+      // Формируем полный результат с информацией о НДС (все в нижнем регистре)
       if (currency === 'RUB') {
-        result += `, в том числе НДС (${vatRate}%) в размере ${vatWords}`
+        result += `, в том числе ндс (${vatRate}%) в размере ${vatWords}`
       } else {
-        result += `, including VAT (${vatRate}%) in the amount of ${vatWords}`
+        result += `, including vat (${vatRate}%) in the amount of ${vatWords}`
       }
     }
     
+    // Применяем регистр ко всему результату
+    result = applyTextCase(result, textCase)
     return { textResult: result, calculatedTotal, vatAmount, principalAmount }
   }
   

@@ -186,9 +186,9 @@ export default function CalculatorWidget({
                             value="words"
                             checked={conversionMode === 'words'}
                             onChange={(e) => handleChange('conversionMode', e.target.value)}
-                            className="mr-2"
+                            className="mr-2 cursor-pointer"
                         />
-                        <label htmlFor="mode-words" className="text-sm text-gray-700">
+                        <label htmlFor="mode-words" className="text-sm text-gray-700 cursor-pointer">
                             {translations.wordsOption}
                         </label>
                     </div>
@@ -202,9 +202,9 @@ export default function CalculatorWidget({
                             value="currency"
                             checked={conversionMode === 'currency'}
                             onChange={(e) => handleChange('conversionMode', e.target.value)}
-                            className="mr-2"
+                            className="mr-2 cursor-pointer"
                         />
-                        <label htmlFor="mode-currency" className="text-sm text-gray-700 mr-[15px]">
+                        <label htmlFor="mode-currency" className="text-sm text-gray-700 mr-[15px] cursor-pointer">
                             {translations.currencyOption}
                         </label>
                         <select
@@ -230,9 +230,9 @@ export default function CalculatorWidget({
                             value="currency_vat"
                             checked={conversionMode === 'currency_vat'}
                             onChange={(e) => handleChange('conversionMode', e.target.value)}
-                            className="mr-2"
+                            className="mr-2 cursor-pointer"
                         />
-                        <label htmlFor="mode-currency-vat" className="text-sm text-gray-700 mr-[15px]">
+                        <label htmlFor="mode-currency-vat" className="text-sm text-gray-700 mr-[15px] cursor-pointer">
                             {translations.currencyOption}
                         </label>
                         <select
@@ -275,9 +275,9 @@ export default function CalculatorWidget({
                             value="check_writing"
                             checked={conversionMode === 'check_writing'}
                             onChange={(e) => handleChange('conversionMode', e.target.value)}
-                            className="mr-2"
+                            className="mr-2 cursor-pointer"
                         />
-                        <label htmlFor="mode-check-writing" className="text-sm text-gray-700">
+                        <label htmlFor="mode-check-writing" className="text-sm text-gray-700 cursor-pointer">
                             {translations.checkWritingOption}
                         </label>
                     </div>
