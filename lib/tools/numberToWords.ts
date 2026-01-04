@@ -1401,32 +1401,34 @@ function frConvertTens(num: number): string {
   const tens = Math.floor(num / 10)
   const ones = num % 10
   
-  if (tens === 7) { // 70-79: soixante-dix, soixante-onze...
+  // 70-79: soixante-dix...
+  if (tens === 7) { 
     if (ones === 0) return 'soixante-dix'
-    if (ones === 1) return 'soixante-et-onze'
+    if (ones === 1) return 'soixante et onze' // et без дефисов
     return 'soixante-' + FR_TEENS[ones]
   }
   
-  if (tens === 8) { // 80-89: quatre-vingt, quatre-vingt-un...
+  // 80-89: quatre-vingts...
+  if (tens === 8) { 
     if (ones === 0) return 'quatre-vingts'
-    if (ones === 1) return 'quatre-vingt-un'
+    if (ones === 1) return 'quatre-vingt-un' // без et
     return 'quatre-vingt-' + FR_ONES[ones]
   }
   
-  if (tens === 9) { // 90-99: quatre-vingt-dix, quatre-vingt-onze...
+  // 90-99: quatre-vingt-dix...
+  if (tens === 9) { 
     if (ones === 0) return 'quatre-vingt-dix'
-    if (ones === 1) return 'quatre-vingt-onze'
+    if (ones === 1) return 'quatre-vingt-onze' // без et
     return 'quatre-vingt-' + FR_TEENS[ones]
   }
   
-  // 20-69: обычные десятки
+  // 20-69
   let result = FR_TENS[tens]
-  if (ones === 1 && tens === 2) {
-    result += '-et-un'
+  if (ones === 1) {
+    // 21, 31, 41, 51, 61: "vingt et un" (с пробелами)
+    result += ' et un'
   } else if (ones > 0) {
     result += '-' + FR_ONES[ones]
-  } else if (tens === 8) {
-    result += 's'
   }
   
   return result
@@ -1445,9 +1447,10 @@ const frProcessor: LocaleProcessor = {
         result += 'cent'
       } else {
         result += FR_ONES[hundreds] + ' cent'
-      }
-      if (remainder === 0 && hundreds > 1) {
-        result += 's'
+        // Добавляем 's' ТОЛЬКО если это конец числа (нет остатка)
+        if (remainder === 0) {
+          result += 's'
+        }
       }
       if (remainder > 0) result += ' '
     }
@@ -1515,7 +1518,7 @@ const frProcessor: LocaleProcessor = {
   getMinusWord(): string { return 'moins' },
   getAndWord(): string { return 'et' },
   getVatPhrase(vatRate: number, vatAmount: string): string {
-    return `, TVA incluse (${vatRate}%) d'un montant de ${vatAmount}`
+    return `, TVA incluse (${vatRate} %) d'un montant de ${vatAmount}`
   },
   getZeroWord(): string { return 'zéro' },
   getHundredthWord(singular: boolean): string {
