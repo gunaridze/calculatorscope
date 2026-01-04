@@ -811,7 +811,7 @@ const DE_CURRENCIES: Record<Currency, CurrencyInfo> = {
   USD: { name: 'US-Dollar', plural: 'US-Dollar', fractional: 'Cent', fractionalPlural: 'Cent' },
   GBP: { name: 'britisches Pfund', plural: 'britische Pfund', fractional: 'Penny', fractionalPlural: 'Pence' },
   EUR: { name: 'Euro', plural: 'Euro', fractional: 'Cent', fractionalPlural: 'Cent' },
-  PLN: { name: 'Złoty', plural: 'Złoty', fractional: 'Grosz', fractionalPlural: 'Grosze' },
+  PLN: { name: 'Złoty', plural: 'Złoty', fractional: 'Grosz', fractionalPlural: 'Groszy' },
   RUB: { name: 'Rubel', plural: 'Rubel', fractional: 'Kopeke', fractionalPlural: 'Kopeken' }
 }
 
@@ -829,7 +829,7 @@ const deProcessor: LocaleProcessor = {
       } else {
         result += DE_ONES[hundreds] + 'hundert'
       }
-      if (remainder > 0) result += 'und'
+      // В немецком языке "und" не ставится между сотнями и остальным числом
     }
     
     if (remainder >= 10 && remainder < 20) {
@@ -905,7 +905,7 @@ const deProcessor: LocaleProcessor = {
   getMinusWord(): string { return 'minus' },
   getAndWord(): string { return 'und' },
   getVatPhrase(vatRate: number, vatAmount: string): string {
-    return `, einschließlich MwSt (${vatRate}%) in Höhe von ${vatAmount}`
+    return `, einschließlich MwSt. (${vatRate} %) in Höhe von ${vatAmount}`
   },
   getZeroWord(): string { return 'null' },
   getHundredthWord(singular: boolean): string {
