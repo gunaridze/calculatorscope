@@ -30,6 +30,8 @@ interface CurrencyInfo {
   plural: string  // множественное число
   fractional: string  // дробная единица (единственное)
   fractionalPlural: string  // дробная единица (множественное)
+  fractionalGender?: 'masculine' | 'feminine'  // род дробной единицы (для русского языка)
+  genitive?: string  // родительный падеж единственного числа (для русского языка)
 }
 
 // Интерфейс для процессора локализации
@@ -37,7 +39,7 @@ interface LocaleProcessor {
   // Конвертация чисел
   convertHundreds(num: number): string
   convertIntegerToWords(integerStr: string): string
-  convertDecimalToWords(decimalStr: string): string
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string
   
   // Валюты
   getCurrencyName(currency: Currency, amount: number): string
@@ -194,7 +196,7 @@ const enProcessor: LocaleProcessor = {
     return words.join(' ')
   },
   
-  convertDecimalToWords(decimalStr: string): string {
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
     return this.convertIntegerToWords(decimalClean)
   },
@@ -381,6 +383,50 @@ const RU_SCALES_GENITIVE_SINGULAR = [
   'уннонагинтиллиона', 'дуононагинтиллиона', 'тринонагинтиллиона', 'кватторнонагинтиллиона', 'квинтнонагинтиллиона', 'секcнонагинтиллиона', 'септеннонагинтиллиона', 'октонoнагинтиллиона', 'новемнонагинтиллиона'
 ]
 
+// Выносим RU_CURRENCIES в общую область для доступа из основной функции
+const RU_CURRENCIES: Record<Currency, CurrencyInfo> = {
+  USD: { 
+    name: 'доллар США', 
+    plural: 'долларов США', 
+    genitive: 'доллара США',
+    fractional: 'цент', 
+    fractionalPlural: 'центов',
+    fractionalGender: 'masculine'
+  },
+  GBP: { 
+    name: 'фунт стерлингов', 
+    plural: 'фунтов стерлингов', 
+    genitive: 'фунта стерлингов',
+    fractional: 'пенс', 
+    fractionalPlural: 'пенсов',
+    fractionalGender: 'masculine'
+  },
+  EUR: { 
+    name: 'евро', 
+    plural: 'евро', 
+    genitive: 'евро',
+    fractional: 'цент', 
+    fractionalPlural: 'центов',
+    fractionalGender: 'masculine'
+  },
+  PLN: { 
+    name: 'злотый', 
+    plural: 'злотых', 
+    genitive: 'злотого',
+    fractional: 'грош', 
+    fractionalPlural: 'грошей',
+    fractionalGender: 'masculine'
+  },
+  RUB: { 
+    name: 'рубль', 
+    plural: 'рублей', 
+    genitive: 'рубля',
+    fractional: 'копейка', 
+    fractionalPlural: 'копеек',
+    fractionalGender: 'feminine'
+  }
+}
+
 const RU_SCALES_GENITIVE_PLURAL = [
   '', 'тысяч', 'миллионов', 'миллиардов', 'триллионов', 'квадриллионов', 'квинтиллионов', 'секстиллионов', 'септиллионов', 'октиллионов', 'нониллионов', 'дециллионов',
   'ундециллионов', 'дуодециллионов', 'тредециллионов', 'кваттордециллионов', 'квиндециллионов', 'сексдециллионов', 'септендециллионов', 'октодециллионов', 'новемдециллионов', 'вигинтиллионов',
@@ -393,14 +439,6 @@ const RU_SCALES_GENITIVE_PLURAL = [
   'уноктогинтиллионов', 'дуоктогинтиллионов', 'триоктогинтиллионов', 'кваттороктогинтиллионов', 'квинтоктогинтиллионов', 'сексоктогинтиллионов', 'септентоктогинтиллионов', 'октоктогинтиллионов', 'новемоктогинтиллионов', 'нонагинтиллионов',
   'уннонагинтиллионов', 'дуононагинтиллионов', 'тринонагинтиллионов', 'кватторнонагинтиллионов', 'квинтнонагинтиллионов', 'секcнонагинтиллионов', 'септеннонагинтиллионов', 'октонoнагинтиллионов', 'новемнонагинтиллионов'
 ]
-
-const RU_CURRENCIES: Record<Currency, CurrencyInfo> = {
-  USD: { name: 'доллар США', plural: 'долларов США', fractional: 'цент', fractionalPlural: 'центов' },
-  GBP: { name: 'фунт стерлингов', plural: 'фунтов стерлингов', fractional: 'пенс', fractionalPlural: 'пенсов' },
-  EUR: { name: 'евро', plural: 'евро', fractional: 'цент', fractionalPlural: 'центов' },
-  PLN: { name: 'злотый', plural: 'злотых', fractional: 'грош', fractionalPlural: 'грошей' },
-  RUB: { name: 'рубль', plural: 'рублей', fractional: 'копейка', fractionalPlural: 'копеек' }
-}
 
 function getRuDeclension(num: number, forms: [string, string, string]): string {
   const mod10 = num % 10
@@ -507,53 +545,100 @@ const ruProcessor: LocaleProcessor = {
     return words.join(' ')
   },
   
-  convertDecimalToWords(decimalStr: string): string {
-    // Для дробных частей в русском языке используется женский род
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
+    // Удаляем нули в начале, но оставляем один ноль, если все число ноль
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
     if (decimalClean === '0') return 'ноль'
     
-    const num = parseInt(decimalClean, 10)
-    if (num === 0) return 'ноль'
-    
-    // Используем женский род для дробных частей
-    const hundreds = Math.floor(num / 100)
-    const remainder = num % 100
-    let result = ''
-    
-    if (hundreds > 0) {
-      result += RU_HUNDREDS[hundreds]
-      if (remainder > 0) result += ' '
+    // Разбиваем на группы по 3 цифры
+    const groups: string[] = []
+    for (let i = decimalClean.length; i > 0; i -= 3) {
+      const start = Math.max(0, i - 3)
+      groups.unshift(decimalClean.substring(start, i))
     }
     
-    if (remainder >= 10 && remainder < 20) {
-      result += RU_TEENS[remainder - 10]
-    } else {
-      const tens = Math.floor(remainder / 10)
-      const ones = remainder % 10
-      if (tens > 0) {
-        result += RU_TENS[tens]
-        if (ones > 0) result += ' '
+    const words: string[] = []
+    for (let i = 0; i < groups.length; i++) {
+      const group = parseInt(groups[i], 10)
+      if (group === 0) continue
+      
+      const scaleIndex = groups.length - 1 - i
+      let groupWords = ''
+      
+      // Логика формирования слов для группы
+      const hundreds = Math.floor(group / 100)
+      const remainder = group % 100
+      
+      if (hundreds > 0) {
+        groupWords += RU_HUNDREDS[hundreds] + ' '
       }
-      if (ones > 0) {
-        // Используем женский род для единиц в дробных частях
-        result += RU_ONES_FEMININE[ones]
+      
+      // Определяем, нужно ли использовать женский род для единиц
+      // 1. Если это тысячи (scaleIndex === 1) -> всегда женский (одна тысяча)
+      // 2. Если это единицы (scaleIndex === 0) И передан параметр gender -> используем его
+      // 3. Иначе (обычные числа) -> мужской
+      let useFeminine = false
+      if (scaleIndex === 1) {
+        useFeminine = true
+      } else if (scaleIndex === 0 && options?.gender === 'feminine') {
+        useFeminine = true
+      }
+      
+      if (remainder >= 10 && remainder < 20) {
+        groupWords += RU_TEENS[remainder - 10]
+      } else {
+        const tens = Math.floor(remainder / 10)
+        const ones = remainder % 10
+        if (tens > 0) {
+          groupWords += RU_TENS[tens]
+          if (ones > 0) groupWords += ' '
+        }
+        if (ones > 0) {
+          groupWords += useFeminine ? RU_ONES_FEMININE[ones] : RU_ONES[ones]
+        }
+      }
+      
+      if (groupWords) {
+        words.push(groupWords.trim())
+        // Добавляем название разряда (тысяча, миллион...), если это не единицы
+        const scaleWord = getRuScaleDeclension(scaleIndex, group)
+        if (scaleWord) {
+          words.push(scaleWord)
+        }
       }
     }
     
-    return result
+    return words.join(' ')
   },
   
   getCurrencyName(currency: Currency, amount: number): string {
     const info = RU_CURRENCIES[currency]
-    if (currency === 'RUB') {
-      return getRuDeclension(amount, [info.name, 'рубля', info.plural])
+    // Используем правильные формы склонения: [именительный, родительный, множественный]
+    if (info.genitive) {
+      return getRuDeclension(amount, [info.name, info.genitive, info.plural])
     }
+    // Fallback для валют без genitive
     return getRuDeclension(amount, [info.name, info.name, info.plural])
   },
   
   getFractionalName(currency: Currency, amount: number): string {
     const info = RU_CURRENCIES[currency]
-    return getRuDeclension(amount, [info.fractional, 'копейки', info.fractionalPlural])
+    // Определяем правильные формы склонения для дробной части
+    // Для всех валют используем стандартное склонение: [единственное, родительное единственное, множественное]
+    let genitiveForm = ''
+    if (currency === 'RUB') {
+      genitiveForm = 'копейки'
+    } else if (currency === 'USD' || currency === 'EUR') {
+      genitiveForm = 'цента'
+    } else if (currency === 'GBP') {
+      genitiveForm = 'пенса'
+    } else if (currency === 'PLN') {
+      genitiveForm = 'гроша'
+    } else {
+      // Fallback
+      genitiveForm = info.fractional
+    }
+    return getRuDeclension(amount, [info.fractional, genitiveForm, info.fractionalPlural])
   },
   
   getMinusWord(): string { return 'минус' },
@@ -794,7 +879,7 @@ const deProcessor: LocaleProcessor = {
     return words.join('')
   },
   
-  convertDecimalToWords(decimalStr: string): string {
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
     return this.convertIntegerToWords(decimalClean)
   },
@@ -1067,7 +1152,7 @@ const esProcessor: LocaleProcessor = {
     return words.join(' ')
   },
   
-  convertDecimalToWords(decimalStr: string): string {
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
     return this.convertIntegerToWords(decimalClean)
   },
@@ -1351,7 +1436,7 @@ const frProcessor: LocaleProcessor = {
     return words.join(' ')
   },
   
-  convertDecimalToWords(decimalStr: string): string {
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
     return this.convertIntegerToWords(decimalClean)
   },
@@ -1606,7 +1691,7 @@ const itProcessor: LocaleProcessor = {
     return words.join('')
   },
   
-  convertDecimalToWords(decimalStr: string): string {
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
     return this.convertIntegerToWords(decimalClean)
   },
@@ -1858,7 +1943,7 @@ const plProcessor: LocaleProcessor = {
     return words.join(' ')
   },
   
-  convertDecimalToWords(decimalStr: string): string {
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
     return this.convertIntegerToWords(decimalClean)
   },
@@ -2173,7 +2258,7 @@ const lvProcessor: LocaleProcessor = {
     return words.join(' ')
   },
   
-  convertDecimalToWords(decimalStr: string): string {
+  convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
     return this.convertIntegerToWords(decimalClean)
   },
@@ -2442,7 +2527,9 @@ export function numberToWords(
       const cents = decimal.substring(0, 2).padEnd(2, '0').substring(0, 2)
       const centsNum = parseInt(cents, 10)
       const fractionalName = processor.getFractionalName(currency, centsNum).toLowerCase()
-      const centsWords = processor.convertDecimalToWords(cents).toLowerCase()
+      // Определяем род дробной части для русского языка
+      const fractionalGender = language === 'ru' && RU_CURRENCIES[currency]?.fractionalGender
+      const centsWords = processor.convertDecimalToWords(cents, fractionalGender ? { gender: fractionalGender } : undefined).toLowerCase()
       
       result += ` ${processor.getAndWord()} ${centsWords} ${fractionalName}`
     } else {
@@ -2468,7 +2555,9 @@ export function numberToWords(
         const vatCents = vatDecimal.substring(0, 2).padEnd(2, '0').substring(0, 2)
         const vatCentsNum = parseInt(vatCents, 10)
         const vatFractionalName = processor.getFractionalName(currency, vatCentsNum).toLowerCase()
-        const vatCentsWords = processor.convertDecimalToWords(vatCents).toLowerCase()
+        // Определяем род дробной части для русского языка
+        const vatFractionalGender = language === 'ru' && RU_CURRENCIES[currency]?.fractionalGender
+        const vatCentsWords = processor.convertDecimalToWords(vatCents, vatFractionalGender ? { gender: vatFractionalGender } : undefined).toLowerCase()
         vatWords += ` ${processor.getAndWord()} ${vatCentsWords} ${vatFractionalName}`
       } else {
         const zeroWord = processor.getZeroWord().toLowerCase()
