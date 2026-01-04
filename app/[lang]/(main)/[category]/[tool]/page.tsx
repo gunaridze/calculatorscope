@@ -126,9 +126,20 @@ export default async function ToolPage({ params, searchParams }: Props) {
         { name: 'Calculator Scope', href: `/${lang}` },
     ]
 
-    // Добавляем категории
+    // Добавляем категории (сначала родительскую, потом дочернюю)
     if (data.tool.categories && data.tool.categories.length > 0) {
         const categoryData = data.tool.categories[0].category
+        
+        // Добавляем родительскую категорию, если она есть
+        if (categoryData.parent && categoryData.parent.i18n && categoryData.parent.i18n.length > 0) {
+            const parentI18n = categoryData.parent.i18n[0]
+            breadcrumbs.push({
+                name: parentI18n.name,
+                href: `/${lang}/${parentI18n.slug}`
+            })
+        }
+        
+        // Добавляем дочернюю категорию
         if (categoryData.i18n && categoryData.i18n.length > 0) {
             const catI18n = categoryData.i18n[0]
             breadcrumbs.push({

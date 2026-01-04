@@ -24,6 +24,13 @@ export async function getToolData(slug: string, lang: string) {
                                 include: {
                                     i18n: {
                                         where: { lang: lang }
+                                    },
+                                    parent: {
+                                        include: {
+                                            i18n: {
+                                                where: { lang: lang }
+                                            }
+                                        }
                                     }
                                 }
                             }
