@@ -53,13 +53,30 @@ export default function CalculatorWidget({
                 defaults[inp.key] = inp.default
             }
         })
+        
+        // Обязательно устанавливаем conversionMode, если его нет
+        if (defaults.conversionMode === undefined) {
+            defaults.conversionMode = 'words'
+        }
+        
         return { ...defaults, ...(initialValues || {}) }
     }
+    
     // Инициализируем state с default значениями
     const defaultValues = getInitialValues()
     const [values, setValues] = useState<JsonEngineInput>(defaultValues)
     const [result, setResult] = useState<JsonEngineOutput>({})
     const [copied, setCopied] = useState(false)
+    
+    // Гарантируем, что conversionMode всегда есть в state
+    useEffect(() => {
+        if (values.conversionMode === undefined || values.conversionMode === null || values.conversionMode === '') {
+            setValues(prev => ({
+                ...prev,
+                conversionMode: config.inputs.find(i => i.key === 'conversionMode')?.default || 'words'
+            }))
+        }
+    }, [values.conversionMode, config.inputs])
 
     // Применяем query params из URL (клиент-side)
     useEffect(() => {
@@ -147,12 +164,8 @@ export default function CalculatorWidget({
     }
 
     // Получаем текущий режим конвертации из state
-    // Используем значение напрямую из values, если его нет - из default
-    // Важно: проверяем явно на undefined и null, чтобы React видел изменения
-    const currentConversionMode = (values.conversionMode !== undefined && values.conversionMode !== null && values.conversionMode !== '')
-        ? String(values.conversionMode)
-        : String(config.inputs.find(i => i.key === 'conversionMode')?.default ?? 'words')
-    const conversionMode = currentConversionMode
+    // Теперь conversionMode ВСЕГДА есть в values, поэтому просто берем его напрямую
+    const conversionMode = String(values.conversionMode || 'words')
     
     // Получаем конфигурацию полей из inputs_json
     const getFieldConfig = (key: string) => {
