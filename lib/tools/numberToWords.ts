@@ -773,8 +773,16 @@ const ruProcessor: LocaleProcessor = {
       word = closest ? fractionalWords[closest] : ['сотая', 'сотых']
     }
     
-    // Используем склонение: 1 - единственное, 2-4 - единственное, 5+ - множественное
-    return getRuDeclension(decimalNum, [word[0], word[0], word[1]])
+    // Для дробных частей (порядковых числительных/субстантивированных прилагательных):
+    // Окончание на 1 (кроме 11) -> именительный падеж единственного числа ("сотая")
+    // Все остальные (2, 3, 4, 5, ...) -> родительный падеж множественного числа ("сотых")
+    const mod10 = decimalNum % 10
+    const mod100 = decimalNum % 100
+    if (mod10 === 1 && mod100 !== 11) {
+      return word[0]  // "сотая", "тысячная" и т.д.
+    } else {
+      return word[1]  // "сотых", "тысячных" и т.д.
+    }
   }
 }
 
@@ -2481,10 +2489,13 @@ export function numberToWords(
       const decimalLength = decimal.length
       const decimalClean = decimal.replace(/^0+/, '') || '0'
       const decimalNum = parseInt(decimalClean, 10)
-      const decimalWords = processor.convertDecimalToWords(decimalClean).toLowerCase()
+      
+      // Для режима 'words' всегда используем женский род (доли)
+      const decimalWords = processor.convertDecimalToWords(decimalClean, { gender: 'feminine' }).toLowerCase()
       
       const andWord = processor.getAndWord()
       // Используем правильное название дробной части в зависимости от количества знаков
+      // Для режима 'words' склонение работает как для порядковых числительных
       const fractionalWord = processor.getFractionalWord(decimalLength, decimalNum)
       result = result + ` ${andWord} ${decimalWords} ${fractionalWord}`
     }
