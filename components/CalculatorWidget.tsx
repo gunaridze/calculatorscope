@@ -411,13 +411,13 @@ export default function CalculatorWidget({
                 </div>
 
                 {/* Logo */}
-                <div className="absolute bottom-[15px] right-[15px]">
+                <div className="mt-5 text-right" style={{ marginTop: '20px' }}>
                     <Image
                         src="/calculatorscope-logo.svg"
                         alt="Calculator Scope"
                         width={90}
                         height={90}
-                        className="object-contain"
+                        className="object-contain inline-block"
                     />
                 </div>
             </div>
