@@ -1721,6 +1721,12 @@ const itProcessor: LocaleProcessor = {
     if (integerStr === '0') return 'zero'
     integerStr = integerStr.replace(/^0+/, '') || '0'
     
+    // Специальная обработка для голой единицы "1" перед сущ. мужского рода
+    // 1 dollar -> un dollaro (не uno dollaro)
+    if (integerStr === '1') {
+      return 'un' // Универсально для un dollaro, un euro, un centesimo
+    }
+    
     const groups: string[] = []
     for (let i = integerStr.length; i > 0; i -= 3) {
       const start = Math.max(0, i - 3)
@@ -1733,26 +1739,47 @@ const itProcessor: LocaleProcessor = {
       if (group === 0) continue
       
       const scaleIndex = groups.length - 1 - i
-      const groupWords = this.convertHundreds(group)
+      let groupWords = this.convertHundreds(group)
       
       if (groupWords) {
         if (scaleIndex === 1 && group === 1) {
           words.push('mille')
+        } else if (scaleIndex === 1) {
+          // Для тысяч (2000 -> duemila) - слитно
+          words.push(groupWords + 'mila')
         } else {
           words.push(groupWords)
           if (scaleIndex > 0 && IT_SCALES[scaleIndex]) {
-            const scale = IT_SCALES[scaleIndex]
-            if (scaleIndex === 2 && group > 1) {
-              words.push(scale.replace('e', 'i'))
+            const scale = IT_SCALES[scaleIndex] // milione, miliardo
+            if (group > 1) {
+              // milione -> milioni, miliardo -> miliardi
+              words.push(scale.replace(/o$/, 'i'))
             } else {
-              words.push(scale)
+              words.push(scale) // un milione, un miliardo
             }
           }
         }
       }
     }
     
-    return words.join('')
+    // Итальянские числительные пишутся слитно, КРОМЕ миллионов и миллиардов
+    // duemilatrecento (2300) - слитно
+    // un milione duecento (1 000 200) - раздельно
+    // Добавляем пробел ПОСЛЕ шкал >= 2 (миллионов)
+    let result = ''
+    for (let i = 0; i < words.length; i++) {
+      if (i > 0) {
+        // Проверяем, является ли предыдущее слово шкалой >= 2 (milione, miliardo...)
+        const prevWord = words[i - 1]
+        const isScale = IT_SCALES.some((scale, idx) => idx >= 2 && (scale === prevWord || scale.replace(/o$/, 'i') === prevWord))
+        if (isScale) {
+          result += ' ' // Пробел после миллионов/миллиардов
+        }
+      }
+      result += words[i]
+    }
+    
+    return result
   },
   
   convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
@@ -1773,7 +1800,7 @@ const itProcessor: LocaleProcessor = {
   getMinusWord(): string { return 'meno' },
   getAndWord(): string { return 'e' },
   getVatPhrase(vatRate: number, vatAmount: string): string {
-    return `, IVA inclusa (${vatRate}%) per un importo di ${vatAmount}`
+    return `, IVA inclusa (${vatRate} %) per un importo di ${vatAmount}`
   },
   getZeroWord(): string { return 'zero' },
   getHundredthWord(singular: boolean): string {
