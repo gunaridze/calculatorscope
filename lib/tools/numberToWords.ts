@@ -508,8 +508,39 @@ const ruProcessor: LocaleProcessor = {
   },
   
   convertDecimalToWords(decimalStr: string): string {
+    // Для дробных частей в русском языке используется женский род
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
-    return this.convertIntegerToWords(decimalClean)
+    if (decimalClean === '0') return 'ноль'
+    
+    const num = parseInt(decimalClean, 10)
+    if (num === 0) return 'ноль'
+    
+    // Используем женский род для дробных частей
+    const hundreds = Math.floor(num / 100)
+    const remainder = num % 100
+    let result = ''
+    
+    if (hundreds > 0) {
+      result += RU_HUNDREDS[hundreds]
+      if (remainder > 0) result += ' '
+    }
+    
+    if (remainder >= 10 && remainder < 20) {
+      result += RU_TEENS[remainder - 10]
+    } else {
+      const tens = Math.floor(remainder / 10)
+      const ones = remainder % 10
+      if (tens > 0) {
+        result += RU_TENS[tens]
+        if (ones > 0) result += ' '
+      }
+      if (ones > 0) {
+        // Используем женский род для единиц в дробных частях
+        result += RU_ONES_FEMININE[ones]
+      }
+    }
+    
+    return result
   },
   
   getCurrencyName(currency: Currency, amount: number): string {
