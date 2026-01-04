@@ -224,38 +224,36 @@ export default function CalculatorWidget({
                     </label>
                 </div>
 
-                {/* Radio Buttons для выбора формата */}
+                {/* Кнопки-переключатели для выбора формата */}
                 <div className="space-y-[15px] mb-4">
                     {/* Words */}
                     <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="mode-words"
-                            name="conversionMode"
-                            value="words"
-                            checked={conversionMode === 'words'}
-                            onChange={() => handleRadioChange('words')}
-                            className="mr-2 cursor-pointer"
-                        />
-                        <label htmlFor="mode-words" className="text-sm text-gray-700 cursor-pointer">
+                        <button
+                            type="button"
+                            onClick={() => handleRadioChange('words')}
+                            className={`mr-2 px-3 py-1.5 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                                conversionMode === 'words'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
                             {translations.wordsOption}
-                        </label>
+                        </button>
                     </div>
 
                     {/* Currency */}
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="mode-currency"
-                            name="conversionMode"
-                            value="currency"
-                            checked={conversionMode === 'currency'}
-                            onChange={() => handleRadioChange('currency')}
-                            className="mr-2 cursor-pointer"
-                        />
-                        <label htmlFor="mode-currency" className="text-sm text-gray-700 mr-[15px] cursor-pointer">
+                    <div className="flex items-center flex-wrap gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleRadioChange('currency')}
+                            className={`px-3 py-1.5 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                                conversionMode === 'currency'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
                             {translations.currencyOption}
-                        </label>
+                        </button>
                         <select
                             className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                             style={{ width: '65px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
@@ -271,19 +269,18 @@ export default function CalculatorWidget({
                     </div>
 
                     {/* Currency + VAT */}
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="mode-currency-vat"
-                            name="conversionMode"
-                            value="currency_vat"
-                            checked={conversionMode === 'currency_vat'}
-                            onChange={() => handleRadioChange('currency_vat')}
-                            className="mr-2 cursor-pointer"
-                        />
-                        <label htmlFor="mode-currency-vat" className="text-sm text-gray-700 mr-[15px] cursor-pointer">
+                    <div className="flex items-center flex-wrap gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleRadioChange('currency_vat')}
+                            className={`px-3 py-1.5 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                                conversionMode === 'currency_vat'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
                             {translations.currencyOption}
-                        </label>
+                        </button>
                         <select
                             className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                             style={{ width: '65px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
@@ -296,7 +293,7 @@ export default function CalculatorWidget({
                                 </option>
                             ))}
                         </select>
-                        <span className="text-sm text-gray-700 mr-[5px] ml-[5px]">{translations.plusVat}</span>
+                        <span className="text-sm text-gray-700">{translations.plusVat}</span>
                         <input
                             type="text"
                             inputMode="numeric"
@@ -317,18 +314,17 @@ export default function CalculatorWidget({
 
                     {/* Check Writing */}
                     <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="mode-check-writing"
-                            name="conversionMode"
-                            value="check_writing"
-                            checked={conversionMode === 'check_writing'}
-                            onChange={() => handleRadioChange('check_writing')}
-                            className="mr-2 cursor-pointer"
-                        />
-                        <label htmlFor="mode-check-writing" className="text-sm text-gray-700 cursor-pointer">
+                        <button
+                            type="button"
+                            onClick={() => handleRadioChange('check_writing')}
+                            className={`px-3 py-1.5 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                                conversionMode === 'check_writing'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
                             {translations.checkWritingOption}
-                        </label>
+                        </button>
                     </div>
                 </div>
 
