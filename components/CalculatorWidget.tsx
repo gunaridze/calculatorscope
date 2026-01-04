@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { calculate, type JsonEngineConfig, type JsonEngineInput, type JsonEngineOutput } from '@/core/engines/json'
@@ -67,16 +67,6 @@ export default function CalculatorWidget({
     const [values, setValues] = useState<JsonEngineInput>(defaultValues)
     const [result, setResult] = useState<JsonEngineOutput>({})
     const [copied, setCopied] = useState(false)
-    
-    // Гарантируем, что conversionMode всегда есть в state
-    useEffect(() => {
-        if (values.conversionMode === undefined || values.conversionMode === null || values.conversionMode === '') {
-            setValues(prev => ({
-                ...prev,
-                conversionMode: config.inputs.find(i => i.key === 'conversionMode')?.default || 'words'
-            }))
-        }
-    }, [values.conversionMode, config.inputs])
 
     // Применяем query params из URL (клиент-side)
     useEffect(() => {
@@ -94,6 +84,10 @@ export default function CalculatorWidget({
             if (Object.keys(urlValues).length > 0) {
                 setValues((prev) => {
                     const newValues = { ...prev, ...urlValues }
+                    // Гарантируем, что conversionMode всегда есть
+                    if (newValues.conversionMode === undefined || newValues.conversionMode === null || newValues.conversionMode === '') {
+                        newValues.conversionMode = prev.conversionMode || config.inputs.find(i => i.key === 'conversionMode')?.default || 'words'
+                    }
                     // Автоматически считаем при загрузке с query params
                     const calculated = calculate(config, newValues)
                     setResult(calculated)
@@ -111,17 +105,13 @@ export default function CalculatorWidget({
         })
     }
     
-    // Обработка изменения radio button - отдельная функция для гарантированного обновления
-    const handleRadioChange = useCallback((value: string) => {
-        // Используем функциональное обновление для немедленного применения
-        // Важно: создаем полностью новый объект для гарантированного обновления React
-        setValues((prev) => {
-            return {
-                ...prev,
-                conversionMode: value
-            }
-        })
-    }, [])
+    // Обработка изменения radio button - упрощенная функция без useCallback
+    const handleRadioChange = (value: string) => {
+        setValues((prev) => ({
+            ...prev,
+            conversionMode: value
+        }))
+    }
 
     // Главная функция расчета через единый движок
     const handleCalculate = () => {
@@ -137,13 +127,17 @@ export default function CalculatorWidget({
 
     // Очистка формы
     const handleClear = () => {
-        // При очистке сохраняем default значения
+        // При очистке сохраняем default значения, включая conversionMode
         const defaults: JsonEngineInput = {}
         config.inputs.forEach((inp) => {
             if (inp.default !== undefined) {
                 defaults[inp.key] = inp.default
             }
         })
+        // Гарантируем, что conversionMode всегда есть
+        if (defaults.conversionMode === undefined) {
+            defaults.conversionMode = 'words'
+        }
         setValues(defaults)
         setResult({})
     }
@@ -240,7 +234,7 @@ export default function CalculatorWidget({
                             name="conversionMode"
                             value="words"
                             checked={conversionMode === 'words'}
-                            onChange={(e) => handleRadioChange(e.target.value)}
+                            onChange={() => handleRadioChange('words')}
                             className="mr-2 cursor-pointer"
                         />
                         <label htmlFor="mode-words" className="text-sm text-gray-700 cursor-pointer">
@@ -256,7 +250,7 @@ export default function CalculatorWidget({
                             name="conversionMode"
                             value="currency"
                             checked={conversionMode === 'currency'}
-                            onChange={(e) => handleRadioChange(e.target.value)}
+                            onChange={() => handleRadioChange('currency')}
                             className="mr-2 cursor-pointer"
                         />
                         <label htmlFor="mode-currency" className="text-sm text-gray-700 mr-[15px] cursor-pointer">
@@ -284,7 +278,7 @@ export default function CalculatorWidget({
                             name="conversionMode"
                             value="currency_vat"
                             checked={conversionMode === 'currency_vat'}
-                            onChange={(e) => handleRadioChange(e.target.value)}
+                            onChange={() => handleRadioChange('currency_vat')}
                             className="mr-2 cursor-pointer"
                         />
                         <label htmlFor="mode-currency-vat" className="text-sm text-gray-700 mr-[15px] cursor-pointer">
@@ -329,7 +323,7 @@ export default function CalculatorWidget({
                             name="conversionMode"
                             value="check_writing"
                             checked={conversionMode === 'check_writing'}
-                            onChange={(e) => handleRadioChange(e.target.value)}
+                            onChange={() => handleRadioChange('check_writing')}
                             className="mr-2 cursor-pointer"
                         />
                         <label htmlFor="mode-check-writing" className="text-sm text-gray-700 cursor-pointer">
