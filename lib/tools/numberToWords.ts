@@ -1079,16 +1079,18 @@ const ES_CURRENCIES: Record<Currency, CurrencyInfo> = {
 }
 
 const esProcessor: LocaleProcessor = {
-  convertHundreds(num: number): string {
+  convertHundreds(num: number, gender?: 'masculine' | 'feminine'): string {
     if (num === 0) return ''
     
     let result = ''
     const hundreds = Math.floor(num / 100)
     const remainder = num % 100
     
+    // Сотни
     if (hundreds > 0) {
       if (hundreds === 1) {
-        result += 'cien'
+        // "cien" если ровно 100, иначе "ciento"
+        result += remainder === 0 ? 'cien' : 'ciento'
       } else if (hundreds === 5) {
         result += 'quinientos'
       } else if (hundreds === 7) {
@@ -1098,26 +1100,60 @@ const esProcessor: LocaleProcessor = {
       } else {
         result += ES_ONES[hundreds] + 'cientos'
       }
-      if (remainder > 0) result += ' '
+      if (remainder > 0 && hundreds !== 1) result += ' ' // пробел после сотен (кроме ciento)
+      if (hundreds === 1 && remainder > 0) result += ' '
     }
+    
+    // Десятки и единицы
+    if (remainder === 0) return result
     
     if (remainder >= 10 && remainder < 20) {
       result += ES_TEENS[remainder - 10]
     } else {
       const tens = Math.floor(remainder / 10)
       const ones = remainder % 10
-      if (tens > 0) {
-        if (tens === 2 && ones === 0) {
+      
+      if (tens === 2) {
+        // Особая обработка 20-29 (Veinti...)
+        if (ones === 0) {
           result += 'veinte'
-        } else if (tens === 2) {
-          result += 'veinti' + ES_ONES[ones]
         } else {
-          result += ES_TENS[tens]
-          if (ones > 0) result += ' y '
+          // Акценты для 22, 23, 26
+          if (ones === 2) result += 'veintidós'
+          else if (ones === 3) result += 'veintitrés'
+          else if (ones === 6) result += 'veintiséis'
+          else if (ones === 1) {
+            // 21: veintiún (masc), veintiuna (fem), veintiuno (none)
+            if (gender === 'masculine') result += 'veintiún'
+            else if (gender === 'feminine') result += 'veintiuna'
+            else result += 'veintiuno'
+          } else {
+            result += 'veinti' + ES_ONES[ones]
+          }
         }
-      }
-      if (ones > 0 && tens !== 2) {
-        result += ES_ONES[ones]
+      } else if (tens > 0) {
+        // 30-90
+        result += ES_TENS[tens]
+        if (ones > 0) {
+          result += ' y '
+          if (ones === 1) {
+            // 31, 41...: un (masc), una (fem), uno (none)
+            if (gender === 'masculine') result += 'un'
+            else if (gender === 'feminine') result += 'una'
+            else result += 'uno'
+          } else {
+            result += ES_ONES[ones]
+          }
+        }
+      } else {
+        // 0-9
+        if (ones === 1) {
+          if (gender === 'masculine') result += 'un'
+          else if (gender === 'feminine') result += 'una'
+          else result += 'uno'
+        } else {
+          result += ES_ONES[ones]
+        }
       }
     }
     
@@ -1140,14 +1176,29 @@ const esProcessor: LocaleProcessor = {
       if (group === 0) continue
       
       const scaleIndex = groups.length - 1 - i
-      let groupWords = this.convertHundreds(group)
+      
+      // Определяем род для текущей группы:
+      // Если это группа единиц (scaleIndex 0) -> используем gender из опций (валюта/доли)
+      // Для миллионов и выше (scaleIndex >= 2) слово "millón" мужского рода, поэтому перед ним "un" (masculine)
+      // Для тысяч (scaleIndex 1) слово "mil" не требует артикля, если число 1 ("mil", не "un mil")
+      // Но если 21000 -> "veintiún mil". Mil не имеет рода в этом контексте, но числительные ведут себя как перед мужским (apocope).
+      
+      let groupGender = options?.gender
+      
+      // Для миллионов и выше (scaleIndex >= 2) слово "millón" мужского рода, поэтому перед ним "un" (masculine)
+      if (scaleIndex >= 2) {
+        groupGender = 'masculine'
+      }
+      // Для тысяч (scaleIndex 1) числительные ведут себя как перед мужским (apocope)
+      if (scaleIndex === 1) {
+        groupGender = 'masculine'
+      }
+      
+      let groupWords = this.convertHundreds(group, groupGender)
       
       if (groupWords) {
         if (scaleIndex === 1 && group === 1) {
-          words.push('mil')
-        } else if (scaleIndex === 1) {
-          words.push(groupWords)
-          words.push('mil')
+          words.push('mil') // Просто "mil", а не "un mil"
         } else {
           words.push(groupWords)
           if (scaleIndex > 0 && ES_SCALES[scaleIndex]) {
@@ -1162,7 +1213,9 @@ const esProcessor: LocaleProcessor = {
   
   convertDecimalToWords(decimalStr: string, options?: { gender?: 'masculine' | 'feminine' }): string {
     const decimalClean = decimalStr.replace(/^0+/, '') || '0'
-    return this.convertIntegerToWords(decimalClean)
+    // Если gender не передан (обычный режим Words), используем feminine (centésimas)
+    const gender = options?.gender || 'feminine'
+    return this.convertIntegerToWords(decimalClean, { gender })
   },
   
   getCurrencyName(currency: Currency, amount: number): string {
@@ -2558,8 +2611,9 @@ export function numberToWords(
       const decimalClean = decimal.replace(/^0+/, '') || '0'
       const decimalNum = parseInt(decimalClean, 10)
       
-      // Для режима 'words' всегда используем женский род (доли) для латышского и русского
-      const decimalGender = (language === 'lv' || language === 'ru') ? 'feminine' : undefined
+      // Для режима 'words' всегда используем женский род (доли) для латышского, русского и испанского
+      // Для испанского convertDecimalToWords уже использует feminine по умолчанию, но явно передаем для консистентности
+      const decimalGender = (language === 'lv' || language === 'ru' || language === 'es') ? 'feminine' : undefined
       const decimalWords = processor.convertDecimalToWords(decimalClean, decimalGender ? { gender: decimalGender } : undefined).toLowerCase()
       
       const andWord = processor.getAndWord()
@@ -2647,12 +2701,15 @@ export function numberToWords(
         const vatCents = vatDecimal.substring(0, 2).padEnd(2, '0').substring(0, 2)
         const vatCentsNum = parseInt(vatCents, 10)
         const vatFractionalName = processor.getFractionalName(currency, vatCentsNum).toLowerCase()
-        // Определяем род дробной части для русского и латышского языков
+        // Определяем род дробной части для русского, латышского и испанского языков
         let vatFractionalGender: 'masculine' | 'feminine' | undefined = undefined
         if (language === 'ru') {
           vatFractionalGender = RU_CURRENCIES[currency]?.fractionalGender
         } else if (language === 'lv') {
           vatFractionalGender = LV_CURRENCIES[currency]?.fractionalGender
+        } else if (language === 'es') {
+          // В испанском языке дробные части валют обычно мужского рода (centavos, céntimos)
+          vatFractionalGender = 'masculine'
         }
         const vatCentsWords = processor.convertDecimalToWords(vatCents, vatFractionalGender ? { gender: vatFractionalGender } : undefined).toLowerCase()
         vatWords += ` ${processor.getAndWord()} ${vatCentsWords} ${vatFractionalName}`
