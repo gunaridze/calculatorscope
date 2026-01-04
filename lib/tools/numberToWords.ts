@@ -17,6 +17,8 @@ export interface NumberToWordsOptions {
 export interface NumberToWordsResult {
   textResult: string
   calculatedTotal?: number
+  vatAmount?: number
+  principalAmount?: number
 }
 
 // Английские числительные
@@ -219,9 +221,14 @@ export function numberToWords(
   
   // Режим currency_vat: сначала вычисляем итоговую сумму с НДС
   let calculatedTotal: number | undefined
+  let vatAmount: number | undefined
+  let principalAmount: number | undefined
+  
   if (mode === 'currency_vat' && vatRate > 0) {
     const originalValue = parseFloat(`${integer}.${decimal}`) || 0
-    calculatedTotal = originalValue * (1 + vatRate / 100)
+    principalAmount = originalValue
+    vatAmount = originalValue * (vatRate / 100)
+    calculatedTotal = originalValue + vatAmount
     const totalStr = calculatedTotal.toFixed(2)
     const parts = totalStr.split('.')
     integer = parts[0]
@@ -239,7 +246,15 @@ export function numberToWords(
   // Обрабатываем режимы конвертации
   if (mode === 'words') {
     // Просто слова, без валюты
-    result = applyTextCase(result, textCase)
+    // Добавляем дробную часть, если есть
+    if (decimal && parseInt(decimal) > 0) {
+      // Удаляем ведущие нули из дробной части
+      const decimalClean = decimal.replace(/^0+/, '') || '0'
+      const decimalWords = convertIntegerToWords(decimalClean)
+      result = applyTextCase(result, textCase) + ` point ${applyTextCase(decimalWords, textCase)}`
+    } else {
+      result = applyTextCase(result, textCase)
+    }
     return { textResult: result, calculatedTotal }
   }
   
@@ -290,11 +305,72 @@ export function numberToWords(
       
       const centsWords = convertIntegerToWords(cents)
       result += ` and ${applyTextCase(centsWords, textCase)} ${fractionalName}`
+    } else {
+      // Если нет дробной части, добавляем "00 копеек/центов"
+      if (currency === 'RUB') {
+        result += ` 00 ${getKopekDeclension(0)}`
+      } else {
+        result += ` and zero ${CURRENCY_INFO[currency].fractionalPlural}`
+      }
     }
     
-    return { textResult: result, calculatedTotal }
+    // Для режима currency_vat добавляем информацию о НДС
+    if (mode === 'currency_vat' && vatAmount !== undefined && principalAmount !== undefined && vatRate > 0) {
+      // Конвертируем сумму НДС в слова
+      const vatStr = vatAmount.toFixed(2)
+      const vatParts = vatStr.split('.')
+      const vatInteger = vatParts[0]
+      const vatDecimal = vatParts[1] || '00'
+      
+      let vatWords = convertIntegerToWords(vatInteger)
+      const vatIntegerNum = parseInt(vatInteger) || 0
+      
+      let vatCurrencyName: string
+      if (currency === 'RUB') {
+        vatCurrencyName = getRubDeclension(vatIntegerNum)
+      } else {
+        vatCurrencyName = vatIntegerNum === 1 
+          ? CURRENCY_INFO[currency].name 
+          : CURRENCY_INFO[currency].plural
+      }
+      
+      vatWords = applyTextCase(vatWords, textCase) + ` ${vatCurrencyName}`
+      
+      // Добавляем дробную часть для НДС
+      if (parseInt(vatDecimal) > 0) {
+        const vatCents = vatDecimal.substring(0, 2).padEnd(2, '0').substring(0, 2)
+        const vatCentsNum = parseInt(vatCents, 10)
+        
+        let vatFractionalName: string
+        if (currency === 'RUB') {
+          vatFractionalName = getKopekDeclension(vatCentsNum)
+        } else {
+          vatFractionalName = vatCentsNum === 1 
+            ? CURRENCY_INFO[currency].fractional 
+            : CURRENCY_INFO[currency].fractionalPlural
+        }
+        
+        const vatCentsWords = convertIntegerToWords(vatCents)
+        vatWords += ` and ${applyTextCase(vatCentsWords, textCase)} ${vatFractionalName}`
+      } else {
+        if (currency === 'RUB') {
+          vatWords += ` 00 ${getKopekDeclension(0)}`
+        } else {
+          vatWords += ` and zero ${CURRENCY_INFO[currency].fractionalPlural}`
+        }
+      }
+      
+      // Формируем полный результат с информацией о НДС
+      if (currency === 'RUB') {
+        result += `, в том числе НДС (${vatRate}%) в размере ${vatWords}`
+      } else {
+        result += `, including VAT (${vatRate}%) in the amount of ${vatWords}`
+      }
+    }
+    
+    return { textResult: result, calculatedTotal, vatAmount, principalAmount }
   }
   
-  return { textResult: result, calculatedTotal }
+  return { textResult: result, calculatedTotal, vatAmount, principalAmount }
 }
 

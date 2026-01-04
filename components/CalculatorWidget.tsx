@@ -18,6 +18,19 @@ type Props = {
         copy: string
         suggest: string
         getWidget: string
+        // Новые переводы для UI
+        inputLabel: string
+        formatLabel: string
+        wordsOption: string
+        checkWritingOption: string
+        currencyOption: string
+        currencyVatOption: string
+        letterCaseLabel: string
+        lowercaseOption: string
+        uppercaseOption: string
+        titleCaseOption: string
+        sentenceCaseOption: string
+        plusVat: string
     }
     widgetPageSlug?: string  // Slug страницы виджета (id105)
 }
@@ -45,10 +58,7 @@ export default function CalculatorWidget({
             config.inputs.forEach((inp) => {
                 const paramValue = params.get(inp.key)
                 if (paramValue) {
-                    const numValue = parseFloat(paramValue)
-                    if (!isNaN(numValue)) {
-                        urlValues[inp.key] = numValue
-                    }
+                    urlValues[inp.key] = paramValue
                 }
             })
 
@@ -68,23 +78,6 @@ export default function CalculatorWidget({
     const handleChange = (key: string, val: string | number) => {
         setValues((prev) => ({ ...prev, [key]: val }))
     }
-    
-    // Проверка условия отображения поля
-    const shouldShowField = (fieldConfig: any): boolean => {
-        if (!fieldConfig.showCondition) return true
-        
-        const { field, operator, value } = fieldConfig.showCondition
-        const fieldValue = values[field]
-        
-        switch (operator) {
-            case 'equals':
-                return String(fieldValue) === String(value)
-            case 'notEquals':
-                return String(fieldValue) !== String(value)
-            default:
-                return true
-        }
-    }
 
     // Главная функция расчета через единый движок
     const handleCalculate = () => {
@@ -98,36 +91,56 @@ export default function CalculatorWidget({
         setResult({})
     }
 
-    // Копирование результата
+    // Копирование результата - только видимый текст
     const handleCopy = () => {
         if (Object.keys(result).length === 0) return
         
-        // Формируем текст результата
-        const resultText = config.outputs.map((out) => {
-            const label = ui?.outputs?.[out.key]?.label || out.key
-            const value = typeof result[out.key] === 'number'
-                ? (result[out.key] as number).toFixed(out.precision || 2)
-                : result[out.key]
-            return `${label}: ${value}`
-        }).join('\n')
-
-        navigator.clipboard.writeText(resultText).then(() => {
-            setCopied(true)
-            setTimeout(() => setCopied(false), 2000)
-        })
-    }
-
-    // Формируем текст результата для отображения
-    const getResultText = (): string => {
-        if (Object.keys(result).length === 0) return ''
+        // Копируем только textResult (видимый текст)
+        const resultText = result.textResult ? String(result.textResult) : ''
         
-        return config.outputs.map((out) => {
-            const value = typeof result[out.key] === 'number'
-                ? (result[out.key] as number).toFixed(out.precision || 2)
-                : String(result[out.key])
-            return value
-        }).join('\n')
+        if (resultText) {
+            navigator.clipboard.writeText(resultText).then(() => {
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+            })
+        }
     }
+
+    // Получаем текущий режим конвертации
+    const conversionMode = values.conversionMode || config.inputs.find(i => i.key === 'conversionMode')?.default || 'words'
+    
+    // Получаем конфигурацию полей из inputs_json
+    const getFieldConfig = (key: string) => {
+        if (Array.isArray(ui?.inputs)) {
+            return ui.inputs.find((f: any) => f.name === key)
+        }
+        return ui?.inputs?.[key]
+    }
+
+    const inputNumberConfig = getFieldConfig('inputNumber')
+    const currencyConfig = getFieldConfig('currency')
+    const vatRateConfig = getFieldConfig('vatRate')
+    const textCaseConfig = getFieldConfig('textCase')
+
+    // Валюты для dropdown
+    const currencies = currencyConfig?.options || [
+        { value: 'USD', label: 'USD' },
+        { value: 'GBP', label: 'GBP' },
+        { value: 'EUR', label: 'EUR' },
+        { value: 'PLN', label: 'PLN' },
+        { value: 'RUB', label: 'RUB' }
+    ]
+
+    // Опции для Letter Case
+    const textCaseOptions = textCaseConfig?.options || [
+        { value: 'lowercase', label: translations.lowercaseOption },
+        { value: 'UPPERCASE', label: translations.uppercaseOption },
+        { value: 'Title Case', label: translations.titleCaseOption },
+        { value: 'Sentence case', label: translations.sentenceCaseOption }
+    ]
+
+    // Получаем текст результата для отображения
+    const resultText = result.textResult ? String(result.textResult) : ''
 
     return (
         <div className="w-full lg:w-[420px] lg:float-left lg:mr-5 mb-5 relative mx-auto lg:mx-0" style={{ maxWidth: '420px' }}>
@@ -138,61 +151,158 @@ export default function CalculatorWidget({
 
             {/* Тело Калькулятора */}
             <div className="bg-white border border-gray-200 border-t-0 p-5 mx-auto relative" style={{ width: '100%', maxWidth: '400px' }}>
-                {/* INPUTS */}
-                <div className="space-y-4 mb-4">
-                    {config.inputs.map((inp) => {
-                        // Получаем конфигурацию поля из inputs_json
-                        const fieldConfig = Array.isArray(ui?.inputs) 
-                            ? ui.inputs.find((f: any) => f.name === inp.key)
-                            : ui?.inputs?.[inp.key]
-                        
-                        // Проверяем условие отображения
-                        if (!shouldShowField(fieldConfig || {})) {
-                            return null
-                        }
-                        
-                        const fieldType = fieldConfig?.type || 'number'
-                        const label = fieldConfig?.label || inp.key
-                        const placeholder = fieldConfig?.placeholder || (fieldType === 'number' ? '0' : '')
-                        
-                        return (
-                            <div key={inp.key}>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    {label}
-                                </label>
-                                
-                                {fieldType === 'select' && fieldConfig?.options ? (
-                                    <select
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                        onChange={(e) => handleChange(inp.key, e.target.value)}
-                                        value={values[inp.key] !== undefined ? String(values[inp.key]) : (inp.default !== undefined ? String(inp.default) : '')}
-                                    >
-                                        {fieldConfig.options.map((opt: any) => (
-                                            <option key={opt.value} value={opt.value}>
-                                                {opt.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : fieldType === 'text' ? (
-                                    <input
-                                        type="text"
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder={placeholder}
-                                        onChange={(e) => handleChange(inp.key, e.target.value)}
-                                        value={values[inp.key] !== undefined ? String(values[inp.key]) : (inp.default !== undefined ? String(inp.default) : '')}
-                                    />
-                                ) : (
-                                    <input
-                                        type="number"
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder={placeholder}
-                                        onChange={(e) => handleChange(inp.key, e.target.value)}
-                                        value={values[inp.key] !== undefined ? String(values[inp.key]) : (inp.default !== undefined ? String(inp.default) : '')}
-                                    />
-                                )}
-                            </div>
-                        )
-                    })}
+                {/* Поле ввода числа */}
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {translations.inputLabel}
+                    </label>
+                    <input
+                        type="text"
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder={inputNumberConfig?.placeholder || "Enter number"}
+                        onChange={(e) => handleChange('inputNumber', e.target.value)}
+                        value={values.inputNumber !== undefined ? String(values.inputNumber) : ''}
+                    />
+                </div>
+
+                {/* Заголовок "To:" */}
+                <div className="mt-[15px] mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                        {translations.formatLabel}
+                    </label>
+                </div>
+
+                {/* Radio Buttons для выбора формата */}
+                <div className="space-y-[15px] mb-4">
+                    {/* Words */}
+                    <div className="flex items-center">
+                        <input
+                            type="radio"
+                            id="mode-words"
+                            name="conversionMode"
+                            value="words"
+                            checked={conversionMode === 'words'}
+                            onChange={(e) => handleChange('conversionMode', e.target.value)}
+                            className="mr-2"
+                        />
+                        <label htmlFor="mode-words" className="text-sm text-gray-700">
+                            {translations.wordsOption}
+                        </label>
+                    </div>
+
+                    {/* Currency */}
+                    <div className="flex items-center">
+                        <input
+                            type="radio"
+                            id="mode-currency"
+                            name="conversionMode"
+                            value="currency"
+                            checked={conversionMode === 'currency'}
+                            onChange={(e) => handleChange('conversionMode', e.target.value)}
+                            className="mr-2"
+                        />
+                        <label htmlFor="mode-currency" className="text-sm text-gray-700 mr-[15px]">
+                            {translations.currencyOption}
+                        </label>
+                        {conversionMode === 'currency' && (
+                            <select
+                                className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                style={{ width: '65px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
+                                onChange={(e) => handleChange('currency', e.target.value)}
+                                value={values.currency !== undefined ? String(values.currency) : (config.inputs.find(i => i.key === 'currency')?.default || 'USD')}
+                            >
+                                {currencies.map((curr: any) => (
+                                    <option key={curr.value} value={curr.value}>
+                                        {curr.label}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+
+                    {/* Currency + VAT */}
+                    <div className="flex items-center flex-wrap gap-[5px]">
+                        <input
+                            type="radio"
+                            id="mode-currency-vat"
+                            name="conversionMode"
+                            value="currency_vat"
+                            checked={conversionMode === 'currency_vat'}
+                            onChange={(e) => handleChange('conversionMode', e.target.value)}
+                            className="mr-2"
+                        />
+                        <label htmlFor="mode-currency-vat" className="text-sm text-gray-700 mr-[15px]">
+                            {translations.currencyOption}
+                        </label>
+                        {conversionMode === 'currency_vat' && (
+                            <>
+                                <select
+                                    className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                    style={{ width: '65px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
+                                    onChange={(e) => handleChange('currency', e.target.value)}
+                                    value={values.currency !== undefined ? String(values.currency) : (config.inputs.find(i => i.key === 'currency')?.default || 'USD')}
+                                >
+                                    {currencies.map((curr: any) => (
+                                        <option key={curr.value} value={curr.value}>
+                                            {curr.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <span className="text-sm text-gray-700 mr-[5px]">{translations.plusVat}</span>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]{1,2}"
+                                    maxLength={2}
+                                    className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-right pr-6"
+                                    style={{ width: '65px', height: '29px', paddingLeft: '8px', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Ctext x=\'6\' y=\'9\' text-anchor=\'middle\' font-size=\'10\' fill=\'%23333\'%3E%25%3C/text%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
+                                    placeholder="0"
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/[^0-9]/g, '')
+                                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 100)) {
+                                            handleChange('vatRate', val === '' ? 0 : parseInt(val))
+                                        }
+                                    }}
+                                    value={values.vatRate !== undefined && values.vatRate !== 0 ? String(values.vatRate) : ''}
+                                />
+                            </>
+                        )}
+                    </div>
+
+                    {/* Check Writing */}
+                    <div className="flex items-center">
+                        <input
+                            type="radio"
+                            id="mode-check-writing"
+                            name="conversionMode"
+                            value="check_writing"
+                            checked={conversionMode === 'check_writing'}
+                            onChange={(e) => handleChange('conversionMode', e.target.value)}
+                            className="mr-2"
+                        />
+                        <label htmlFor="mode-check-writing" className="text-sm text-gray-700">
+                            {translations.checkWritingOption}
+                        </label>
+                    </div>
+                </div>
+
+                {/* Letter Case */}
+                <div className="flex items-center mb-4">
+                    <label className="text-sm font-medium text-gray-700 mr-[15px]">
+                        {translations.letterCaseLabel}
+                    </label>
+                    <select
+                        className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                        style={{ width: '180px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
+                        onChange={(e) => handleChange('textCase', e.target.value)}
+                        value={values.textCase !== undefined ? String(values.textCase) : (config.inputs.find(i => i.key === 'textCase')?.default || 'Sentence case')}
+                    >
+                        {textCaseOptions.map((opt: any) => (
+                            <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* Action Row */}
@@ -222,7 +332,7 @@ export default function CalculatorWidget({
                         <button
                             onClick={handleCopy}
                             className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors"
-                            disabled={Object.keys(result).length === 0}
+                            disabled={!resultText}
                         >
                             {copied ? '✓' : translations.copy}
                         </button>
@@ -230,15 +340,9 @@ export default function CalculatorWidget({
                     
                     {/* Result Content */}
                     <div className="p-4" style={{ paddingBottom: '20px' }}>
-                        {Object.keys(result).length > 0 ? (
-                            <div className="space-y-2">
-                                {config.outputs.map((out) => (
-                                    <div key={out.key} className="text-gray-800 whitespace-pre-wrap">
-                                        {typeof result[out.key] === 'number'
-                                            ? (result[out.key] as number).toFixed(out.precision || 2)
-                                            : String(result[out.key])}
-                                    </div>
-                                ))}
+                        {resultText ? (
+                            <div className="text-gray-800 whitespace-pre-wrap">
+                                {resultText}
                             </div>
                         ) : (
                             <div className="text-gray-400 text-sm">—</div>
@@ -279,4 +383,3 @@ export default function CalculatorWidget({
         </div>
     )
 }
-

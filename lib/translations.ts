@@ -17,6 +17,18 @@ type TranslationKey =
   | 'widget_copy'
   | 'widget_suggest'
   | 'widget_get_widget'
+  | 'widget_input_label'
+  | 'widget_format_label'
+  | 'widget_words_option'
+  | 'widget_check_writing_option'
+  | 'widget_currency_option'
+  | 'widget_currency_vat_option'
+  | 'widget_letter_case_label'
+  | 'widget_lowercase_option'
+  | 'widget_uppercase_option'
+  | 'widget_title_case_option'
+  | 'widget_sentence_case_option'
+  | 'widget_plus_vat'
 
 type Lang = 'en' | 'de' | 'es' | 'fr' | 'it' | 'pl' | 'ru' | 'lv'
 
@@ -36,6 +48,18 @@ interface TranslationRow {
   widget_copy: string
   widget_suggest: string
   widget_get_widget: string
+  widget_input_label: string
+  widget_format_label: string
+  widget_words_option: string
+  widget_check_writing_option: string
+  widget_currency_option: string
+  widget_currency_vat_option: string
+  widget_letter_case_label: string
+  widget_lowercase_option: string
+  widget_uppercase_option: string
+  widget_title_case_option: string
+  widget_sentence_case_option: string
+  widget_plus_vat: string
 }
 
 let translationsCache: Map<Lang, TranslationRow> | null = null
@@ -89,6 +113,18 @@ const fallbackTranslations: Record<TranslationKey, string> = {
   widget_copy: 'Copy',
   widget_suggest: 'Suggest an improvement or request a new calculator.',
   widget_get_widget: 'Get a Free Widget for this Calculator',
+  widget_input_label: 'Convert this Number:',
+  widget_format_label: 'To:',
+  widget_words_option: 'Words',
+  widget_check_writing_option: 'Check Writing',
+  widget_currency_option: 'Currency',
+  widget_currency_vat_option: 'Currency + VAT',
+  widget_letter_case_label: 'Letter Case:',
+  widget_lowercase_option: 'lowercase',
+  widget_uppercase_option: 'UPPERCASE',
+  widget_title_case_option: 'Title Case',
+  widget_sentence_case_option: 'Sentence case',
+  widget_plus_vat: '+ VAT',
 }
 
 export function t(lang: string, key: TranslationKey): string {
@@ -119,5 +155,17 @@ export function getTranslations(lang: string): Record<TranslationKey, string> {
     widget_copy: t(lang, 'widget_copy'),
     widget_suggest: t(lang, 'widget_suggest'),
     widget_get_widget: t(lang, 'widget_get_widget'),
+    widget_input_label: t(lang, 'widget_input_label'),
+    widget_format_label: t(lang, 'widget_format_label'),
+    widget_words_option: t(lang, 'widget_words_option'),
+    widget_check_writing_option: t(lang, 'widget_check_writing_option'),
+    widget_currency_option: t(lang, 'widget_currency_option'),
+    widget_currency_vat_option: t(lang, 'widget_currency_vat_option'),
+    widget_letter_case_label: t(lang, 'widget_letter_case_label'),
+    widget_lowercase_option: t(lang, 'widget_lowercase_option'),
+    widget_uppercase_option: t(lang, 'widget_uppercase_option'),
+    widget_title_case_option: t(lang, 'widget_title_case_option'),
+    widget_sentence_case_option: t(lang, 'widget_sentence_case_option'),
+    widget_plus_vat: t(lang, 'widget_plus_vat'),
   }
 }

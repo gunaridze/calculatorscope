@@ -472,6 +472,18 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                     copy: translations.widget_copy,
                                     suggest: translations.widget_suggest,
                                     getWidget: translations.widget_get_widget,
+                                    inputLabel: translations.widget_input_label,
+                                    formatLabel: translations.widget_format_label,
+                                    wordsOption: translations.widget_words_option,
+                                    checkWritingOption: translations.widget_check_writing_option,
+                                    currencyOption: translations.widget_currency_option,
+                                    currencyVatOption: translations.widget_currency_vat_option,
+                                    letterCaseLabel: translations.widget_letter_case_label,
+                                    lowercaseOption: translations.widget_lowercase_option,
+                                    uppercaseOption: translations.widget_uppercase_option,
+                                    titleCaseOption: translations.widget_title_case_option,
+                                    sentenceCaseOption: translations.widget_sentence_case_option,
+                                    plusVat: translations.widget_plus_vat,
                                 }}
                                 widgetPageSlug={widgetPage?.slug}
                             />
@@ -515,6 +527,18 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                     copy: translations.widget_copy,
                                     suggest: translations.widget_suggest,
                                     getWidget: translations.widget_get_widget,
+                                    inputLabel: translations.widget_input_label,
+                                    formatLabel: translations.widget_format_label,
+                                    wordsOption: translations.widget_words_option,
+                                    checkWritingOption: translations.widget_check_writing_option,
+                                    currencyOption: translations.widget_currency_option,
+                                    currencyVatOption: translations.widget_currency_vat_option,
+                                    letterCaseLabel: translations.widget_letter_case_label,
+                                    lowercaseOption: translations.widget_lowercase_option,
+                                    uppercaseOption: translations.widget_uppercase_option,
+                                    titleCaseOption: translations.widget_title_case_option,
+                                    sentenceCaseOption: translations.widget_sentence_case_option,
+                                    plusVat: translations.widget_plus_vat,
                                 }}
                                 widgetPageSlug={widgetPage?.slug}
                             />
