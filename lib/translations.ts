@@ -18,6 +18,7 @@ type TranslationKey =
   | 'widget_suggest'
   | 'widget_get_widget'
   | 'widget_input_label'
+  | 'widget_input_placeholder'
   | 'widget_format_label'
   | 'widget_words_option'
   | 'widget_check_writing_option'
@@ -49,6 +50,7 @@ interface TranslationRow {
   widget_suggest: string
   widget_get_widget: string
   widget_input_label: string
+  widget_input_placeholder: string
   widget_format_label: string
   widget_words_option: string
   widget_check_writing_option: string
@@ -114,6 +116,7 @@ const fallbackTranslations: Record<TranslationKey, string> = {
   widget_suggest: 'Suggest an improvement or request a new calculator.',
   widget_get_widget: 'Get a Free Widget for this Calculator',
   widget_input_label: 'Convert this Number:',
+  widget_input_placeholder: 'Enter number',
   widget_format_label: 'To:',
   widget_words_option: 'Words',
   widget_check_writing_option: 'Check Writing',
@@ -156,6 +159,7 @@ export function getTranslations(lang: string): Record<TranslationKey, string> {
     widget_suggest: t(lang, 'widget_suggest'),
     widget_get_widget: t(lang, 'widget_get_widget'),
     widget_input_label: t(lang, 'widget_input_label'),
+    widget_input_placeholder: t(lang, 'widget_input_placeholder'),
     widget_format_label: t(lang, 'widget_format_label'),
     widget_words_option: t(lang, 'widget_words_option'),
     widget_check_writing_option: t(lang, 'widget_check_writing_option'),
