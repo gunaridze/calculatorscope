@@ -402,14 +402,12 @@ export default function CalculatorWidget({
                         {translations.suggest}
                     </Link>
                     
-                    {widgetPageSlug && (
-                        <Link 
-                            href={`/${lang}/${widgetPageSlug}`}
-                            className="text-blue-600 hover:text-blue-800 hover:underline text-sm block text-center mt-[50px]"
-                        >
-                            {translations.getWidget}
-                        </Link>
-                    )}
+                    <Link 
+                        href={widgetPageSlug ? `/${lang}/${widgetPageSlug}` : `/${lang}/widget`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline text-sm block text-center mt-[50px]"
+                    >
+                        {translations.getWidget}
+                    </Link>
                 </div>
 
                 {/* Logo */}
