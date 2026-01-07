@@ -121,6 +121,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
     const { lang, tool: slug, category } = await params
     const search = await searchParams
 
+    // Проверяем, открыт ли попап режим
+    const isPopup = search.do === 'pop'
+
     // 2. Запрашиваем данные из БД
     const data = await getToolData(slug, lang)
 
@@ -474,6 +477,46 @@ export default async function ToolPage({ params, searchParams }: Props) {
                 </>
             )
         })
+    }
+
+    // Если это попап режим, показываем только калькулятор без header/footer
+    if (isPopup) {
+        return (
+            <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+                {config && (
+                    <CalculatorWidget
+                        config={config}
+                        interface={interfaceData}
+                        initialValues={initialValues}
+                        h1={data.h1 || data.title}
+                        lang={lang}
+                        translations={{
+                            clear: translations.widget_clear,
+                            calculate: translations.widget_calculate,
+                            result: translations.widget_result,
+                            copy: translations.widget_copy,
+                            suggest: translations.widget_suggest,
+                            getWidget: translations.widget_get_widget,
+                            inputLabel: translations.widget_input_label,
+                            inputPlaceholder: translations.widget_input_placeholder,
+                            formatLabel: translations.widget_format_label,
+                            wordsOption: translations.widget_words_option,
+                            checkWritingOption: translations.widget_check_writing_option,
+                            currencyOption: translations.widget_currency_option,
+                            currencyVatOption: translations.widget_currency_vat_option,
+                            letterCaseLabel: translations.widget_letter_case_label,
+                            lowercaseOption: translations.widget_lowercase_option,
+                            uppercaseOption: translations.widget_uppercase_option,
+                            titleCaseOption: translations.widget_title_case_option,
+                            sentenceCaseOption: translations.widget_sentence_case_option,
+                            plusVat: translations.widget_plus_vat,
+                        }}
+                        widgetPageSlug={widgetPage?.slug}
+                        toolSlug={slug}
+                    />
+                )}
+            </div>
+        )
     }
 
     return (

@@ -48,12 +48,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             }
         }
 
-        // Получаем шаблон страницы виджета (page_id = 104)
+        // Получаем шаблон страницы виджета (page code = 'widget')
         // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
         const widgetPage = await prisma.pageI18n.findFirst({
             where: {
                 page: {
-                    id: '104'
+                    code: 'widget'
                 },
                 lang,
             },
@@ -127,12 +127,12 @@ export default async function WidgetPage({ params }: Props) {
     const toolName = toolI18n.title
     const toolSlug = toolI18n.slug
 
-    // Получаем шаблон страницы виджета (page_id = 104)
+    // Получаем шаблон страницы виджета (page code = 'widget')
     // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
     const widgetPage = await prisma.pageI18n.findFirst({
         where: {
             page: {
-                id: '104'
+                code: 'widget'
             },
             lang,
         },
