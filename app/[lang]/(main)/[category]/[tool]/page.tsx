@@ -132,6 +132,57 @@ export default async function ToolPage({ params, searchParams }: Props) {
         return notFound()
     }
 
+    // Если это попап, показываем только калькулятор (даже если category не совпадает)
+    if (isPopup) {
+        const translations = getTranslations(lang)
+        const dataAny = data as any
+        const inputsJson = dataAny.inputs_json
+        const interfaceData = inputsJson || {}
+
+        // @ts-ignore
+        const config: any = data.tool.config?.config_json
+        if (config) {
+            config.language = lang
+        }
+
+        if (!config) {
+            return notFound()
+        }
+
+        return (
+            <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+                <CalculatorWidget
+                    config={config}
+                    interface={interfaceData}
+                    h1={data.h1 || data.title}
+                    lang={lang}
+                    translations={{
+                        clear: translations.widget_clear,
+                        calculate: translations.widget_calculate,
+                        result: translations.widget_result,
+                        copy: translations.widget_copy,
+                        suggest: translations.widget_suggest,
+                        getWidget: translations.widget_get_widget,
+                        inputLabel: translations.widget_input_label,
+                        inputPlaceholder: translations.widget_input_placeholder,
+                        formatLabel: translations.widget_format_label,
+                        wordsOption: translations.widget_words_option,
+                        checkWritingOption: translations.widget_check_writing_option,
+                        currencyOption: translations.widget_currency_option,
+                        currencyVatOption: translations.widget_currency_vat_option,
+                        letterCaseLabel: translations.widget_letter_case_label,
+                        lowercaseOption: translations.widget_lowercase_option,
+                        uppercaseOption: translations.widget_uppercase_option,
+                        titleCaseOption: translations.widget_title_case_option,
+                        sentenceCaseOption: translations.widget_sentence_case_option,
+                        plusVat: translations.widget_plus_vat,
+                    }}
+                    toolSlug={slug}
+                />
+            </div>
+        )
+    }
+
     // Извлекаем поля из data (TypeScript не всегда правильно выводит типы из Prisma с include)
     const dataAny = data as any
     const introText = dataAny.intro_text

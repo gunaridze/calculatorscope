@@ -48,9 +48,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             }
         }
 
-        // Получаем шаблон страницы виджета (page code = 'widget')
+        // Получаем шаблон страницы виджета
+        // Пробуем разные варианты code: 'widget', 'id104', '104'
         // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
-        const widgetPage = await prisma.pageI18n.findFirst({
+        let widgetPage = await prisma.pageI18n.findFirst({
             where: {
                 page: {
                     code: 'widget'
@@ -62,6 +63,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
                 meta_description: true,
             },
         })
+
+        // Если не нашли, пробуем другие варианты
+        if (!widgetPage) {
+            // @ts-ignore
+            widgetPage = await prisma.pageI18n.findFirst({
+                where: {
+                    page: {
+                        code: 'id104'
+                    },
+                    lang,
+                },
+                select: {
+                    meta_title: true,
+                    meta_description: true,
+                },
+            })
+        }
+
+        if (!widgetPage) {
+            // @ts-ignore
+            widgetPage = await prisma.pageI18n.findFirst({
+                where: {
+                    page: {
+                        code: '104'
+                    },
+                    lang,
+                },
+                select: {
+                    meta_title: true,
+                    meta_description: true,
+                },
+            })
+        }
 
         const toolName = toolI18n.title
         const metaTitle = widgetPage?.meta_title?.replace('{Tool Name}', toolName) || `${toolName} Widget – Free Calculator Widget | CalculatorScope`
@@ -127,9 +161,10 @@ export default async function WidgetPage({ params }: Props) {
     const toolName = toolI18n.title
     const toolSlug = toolI18n.slug
 
-    // Получаем шаблон страницы виджета (page code = 'widget')
+    // Получаем шаблон страницы виджета
+    // Пробуем разные варианты code: 'widget', 'id104', '104'
     // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
-    const widgetPage = await prisma.pageI18n.findFirst({
+    let widgetPage = await prisma.pageI18n.findFirst({
         where: {
             page: {
                 code: 'widget'
@@ -142,7 +177,41 @@ export default async function WidgetPage({ params }: Props) {
         },
     })
 
+    // Если не нашли, пробуем другие варианты
+    if (!widgetPage) {
+        // @ts-ignore
+        widgetPage = await prisma.pageI18n.findFirst({
+            where: {
+                page: {
+                    code: 'id104'
+                },
+                lang,
+            },
+            select: {
+                h1: true,
+                body_blocks_json: true,
+            },
+        })
+    }
+
+    if (!widgetPage) {
+        // @ts-ignore
+        widgetPage = await prisma.pageI18n.findFirst({
+            where: {
+                page: {
+                    code: '104'
+                },
+                lang,
+            },
+            select: {
+                h1: true,
+                body_blocks_json: true,
+            },
+        })
+    }
+
     if (!widgetPage || !widgetPage.body_blocks_json) {
+        console.error(`Widget page template not found for lang: ${lang}, tool: ${slug}`)
         notFound()
     }
 
