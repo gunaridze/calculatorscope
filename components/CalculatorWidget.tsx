@@ -33,7 +33,8 @@ type Props = {
         sentenceCaseOption: string
         plusVat: string
     }
-    widgetPageSlug?: string  // Slug страницы виджета (id105)
+    widgetPageSlug?: string  // Slug страницы виджета (id105) - устаревший, используйте toolSlug
+    toolSlug?: string  // Slug инструмента для генерации ссылки на виджет
 }
 
 export default function CalculatorWidget({ 
@@ -43,7 +44,8 @@ export default function CalculatorWidget({
     h1,
     lang,
     translations,
-    widgetPageSlug
+    widgetPageSlug,
+    toolSlug
 }: Props) {
     // Храним значения всех инпутов
     // Инициализируем с default значениями из config
@@ -403,7 +405,7 @@ export default function CalculatorWidget({
                     </Link>
                     
                     <Link 
-                        href={widgetPageSlug ? `/${lang}/${widgetPageSlug}` : `/${lang}/widget`}
+                        href={toolSlug ? `/${lang}/widget/${toolSlug}` : (widgetPageSlug ? `/${lang}/${widgetPageSlug}` : `/${lang}/widget`)}
                         className="text-blue-600 hover:text-blue-800 hover:underline text-sm block text-center mt-[50px]"
                     >
                         {translations.getWidget}

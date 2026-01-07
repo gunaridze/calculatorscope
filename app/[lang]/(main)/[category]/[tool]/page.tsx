@@ -528,6 +528,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                     plusVat: translations.widget_plus_vat,
                                 }}
                                 widgetPageSlug={widgetPage?.slug}
+                                toolSlug={slug}
                             />
                         )}
 
@@ -584,6 +585,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                     plusVat: translations.widget_plus_vat,
                                 }}
                                 widgetPageSlug={widgetPage?.slug}
+                                toolSlug={slug}
                             />
                         </div>
                     )}
