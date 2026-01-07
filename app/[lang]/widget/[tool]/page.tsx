@@ -7,6 +7,7 @@ import { getTranslations } from '@/lib/translations'
 import type { Metadata } from 'next'
 import React from 'react'
 import WidgetCodeBlock from '@/components/WidgetCodeBlock'
+import CopyableCodeBlock from '@/components/CopyableCodeBlock'
 
 type Props = {
     params: Promise<{ lang: string; tool: string }>
@@ -39,6 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             },
             select: {
                 title: true,
+                h1: true,
             },
         })
 
@@ -97,7 +99,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             })
         }
 
-        const toolName = toolI18n.title
+        const toolName = toolI18n.h1 || toolI18n.title
         const metaTitle = widgetPage?.meta_title?.replace('{Tool Name}', toolName) || `${toolName} Widget – Free Calculator Widget | CalculatorScope`
         const metaDescription = widgetPage?.meta_description?.replace('{Tool Name}', toolName) || `Add the free ${toolName} widget to your website or blog. Copy the HTML code, preview the calculator popup, and improve user engagement easily.`
 
@@ -150,6 +152,7 @@ export default async function WidgetPage({ params }: Props) {
         select: {
             tool_id: true,
             title: true,
+            h1: true,
             slug: true,
         },
     })
@@ -158,7 +161,8 @@ export default async function WidgetPage({ params }: Props) {
         notFound()
     }
 
-    const toolName = toolI18n.title
+    // Используем h1, если есть, иначе title
+    const toolName = toolI18n.h1 || toolI18n.title
     const toolSlug = toolI18n.slug
 
     // Получаем шаблон страницы виджета
@@ -321,19 +325,83 @@ ${toolName}
                                     {section.type === 'links' && (
                                         <div>
                                             {section.heading && (
-                                                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
                                                     {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
-                                                </h3>
+                                                </h2>
                                             )}
-                                            <div
-                                                className="prose"
-                                                dangerouslySetInnerHTML={{
-                                                    __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                            <div className="prose">
+                                                {/* Парсим HTML и заменяем блоки с кодом на компоненты с кнопкой Copy */}
+                                                {(() => {
+                                                    const html = replacePlaceholders(section.html, toolName, toolSlug, lang)
                                                         .replace(/{direct_url}/g, directUrl)
                                                         .replace(/{html_link_code}/g, htmlLinkCode)
                                                         .replace(/{copy_link_url}/g, copyLinkUrl)
-                                                }}
-                                            />
+                                                    
+                                                    // Извлекаем Direct URL из <code> (более надежный regex)
+                                                    const directUrlMatch = html.match(/<h3>Direct URL<\/h3>[\s\S]*?<p><code>([\s\S]*?)<\/code><\/p>/)
+                                                    const htmlLinkMatch = html.match(/<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>([\s\S]*?)<\/code><\/pre>/)
+                                                    
+                                                    // Удаляем блоки с кодом из HTML, они будут заменены компонентами
+                                                    let processedHtml = html
+                                                    if (directUrlMatch) {
+                                                        processedHtml = processedHtml.replace(
+                                                            /<h3>Direct URL<\/h3>[\s\S]*?<p><code>[\s\S]*?<\/code><\/p>/,
+                                                            '<h3>Direct URL</h3>'
+                                                        )
+                                                    }
+                                                    if (htmlLinkMatch) {
+                                                        processedHtml = processedHtml.replace(
+                                                            /<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>[\s\S]*?<\/code><\/pre>/,
+                                                            '<h3>HTML Link Code</h3>'
+                                                        )
+                                                    }
+                                                    
+                                                    // Декодируем HTML entities
+                                                    const decodeHtml = (str: string) => {
+                                                        return str
+                                                            .replace(/&lt;/g, '<')
+                                                            .replace(/&gt;/g, '>')
+                                                            .replace(/&amp;/g, '&')
+                                                            .replace(/&quot;/g, '"')
+                                                            .replace(/&#39;/g, "'")
+                                                    }
+                                                    
+                                                    return (
+                                                        <>
+                                                            <div dangerouslySetInnerHTML={{ __html: processedHtml }} />
+                                                            {directUrlMatch && (
+                                                                <CopyableCodeBlock
+                                                                    label="Direct URL"
+                                                                    code={decodeHtml(directUrlMatch[1].trim())}
+                                                                />
+                                                            )}
+                                                            {htmlLinkMatch && (
+                                                                <CopyableCodeBlock
+                                                                    label="HTML Link Code"
+                                                                    code={decodeHtml(htmlLinkMatch[1].trim())}
+                                                                />
+                                                            )}
+                                                        </>
+                                                    )
+                                                })()}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {section.type === 'widget_preview' && (
+                                        <div>
+                                            {section.heading && (
+                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                    {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
+                                                </h2>
+                                            )}
+                                            {section.html && (
+                                                <div
+                                                    className="prose"
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                     )}
                                     {section.html && section.type !== 'widget_code' && section.type !== 'links' && (
@@ -406,22 +474,86 @@ ${toolName}
                                 {section.type === 'links' && (
                                     <div>
                                         {section.heading && (
-                                            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
                                                 {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
-                                            </h3>
+                                            </h2>
                                         )}
-                                        <div
-                                            className="prose"
-                                            dangerouslySetInnerHTML={{
-                                                __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                        <div className="prose">
+                                            {/* Парсим HTML и заменяем блоки с кодом на компоненты с кнопкой Copy */}
+                                            {(() => {
+                                                const html = replacePlaceholders(section.html, toolName, toolSlug, lang)
                                                     .replace(/{direct_url}/g, directUrl)
                                                     .replace(/{html_link_code}/g, htmlLinkCode)
                                                     .replace(/{copy_link_url}/g, copyLinkUrl)
-                                            }}
-                                        />
+                                                
+                                                // Извлекаем Direct URL из <code> (более надежный regex)
+                                                const directUrlMatch = html.match(/<h3>Direct URL<\/h3>[\s\S]*?<p><code>([\s\S]*?)<\/code><\/p>/)
+                                                const htmlLinkMatch = html.match(/<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>([\s\S]*?)<\/code><\/pre>/)
+                                                
+                                                // Удаляем блоки с кодом из HTML, они будут заменены компонентами
+                                                let processedHtml = html
+                                                if (directUrlMatch) {
+                                                    processedHtml = processedHtml.replace(
+                                                        /<h3>Direct URL<\/h3>[\s\S]*?<p><code>[\s\S]*?<\/code><\/p>/,
+                                                        '<h3>Direct URL</h3>'
+                                                    )
+                                                }
+                                                if (htmlLinkMatch) {
+                                                    processedHtml = processedHtml.replace(
+                                                        /<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>[\s\S]*?<\/code><\/pre>/,
+                                                        '<h3>HTML Link Code</h3>'
+                                                    )
+                                                }
+                                                
+                                                // Декодируем HTML entities
+                                                const decodeHtml = (str: string) => {
+                                                    return str
+                                                        .replace(/&lt;/g, '<')
+                                                        .replace(/&gt;/g, '>')
+                                                        .replace(/&amp;/g, '&')
+                                                        .replace(/&quot;/g, '"')
+                                                        .replace(/&#39;/g, "'")
+                                                }
+                                                
+                                                return (
+                                                    <>
+                                                        <div dangerouslySetInnerHTML={{ __html: processedHtml }} />
+                                                        {directUrlMatch && (
+                                                            <CopyableCodeBlock
+                                                                label="Direct URL"
+                                                                code={decodeHtml(directUrlMatch[1].trim())}
+                                                            />
+                                                        )}
+                                                        {htmlLinkMatch && (
+                                                            <CopyableCodeBlock
+                                                                label="HTML Link Code"
+                                                                code={decodeHtml(htmlLinkMatch[1].trim())}
+                                                            />
+                                                        )}
+                                                    </>
+                                                )
+                                            })()}
+                                        </div>
                                     </div>
                                 )}
-                                {section.html && section.type !== 'widget_code' && section.type !== 'links' && (
+                                {section.type === 'widget_preview' && (
+                                    <div>
+                                        {section.heading && (
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
+                                            </h2>
+                                        )}
+                                        {section.html && (
+                                            <div
+                                                className="prose"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                )}
+                                {section.html && section.type !== 'widget_code' && section.type !== 'links' && section.type !== 'widget_preview' && (
                                     <div
                                         className="prose"
                                         dangerouslySetInnerHTML={{
