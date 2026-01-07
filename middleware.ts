@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { match } from '@formatjs/intl-localematcher'
 import Negotiate from 'negotiator'
-import { PrismaClient } from '@prisma/client'
 
 // Поддерживаемые языки
 const locales = ['en', 'de', 'es', 'fr', 'it', 'pl', 'ru', 'lv']
@@ -12,11 +11,6 @@ const defaultLocale = 'en'
 const reservedPaths = [
     '/api', '/_next', '/static', '/favicon.ico', '/robots.txt', '/sitemap.xml', '/widget.js', '/widget'
 ]
-
-// Singleton для Prisma в middleware
-const globalForPrisma = global as unknown as { prisma: PrismaClient }
-const prisma = globalForPrisma.prisma || new PrismaClient()
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 function getLocale(request: NextRequest): string {
     // 1. Проверяем куки (если будем сохранять выбор пользователя)
@@ -58,56 +52,9 @@ export async function middleware(request: NextRequest) {
         )
     }
 
-    // 4. Обработка попапа: /{lang}/{tool-slug}?do=pop -> /{lang}/{category}/{tool-slug}?do=pop
-    const pathParts = pathname.split('/').filter(Boolean)
-    if (pathParts.length === 2 && searchParams.get('do') === 'pop') {
-        const [lang, toolSlug] = pathParts
-        
-        if (locales.includes(lang)) {
-            try {
-                // Ищем инструмент и его категорию
-                const toolI18n = await prisma.toolI18n.findUnique({
-                    where: {
-                        lang_slug: {
-                            lang,
-                            slug: toolSlug,
-                        },
-                    },
-                    include: {
-                        tool: {
-                            include: {
-                                categories: {
-                                    include: {
-                                        category: {
-                                            include: {
-                                                i18n: {
-                                                    where: { lang },
-                                                    select: { slug: true },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                })
-
-                if (toolI18n && toolI18n.tool.categories.length > 0) {
-                    const categorySlug = toolI18n.tool.categories[0].category.i18n[0]?.slug
-                    if (categorySlug) {
-                        // Перенаправляем на правильный URL с category
-                        return NextResponse.redirect(
-                            new URL(`/${lang}/${categorySlug}/${toolSlug}?do=pop`, request.url)
-                        )
-                    }
-                }
-            } catch (error) {
-                // В случае ошибки просто продолжаем обычную обработку
-                console.error('Error in middleware popup redirect:', error)
-            }
-        }
-    }
+    // 4. Обработка попапа: /{lang}/{tool-slug}?do=pop
+    // Попап обрабатывается на уровне страницы [category]/[tool], где category может быть любым
+    // Если это попап, страница сама определит правильный category или покажет попап без category
 }
 
 export const config = {

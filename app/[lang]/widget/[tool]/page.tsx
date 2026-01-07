@@ -304,7 +304,8 @@ ${toolName}
                         <div className="prose lg:prose-xl max-w-none">
                             {pageContent.sections.map((section, index) => (
                                 <section key={index} className={index > 0 ? 'mt-8' : ''}>
-                                    {section.heading && (
+                                    {/* Показываем общий заголовок только для секций без специального типа */}
+                                    {section.heading && !section.type && (
                                         <h2 className="text-3xl font-bold text-gray-900 mb-4">
                                             {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
                                         </h2>
@@ -312,9 +313,9 @@ ${toolName}
                                     {section.type === 'widget_code' && (
                                         <div>
                                             {section.heading && (
-                                                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
                                                     {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
-                                                </h3>
+                                                </h2>
                                             )}
                                             <WidgetCodeBlock
                                                 code={section.html ? replacePlaceholders(section.html, toolName, toolSlug, lang) : ''}
@@ -404,7 +405,24 @@ ${toolName}
                                             )}
                                         </div>
                                     )}
-                                    {section.html && section.type !== 'widget_code' && section.type !== 'links' && (
+                                    {section.type === 'widget_preview' && (
+                                        <div>
+                                            {section.heading && (
+                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                    {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
+                                                </h2>
+                                            )}
+                                            {section.html && (
+                                                <div
+                                                    className="prose"
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    )}
+                                    {section.html && !section.type && (
                                         <div
                                             className="prose"
                                             dangerouslySetInnerHTML={{
@@ -453,7 +471,8 @@ ${toolName}
                     <div className="prose lg:prose-xl max-w-none">
                         {pageContent.sections.map((section, index) => (
                             <section key={index} className={index > 0 ? 'mt-8' : ''}>
-                                {section.heading && (
+                                {/* Показываем общий заголовок только для секций без специального типа */}
+                                {section.heading && !section.type && (
                                     <h2 className="text-3xl font-bold text-gray-900 mb-4">
                                         {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
                                     </h2>
@@ -461,9 +480,9 @@ ${toolName}
                                 {section.type === 'widget_code' && (
                                     <div>
                                         {section.heading && (
-                                            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
                                                 {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
-                                            </h3>
+                                            </h2>
                                         )}
                                         <WidgetCodeBlock
                                             code={section.html ? replacePlaceholders(section.html, toolName, toolSlug, lang) : ''}
@@ -553,7 +572,7 @@ ${toolName}
                                         )}
                                     </div>
                                 )}
-                                {section.html && section.type !== 'widget_code' && section.type !== 'links' && section.type !== 'widget_preview' && (
+                                {section.html && !section.type && (
                                     <div
                                         className="prose"
                                         dangerouslySetInnerHTML={{

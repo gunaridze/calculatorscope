@@ -132,7 +132,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
         return notFound()
     }
 
-    // Если это попап, показываем только калькулятор (даже если category не совпадает)
+    // Если это попап, показываем только калькулятор (category не важен для попапа)
     if (isPopup) {
         const translations = getTranslations(lang)
         const dataAny = data as any

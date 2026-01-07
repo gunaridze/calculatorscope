@@ -7,9 +7,11 @@ import { getTranslations } from '@/lib/translations'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
+import CalculatorWidget from '@/components/CalculatorWidget'
 
 type Props = {
     params: Promise<{ lang: string; category: string }>
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 // Интерфейс для content_blocks_json
@@ -99,9 +101,79 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 }
 
-export default async function CategoryPage({ params }: Props) {
+export default async function CategoryPage({ params, searchParams }: Props) {
     const { lang, category: slug } = await params
+    const search = await searchParams
     const translations = getTranslations(lang)
+
+    // Проверяем, не является ли это попапом инструмента: /{lang}/{tool-slug}?do=pop
+    const isPopup = search?.do === 'pop'
+    if (isPopup) {
+        // Пытаемся найти инструмент по slug
+        const toolData = await prisma.toolI18n.findUnique({
+            where: {
+                lang_slug: {
+                    lang,
+                    slug,
+                },
+            },
+            include: {
+                tool: {
+                    include: {
+                        config: true,
+                    },
+                },
+            },
+        })
+
+        if (toolData) {
+            // Это инструмент в режиме попапа - показываем только калькулятор
+            const dataAny = toolData as any
+            const inputsJson = dataAny.inputs_json
+            const interfaceData = inputsJson || {}
+
+            // @ts-ignore
+            const config: any = toolData.tool.config?.config_json
+            if (config) {
+                config.language = lang
+            }
+
+            if (config) {
+                return (
+                    <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+                        <CalculatorWidget
+                            config={config}
+                            interface={interfaceData}
+                            h1={toolData.h1 || toolData.title}
+                            lang={lang}
+                            translations={{
+                                clear: translations.widget_clear,
+                                calculate: translations.widget_calculate,
+                                result: translations.widget_result,
+                                copy: translations.widget_copy,
+                                suggest: translations.widget_suggest,
+                                getWidget: translations.widget_get_widget,
+                                inputLabel: translations.widget_input_label,
+                                inputPlaceholder: translations.widget_input_placeholder,
+                                formatLabel: translations.widget_format_label,
+                                wordsOption: translations.widget_words_option,
+                                checkWritingOption: translations.widget_check_writing_option,
+                                currencyOption: translations.widget_currency_option,
+                                currencyVatOption: translations.widget_currency_vat_option,
+                                letterCaseLabel: translations.widget_letter_case_label,
+                                lowercaseOption: translations.widget_lowercase_option,
+                                uppercaseOption: translations.widget_uppercase_option,
+                                titleCaseOption: translations.widget_title_case_option,
+                                sentenceCaseOption: translations.widget_sentence_case_option,
+                                plusVat: translations.widget_plus_vat,
+                            }}
+                            toolSlug={slug}
+                        />
+                    </div>
+                )
+            }
+        }
+    }
 
     // Проверяем, не является ли это статической страницей
     const staticPage = await getPageBySlug(slug, lang)
