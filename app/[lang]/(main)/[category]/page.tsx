@@ -6,6 +6,7 @@ import AdBanner from '@/components/AdBanner'
 import { getTranslations } from '@/lib/translations'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import React from 'react'
 
 type Props = {
     params: Promise<{ lang: string; category: string }>
@@ -138,7 +139,9 @@ export default async function CategoryPage({ params }: Props) {
         }
 
         // Парсим body_blocks_json (HTML контент)
-        let bodyContent = ''
+        let bodyContent: React.ReactNode = null
+        let bodyContentSections: Array<{ heading?: string; html: string; type?: string }> = []
+        
         if (staticPage.body_blocks_json) {
             try {
                 const parsed = typeof staticPage.body_blocks_json === 'string'
@@ -147,10 +150,30 @@ export default async function CategoryPage({ params }: Props) {
                 
                 // Если это строка (HTML), используем её напрямую
                 if (typeof parsed === 'string') {
-                    bodyContent = parsed
+                    bodyContent = (
+                        <div 
+                            className="prose lg:prose-xl max-w-none"
+                            dangerouslySetInnerHTML={{ __html: parsed }}
+                        />
+                    )
                 } else if (parsed && typeof parsed === 'object') {
-                    // Если это объект с полем content или html
-                    bodyContent = (parsed as any).content || (parsed as any).html || ''
+                    // Проверяем структуру с sections (новый формат)
+                    if (Array.isArray((parsed as any).sections)) {
+                        bodyContentSections = (parsed as any).sections.map((section: any) => ({
+                            heading: section.heading,
+                            html: section.html || '',
+                            type: section.type
+                        }))
+                    } else if ((parsed as any).content || (parsed as any).html) {
+                        // Старый формат с полем content или html
+                        const htmlContent = (parsed as any).content || (parsed as any).html || ''
+                        bodyContent = (
+                            <div 
+                                className="prose lg:prose-xl max-w-none"
+                                dangerouslySetInnerHTML={{ __html: htmlContent }}
+                            />
+                        )
+                    }
                 }
             } catch (e) {
                 console.error('Error parsing body_blocks_json:', e)
@@ -177,11 +200,24 @@ export default async function CategoryPage({ params }: Props) {
                             </h1>
                             
                             {/* Body content */}
-                            {bodyContent && (
-                                <div 
-                                    className="prose lg:prose-xl max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: bodyContent }}
-                                />
+                            {bodyContent && bodyContent}
+                            {bodyContentSections.length > 0 && (
+                                <div className="prose lg:prose-xl max-w-none">
+                                    {bodyContentSections.map((section, index) => (
+                                        <section key={index} className={index > 0 ? 'mt-8' : ''}>
+                                            {section.heading && (
+                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                    {section.heading}
+                                                </h2>
+                                            )}
+                                            {section.html && (
+                                                <div 
+                                                    dangerouslySetInnerHTML={{ __html: section.html }}
+                                                />
+                                            )}
+                                        </section>
+                                    ))}
+                                </div>
                             )}
                         </div>
                         
@@ -218,11 +254,24 @@ export default async function CategoryPage({ params }: Props) {
                         </h1>
                         
                         {/* Body content */}
-                        {bodyContent && (
-                            <div 
-                                className="prose lg:prose-xl max-w-none"
-                                dangerouslySetInnerHTML={{ __html: bodyContent }}
-                            />
+                        {bodyContent && bodyContent}
+                        {bodyContentSections.length > 0 && (
+                            <div className="prose lg:prose-xl max-w-none">
+                                {bodyContentSections.map((section, index) => (
+                                    <section key={index} className={index > 0 ? 'mt-8' : ''}>
+                                        {section.heading && (
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                {section.heading}
+                                            </h2>
+                                        )}
+                                        {section.html && (
+                                            <div 
+                                                dangerouslySetInnerHTML={{ __html: section.html }}
+                                            />
+                                        )}
+                                    </section>
+                                ))}
+                            </div>
                         )}
                     </div>
                 </main>
