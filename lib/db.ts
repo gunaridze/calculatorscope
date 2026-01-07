@@ -60,3 +60,26 @@ export async function getPageByCode(code: string, lang: string) {
     
     return pageI18n
 }
+
+// Функция получения статической страницы по slug и языку
+export async function getPageBySlug(slug: string, lang: string) {
+    const pageI18n = await prisma.pageI18n.findUnique({
+        where: {
+            lang_slug: {
+                lang: lang,
+                slug: slug,
+            },
+        },
+        include: {
+            page: {
+                select: {
+                    id: true,
+                    code: true,
+                    status: true,
+                }
+            }
+        }
+    })
+    
+    return pageI18n
+}
