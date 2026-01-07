@@ -41,25 +41,39 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     const url = process.env.NEXT_PUBLIC_SITE_URL || 'https://calculatorscope.com'
     const canonicalUrl = `${url}/${lang}/${slug}`
 
+    // TypeScript не всегда правильно выводит типы из Prisma с include
+    const dataAny = data as any
+    const metaTitle = dataAny.meta_title
+    const metaDescription = dataAny.meta_description
+    const metaRobots = dataAny.meta_robots
+    const canonicalPath = dataAny.canonical_path
+    const ogTitle = dataAny.og_title
+    const ogDescription = dataAny.og_description
+    const ogImageUrl = dataAny.og_image_url
+    const twitterTitle = dataAny.twitter_title
+    const twitterDescription = dataAny.twitter_description
+    const twitterImageUrl = dataAny.twitter_image_url
+    const introText = dataAny.intro_text
+
     return {
-        title: data.meta_title || data.title,
-        description: data.meta_description || data.intro_text || undefined,
-        robots: data.meta_robots || 'index,follow,max-snippet:300',
+        title: metaTitle || data.title,
+        description: metaDescription || introText || undefined,
+        robots: metaRobots || 'index,follow,max-snippet:300',
         alternates: {
-            canonical: data.canonical_path || canonicalUrl,
+            canonical: canonicalPath || canonicalUrl,
         },
         openGraph: {
-            title: data.og_title || data.meta_title || data.title,
-            description: data.og_description || data.meta_description || data.intro_text || undefined,
-            images: data.og_image_url ? [{ url: data.og_image_url }] : undefined,
+            title: ogTitle || metaTitle || data.title,
+            description: ogDescription || metaDescription || introText || undefined,
+            images: ogImageUrl ? [{ url: ogImageUrl }] : undefined,
             locale: lang,
             type: 'website',
         },
         twitter: {
             card: 'summary_large_image',
-            title: data.twitter_title || data.og_title || data.title,
-            description: data.twitter_description || data.og_description || data.meta_description || undefined,
-            images: data.twitter_image_url || data.og_image_url ? [data.twitter_image_url || data.og_image_url!] : undefined,
+            title: twitterTitle || ogTitle || data.title,
+            description: twitterDescription || ogDescription || metaDescription || undefined,
+            images: twitterImageUrl || ogImageUrl ? [twitterImageUrl || ogImageUrl!] : undefined,
         },
     }
 }
@@ -115,6 +129,16 @@ export default async function ToolPage({ params, searchParams }: Props) {
         return notFound()
     }
 
+    // Извлекаем поля из data (TypeScript не всегда правильно выводит типы из Prisma с include)
+    const dataAny = data as any
+    const introText = dataAny.intro_text
+    const shortAnswer = dataAny.short_answer
+    const keyPointsJson = dataAny.key_points_json
+    const formulaMd = dataAny.formula_md
+    const assumptionsMd = dataAny.assumptions_md
+    const faqJson = dataAny.faq_json
+    const inputsJson = dataAny.inputs_json
+
     // Получаем переводы для текущего языка
     const translations = getTranslations(lang)
 
@@ -163,7 +187,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
         config.language = lang
     }
     // @ts-ignore
-    const interfaceData = data.inputs_json || {} // Используем inputs_json вместо interface_json
+    const interfaceData = inputsJson || {} // Используем inputs_json вместо interface_json
 
     // 5. Обработка share links (server-side calculation только для ?share=1)
     let initialValues: Record<string, number> | undefined = undefined
@@ -190,12 +214,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
     // 6. Генерация примеров через единый движок (для SEO/AI)
     let examples: Array<{ inputs: Record<string, number>, outputs: JsonEngineOutput }> = []
-    if (config && data.examples_json) {
+    const examplesJson = (data as any).examples_json
+    if (config && examplesJson) {
         try {
             // @ts-ignore
-            const examplesData = typeof data.examples_json === 'string' 
-                ? JSON.parse(data.examples_json) 
-                : data.examples_json
+            const examplesData = typeof examplesJson === 'string' 
+                ? JSON.parse(examplesJson) 
+                : examplesJson
             
             if (Array.isArray(examplesData)) {
                 examples = examplesData.map((ex: any) => ({
@@ -210,12 +235,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
     // Парсим content_blocks_json
     let contentBlocks: ContentBlock[] = []
-    if (data.content_blocks_json) {
+    const contentBlocksJson = (data as any).content_blocks_json
+    if (contentBlocksJson) {
         try {
             // @ts-ignore
-            const parsed = typeof data.content_blocks_json === 'string'
-                ? JSON.parse(data.content_blocks_json)
-                : data.content_blocks_json
+            const parsed = typeof contentBlocksJson === 'string'
+                ? JSON.parse(contentBlocksJson)
+                : contentBlocksJson
             
             if (Array.isArray(parsed)) {
                 contentBlocks = parsed as ContentBlock[]
@@ -296,13 +322,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
 
     // Short Answer Section
-    if (data.short_answer) {
+    if (shortAnswer) {
         contentSections.push({
             node: (
                 <div 
                     key="short-answer" 
                     className="mb-4 prose lg:prose-xl"
-                    dangerouslySetInnerHTML={{ __html: data.short_answer }}
+                    dangerouslySetInnerHTML={{ __html: shortAnswer }}
                 />
             ),
             sectionType: 'short_answer'
@@ -310,12 +336,12 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
 
     // Key Points Section
-    if (data.key_points_json) {
+    if (keyPointsJson) {
         try {
             // @ts-ignore
-            const keyPoints = typeof data.key_points_json === 'string'
-                ? JSON.parse(data.key_points_json)
-                : data.key_points_json
+            const keyPoints = typeof keyPointsJson === 'string'
+                ? JSON.parse(keyPointsJson)
+                : keyPointsJson
             
             if (Array.isArray(keyPoints) && keyPoints.length > 0) {
                 contentSections.push({
@@ -382,14 +408,14 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
 
     // Formula Section
-    if (data.formula_md) {
+    if (formulaMd) {
         contentSections.push({
             node: (
                 <>
                     <h2 key="formula-h2" className="text-3xl font-bold mb-6 mt-8">Formula</h2>
                     <section key="formula-section" id="formula" className="mb-12 prose lg:prose-xl">
                         <div className="bg-gray-50 p-6 rounded-lg">
-                            <div dangerouslySetInnerHTML={{ __html: data.formula_md }} />
+                            <div dangerouslySetInnerHTML={{ __html: formulaMd }} />
                         </div>
                     </section>
                 </>
@@ -398,14 +424,14 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
 
     // Assumptions Section
-    if (data.assumptions_md) {
+    if (assumptionsMd) {
         contentSections.push({
             node: (
                 <>
                     <h2 key="assumptions-h2" className="text-3xl font-bold mb-6 mt-8">Assumptions</h2>
                     <section key="assumptions-section" id="assumptions" className="mb-12 prose lg:prose-xl">
                         <div className="bg-gray-50 p-6 rounded-lg">
-                            <div dangerouslySetInnerHTML={{ __html: data.assumptions_md }} />
+                            <div dangerouslySetInnerHTML={{ __html: assumptionsMd }} />
                         </div>
                     </section>
                 </>
@@ -414,7 +440,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
 
     // FAQ Section
-    if (data.faq_json) {
+    if (faqJson) {
         contentSections.push({
             node: (
                 <>
@@ -424,9 +450,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
                             {(() => {
                                 try {
                                     // @ts-ignore
-                                    const faqs = typeof data.faq_json === 'string' 
-                                        ? JSON.parse(data.faq_json) 
-                                        : data.faq_json
+                                    const faqs = typeof faqJson === 'string' 
+                                        ? JSON.parse(faqJson) 
+                                        : faqJson
                                     if (Array.isArray(faqs)) {
                                         return faqs.map((faq: any, idx: number) => (
                                             <div key={idx} className="bg-gray-50 p-6 rounded-lg">

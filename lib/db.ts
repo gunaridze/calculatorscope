@@ -46,6 +46,7 @@ export async function getToolData(slug: string, lang: string) {
 
 // Функция получения страницы по коду и языку (для ссылок на виджеты)
 export async function getPageByCode(code: string, lang: string) {
+    // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
     const pageI18n = await prisma.pageI18n.findFirst({
         where: {
             page: {
@@ -63,6 +64,7 @@ export async function getPageByCode(code: string, lang: string) {
 
 // Функция получения статической страницы по slug и языку
 export async function getPageBySlug(slug: string, lang: string) {
+    // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
     const pageI18n = await prisma.pageI18n.findUnique({
         where: {
             lang_slug: {

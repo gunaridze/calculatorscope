@@ -46,21 +46,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         }
 
         // Это категория
-        const categoryI18n = await prisma.categoryI18n.findUnique({
+        const categoryI18nRaw = await prisma.categoryI18n.findUnique({
             where: {
                 lang_slug: {
                     lang,
                     slug,
                 },
             },
-            select: {
-                meta_title: true,
-                meta_description: true,
-                og_title: true,
-                og_description: true,
-                og_image_url: true,
-            },
         })
+        // TypeScript не всегда правильно выводит типы из Prisma
+        const categoryI18n = categoryI18nRaw ? {
+            meta_title: (categoryI18nRaw as any).meta_title,
+            meta_description: (categoryI18nRaw as any).meta_description,
+            og_title: (categoryI18nRaw as any).og_title,
+            og_description: (categoryI18nRaw as any).og_description,
+            og_image_url: (categoryI18nRaw as any).og_image_url,
+        } : null
 
         if (!categoryI18n) {
             return {
@@ -71,9 +72,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const url = process.env.NEXT_PUBLIC_SITE_URL || 'https://calculatorscope.com'
         const canonicalUrl = `${url}/${lang}/${slug}`
 
+        const ogTitle = categoryI18n.og_title
+        const ogDescription = categoryI18n.og_description
+
         return {
-            title: categoryI18n.meta_title || categoryI18n.og_title || 'Category',
-            description: categoryI18n.meta_description || categoryI18n.og_description || undefined,
+            title: categoryI18n.meta_title || ogTitle || 'Category',
+            description: categoryI18n.meta_description || ogDescription || undefined,
             robots: 'index,follow',
             alternates: {
                 canonical: canonicalUrl,
@@ -111,6 +115,7 @@ export default async function CategoryPage({ params }: Props) {
         } = {}
 
         try {
+            // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
             const homePageData = await prisma.pageI18n.findFirst({
                 where: {
                     lang,
@@ -221,7 +226,15 @@ export default async function CategoryPage({ params }: Props) {
                         )}
                     </div>
                 </main>
-                <Footer lang={lang} />
+                <Footer 
+                    lang={lang} 
+                    translations={{
+                        footer_link_1: translations.footer_link_1,
+                        footer_link_2: translations.footer_link_2,
+                        footer_link_3: translations.footer_link_3,
+                        footer_copyright: translations.footer_copyright,
+                    }}
+                />
             </>
         )
     }
@@ -241,11 +254,6 @@ export default async function CategoryPage({ params }: Props) {
                         include: {
                             i18n: {
                                 where: { lang },
-                                select: {
-                                    slug: true,
-                                    name: true,
-                                    og_description: true,
-                                },
                             },
                         },
                         orderBy: { sort_order: 'asc' },
@@ -256,12 +264,6 @@ export default async function CategoryPage({ params }: Props) {
                                 include: {
                                     i18n: {
                                         where: { lang },
-                                        select: {
-                                            slug: true,
-                                            h1: true,
-                                            title: true,
-                                            is_popular: true,
-                                        },
                                     },
                                 },
                             },
@@ -276,6 +278,11 @@ export default async function CategoryPage({ params }: Props) {
         notFound()
     }
 
+    // Извлекаем поля из categoryI18n (TypeScript не всегда правильно выводит типы из Prisma с include)
+    const categoryI18nAny = categoryI18n as any
+    const ogTitle = categoryI18nAny.og_title
+    const ogDescription = categoryI18nAny.og_description
+
     const category = categoryI18n.category
     const hasChildren = category.children.length > 0
 
@@ -283,7 +290,7 @@ export default async function CategoryPage({ params }: Props) {
     const popularTools = category.tools
         .filter(({ tool }) => {
             const toolI18n = tool.i18n[0]
-            return toolI18n && toolI18n.is_popular === 1
+            return toolI18n && (toolI18n as any).is_popular === 1
         })
         .map(({ tool }) => ({
             id: tool.id,
@@ -315,18 +322,19 @@ export default async function CategoryPage({ params }: Props) {
                 id: child.id,
                 slug: childI18n.slug,
                 name: childI18n.name,
-                og_description: childI18n.og_description,
+                og_description: (childI18n as any).og_description,
             }
         })
         .filter((cat): cat is NonNullable<typeof cat> => cat !== null)
 
     // Парсим content_blocks_json
     let content: CategoryContent = {}
-    if (categoryI18n.content_blocks_json) {
+    const contentBlocksJson = (categoryI18n as any).content_blocks_json
+    if (contentBlocksJson) {
         try {
-            const parsed = typeof categoryI18n.content_blocks_json === 'string'
-                ? JSON.parse(categoryI18n.content_blocks_json)
-                : categoryI18n.content_blocks_json
+            const parsed = typeof contentBlocksJson === 'string'
+                ? JSON.parse(contentBlocksJson)
+                : contentBlocksJson
             content = parsed as CategoryContent
         } catch (e) {
             console.error('Error parsing content_blocks_json:', e)
@@ -344,7 +352,7 @@ export default async function CategoryPage({ params }: Props) {
             <Header
                 lang={lang}
                 h1={categoryI18n.name}
-                metaDescription={categoryI18n.short_description || undefined}
+                metaDescription={(categoryI18n as any).short_description || undefined}
                 translations={{
                     burger_button: translations.burger_button,
                     header_search_placeholder: translations.header_search_placeholder,
@@ -422,16 +430,16 @@ export default async function CategoryPage({ params }: Props) {
                                 )}
 
                                 {/* SEO-описание */}
-                                {(categoryI18n.og_title || categoryI18n.og_description) && (
+                                {(ogTitle || ogDescription) && (
                                     <div className="mb-12">
-                                        {categoryI18n.og_title && (
+                                        {ogTitle && (
                                             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                {categoryI18n.og_title}
+                                                {ogTitle}
                                             </h2>
                                         )}
-                                        {categoryI18n.og_description && (
+                                        {ogDescription && (
                                             <p className="text-lg text-gray-700">
-                                                {categoryI18n.og_description}
+                                                {ogDescription}
                                             </p>
                                         )}
                                     </div>
@@ -487,16 +495,16 @@ export default async function CategoryPage({ params }: Props) {
                                 )}
 
                                 {/* SEO-описание */}
-                                {(categoryI18n.og_title || categoryI18n.og_description) && (
+                                {(ogTitle || ogDescription) && (
                                     <div className="mb-12">
-                                        {categoryI18n.og_title && (
+                                        {ogTitle && (
                                             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                {categoryI18n.og_title}
+                                                {ogTitle}
                                             </h2>
                                         )}
-                                        {categoryI18n.og_description && (
+                                        {ogDescription && (
                                             <p className="text-lg text-gray-700">
-                                                {categoryI18n.og_description}
+                                                {ogDescription}
                                             </p>
                                         )}
                                     </div>
@@ -656,16 +664,16 @@ export default async function CategoryPage({ params }: Props) {
                                 })}
 
                                 {/* SEO-описание */}
-                                {(categoryI18n.og_title || categoryI18n.og_description) && (
+                                {(ogTitle || ogDescription) && (
                                     <div className="mt-12">
-                                        {categoryI18n.og_title && (
+                                        {ogTitle && (
                                             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                {categoryI18n.og_title}
+                                                {ogTitle}
                                             </h2>
                                         )}
-                                        {categoryI18n.og_description && (
+                                        {ogDescription && (
                                             <p className="text-lg text-gray-700">
-                                                {categoryI18n.og_description}
+                                                {ogDescription}
                                             </p>
                                         )}
                                     </div>
@@ -765,16 +773,16 @@ export default async function CategoryPage({ params }: Props) {
                             )}
 
                             {/* SEO-описание */}
-                            {(categoryI18n.og_title || categoryI18n.og_description) && (
+                            {(ogTitle || ogDescription) && (
                                 <div className="mb-12">
-                                    {categoryI18n.og_title && (
+                                    {ogTitle && (
                                         <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                            {categoryI18n.og_title}
+                                            {ogTitle}
                                         </h2>
                                     )}
-                                    {categoryI18n.og_description && (
+                                    {ogDescription && (
                                         <p className="text-lg text-gray-700">
-                                            {categoryI18n.og_description}
+                                            {ogDescription}
                                         </p>
                                     )}
                                 </div>

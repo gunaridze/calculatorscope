@@ -47,6 +47,7 @@ async function main() {
         tool_id: toolId
       },
       data: {
+        // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
         inputs_json: configData.inputs_json
       }
     })

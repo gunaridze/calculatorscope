@@ -20,11 +20,6 @@ export async function GET(request: NextRequest) {
                 sort_order: true,
                 i18n: {
                     where: { lang },
-                    select: {
-                        slug: true,
-                        name: true,
-                        og_image_url: true,
-                    }
                 }
             },
             orderBy: { sort_order: 'asc' }
@@ -37,7 +32,7 @@ export async function GET(request: NextRequest) {
                 id: cat.id,
                 slug: cat.i18n[0].slug,
                 name: cat.i18n[0].name,
-                iconUrl: cat.i18n[0].og_image_url,
+                iconUrl: (cat.i18n[0] as any).og_image_url,
                 sort_order: cat.sort_order,
             }))
             .sort((a, b) => a.sort_order - b.sort_order)

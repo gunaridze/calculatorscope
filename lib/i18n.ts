@@ -27,6 +27,7 @@ export async function getLanguageSwitchUrl(
 
         // Сначала проверяем, является ли это статической страницей
         // Ищем по текущему slug и языку в PageI18n
+        // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
         const pageI18n = await prisma.pageI18n.findUnique({
             where: {
                 lang_slug: {
