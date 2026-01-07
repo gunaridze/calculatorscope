@@ -212,6 +212,7 @@ export default async function CategoryPage({ params }: Props) {
                                             )}
                                             {section.html && (
                                                 <div 
+                                                    className="prose"
                                                     dangerouslySetInnerHTML={{ __html: section.html }}
                                                 />
                                             )}
@@ -266,6 +267,7 @@ export default async function CategoryPage({ params }: Props) {
                                         )}
                                         {section.html && (
                                             <div 
+                                                className="prose"
                                                 dangerouslySetInnerHTML={{ __html: section.html }}
                                             />
                                         )}
