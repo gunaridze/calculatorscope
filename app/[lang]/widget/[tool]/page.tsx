@@ -404,45 +404,31 @@ ${toolName}
                                             </div>
                                         </div>
                                     )}
-                                    {section.type === 'widget_preview' && (
-                                        <div>
-                                            {section.heading && (
-                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                    {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
-                                                </h2>
-                                            )}
-                                            {section.html && (
-                                                <div
-                                                    className="prose"
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
-                                                    }}
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-                                    {section.type === 'widget_preview' && (
-                                        <div>
-                                            {section.heading && (
-                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                    {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
-                                                </h2>
-                                            )}
-                                            {section.html && (
-                                                <div
-                                                    className="prose"
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
-                                                    }}
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-                                    {section.html && !section.type && (
+                                    {/* Игнорируем секции widget_preview - они не нужны */}
+                                    {section.html && !section.type && section.type !== 'widget_preview' && (
                                         <div
                                             className="prose"
                                             dangerouslySetInnerHTML={{
-                                                __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                __html: (() => {
+                                                    let html = replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                    
+                                                    // Удаляем дублирующиеся блоки preview из HTML
+                                                    // Ищем все блоки с заголовком "Preview the ... Widget"
+                                                    const previewPattern = /<div>[\s\S]*?<h2[^>]*>Preview[^<]*Widget[^<]*<\/h2>[\s\S]*?<\/div>/gi
+                                                    const matches = [...html.matchAll(previewPattern)]
+                                                    
+                                                    if (matches.length > 1) {
+                                                        // Оставляем только первый блок, удаляем остальные
+                                                        for (let i = matches.length - 1; i > 0; i--) {
+                                                            const match = matches[i]
+                                                            if (match[0]) {
+                                                                html = html.replace(match[0], '')
+                                                            }
+                                                        }
+                                                    }
+                                                    
+                                                    return html
+                                                })()
                                             }}
                                         />
                                     )}
@@ -584,11 +570,31 @@ ${toolName}
                                         </div>
                                     </div>
                                 )}
-                                {section.html && !section.type && (
+                                {/* Игнорируем секции widget_preview - они не нужны */}
+                                {section.html && !section.type && section.type !== 'widget_preview' && (
                                     <div
                                         className="prose"
                                         dangerouslySetInnerHTML={{
-                                            __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                            __html: (() => {
+                                                let html = replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                
+                                                // Удаляем дублирующиеся блоки preview из HTML
+                                                // Ищем все блоки с заголовком "Preview the ... Widget"
+                                                const previewPattern = /<div>[\s\S]*?<h2[^>]*>Preview[^<]*Widget[^<]*<\/h2>[\s\S]*?<\/div>/gi
+                                                const matches = [...html.matchAll(previewPattern)]
+                                                
+                                                if (matches.length > 1) {
+                                                    // Оставляем только первый блок, удаляем остальные
+                                                    for (let i = matches.length - 1; i > 0; i--) {
+                                                        const match = matches[i]
+                                                        if (match[0]) {
+                                                            html = html.replace(match[0], '')
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                return html
+                                            })()
                                         }}
                                     />
                                 )}
