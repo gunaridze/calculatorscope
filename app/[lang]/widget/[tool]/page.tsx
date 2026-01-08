@@ -317,10 +317,29 @@ ${toolName}
                                                     {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
                                                 </h2>
                                             )}
-                                            <WidgetCodeBlock
-                                                code={section.html ? replacePlaceholders(section.html, toolName, toolSlug, lang) : ''}
-                                                widgetCode={widgetCode}
-                                            />
+                                            {(() => {
+                                                // Обрабатываем HTML: заменяем ссылку на preview кнопкой и удаляем старую ссылку виджета
+                                                let processedHtml = section.html ? replacePlaceholders(section.html, toolName, toolSlug, lang) : ''
+                                                
+                                                // Удаляем старую ссылку виджета (если она есть в HTML)
+                                                processedHtml = processedHtml.replace(/<a\s+href="[^"]*"[^>]*onclick="[^"]*"[^>]*>[\s\S]*?<\/a>/gi, (match) => {
+                                                    // Если это не preview ссылка, удаляем её
+                                                    if (!match.includes('widget-preview-link')) {
+                                                        return ''
+                                                    }
+                                                    return match
+                                                })
+                                                
+                                                // Заменяем preview ссылку на placeholder, который будет заменен на кнопку в компоненте
+                                                // (компонент сам заменит ссылку через useEffect)
+                                                
+                                                return (
+                                                    <WidgetCodeBlock
+                                                        code={processedHtml}
+                                                        widgetCode={widgetCode}
+                                                    />
+                                                )
+                                            })()}
                                         </div>
                                     )}
                                     {section.type === 'links' && (
@@ -342,20 +361,17 @@ ${toolName}
                                                     const directUrlMatch = html.match(/<h3>Direct URL<\/h3>[\s\S]*?<p><code>([\s\S]*?)<\/code><\/p>/)
                                                     const htmlLinkMatch = html.match(/<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>([\s\S]*?)<\/code><\/pre>/)
                                                     
-                                                    // Удаляем блоки с кодом из HTML, они будут заменены компонентами
+                                                    // Удаляем все дублирующиеся заголовки и блоки с кодом из HTML
                                                     let processedHtml = html
-                                                    if (directUrlMatch) {
-                                                        processedHtml = processedHtml.replace(
-                                                            /<h3>Direct URL<\/h3>[\s\S]*?<p><code>[\s\S]*?<\/code><\/p>/,
-                                                            '<h3>Direct URL</h3>'
-                                                        )
-                                                    }
-                                                    if (htmlLinkMatch) {
-                                                        processedHtml = processedHtml.replace(
-                                                            /<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>[\s\S]*?<\/code><\/pre>/,
-                                                            '<h3>HTML Link Code</h3>'
-                                                        )
-                                                    }
+                                                    
+                                                    // Удаляем заголовки h3 и связанные блоки
+                                                    processedHtml = processedHtml.replace(/<h3>Direct URL<\/h3>[\s\S]*?<p><code>[\s\S]*?<\/code><\/p>/gi, '')
+                                                    processedHtml = processedHtml.replace(/<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>[\s\S]*?<\/code><\/pre>/gi, '')
+                                                    processedHtml = processedHtml.replace(/<h3>Right-Click Copy Link<\/h3>[\s\S]*?<p><a[^>]*>[\s\S]*?<\/a><\/p>/gi, '')
+                                                    
+                                                    // Удаляем дублирующиеся блоки с кнопками Copy (если они есть в HTML)
+                                                    processedHtml = processedHtml.replace(/<div class="bg-gray-50[^"]*">[\s\S]*?Direct URL[\s\S]*?<\/div>/gi, '')
+                                                    processedHtml = processedHtml.replace(/<div class="bg-gray-50[^"]*">[\s\S]*?HTML Link Code[\s\S]*?<\/div>/gi, '')
                                                     
                                                     // Декодируем HTML entities
                                                     const decodeHtml = (str: string) => {
@@ -484,10 +500,26 @@ ${toolName}
                                                 {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
                                             </h2>
                                         )}
-                                        <WidgetCodeBlock
-                                            code={section.html ? replacePlaceholders(section.html, toolName, toolSlug, lang) : ''}
-                                            widgetCode={widgetCode}
-                                        />
+                                        {(() => {
+                                            // Обрабатываем HTML: заменяем ссылку на preview кнопкой и удаляем старую ссылку виджета
+                                            let processedHtml = section.html ? replacePlaceholders(section.html, toolName, toolSlug, lang) : ''
+                                            
+                                            // Удаляем старую ссылку виджета (если она есть в HTML)
+                                            processedHtml = processedHtml.replace(/<a\s+href="[^"]*"[^>]*onclick="[^"]*"[^>]*>[\s\S]*?<\/a>/gi, (match) => {
+                                                // Если это не preview ссылка, удаляем её
+                                                if (!match.includes('widget-preview-link')) {
+                                                    return ''
+                                                }
+                                                return match
+                                            })
+                                            
+                                            return (
+                                                <WidgetCodeBlock
+                                                    code={processedHtml}
+                                                    widgetCode={widgetCode}
+                                                />
+                                            )
+                                        })()}
                                     </div>
                                 )}
                                 {section.type === 'links' && (
@@ -509,20 +541,17 @@ ${toolName}
                                                 const directUrlMatch = html.match(/<h3>Direct URL<\/h3>[\s\S]*?<p><code>([\s\S]*?)<\/code><\/p>/)
                                                 const htmlLinkMatch = html.match(/<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>([\s\S]*?)<\/code><\/pre>/)
                                                 
-                                                // Удаляем блоки с кодом из HTML, они будут заменены компонентами
+                                                // Удаляем все дублирующиеся заголовки и блоки с кодом из HTML
                                                 let processedHtml = html
-                                                if (directUrlMatch) {
-                                                    processedHtml = processedHtml.replace(
-                                                        /<h3>Direct URL<\/h3>[\s\S]*?<p><code>[\s\S]*?<\/code><\/p>/,
-                                                        '<h3>Direct URL</h3>'
-                                                    )
-                                                }
-                                                if (htmlLinkMatch) {
-                                                    processedHtml = processedHtml.replace(
-                                                        /<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>[\s\S]*?<\/code><\/pre>/,
-                                                        '<h3>HTML Link Code</h3>'
-                                                    )
-                                                }
+                                                
+                                                // Удаляем заголовки h3 и связанные блоки
+                                                processedHtml = processedHtml.replace(/<h3>Direct URL<\/h3>[\s\S]*?<p><code>[\s\S]*?<\/code><\/p>/gi, '')
+                                                processedHtml = processedHtml.replace(/<h3>HTML Link Code<\/h3>[\s\S]*?<pre><code>[\s\S]*?<\/code><\/pre>/gi, '')
+                                                processedHtml = processedHtml.replace(/<h3>Right-Click Copy Link<\/h3>[\s\S]*?<p><a[^>]*>[\s\S]*?<\/a><\/p>/gi, '')
+                                                
+                                                // Удаляем дублирующиеся блоки с кнопками Copy (если они есть в HTML)
+                                                processedHtml = processedHtml.replace(/<div class="bg-gray-50[^"]*">[\s\S]*?Direct URL[\s\S]*?<\/div>/gi, '')
+                                                processedHtml = processedHtml.replace(/<div class="bg-gray-50[^"]*">[\s\S]*?HTML Link Code[\s\S]*?<\/div>/gi, '')
                                                 
                                                 // Декодируем HTML entities
                                                 const decodeHtml = (str: string) => {
@@ -553,23 +582,6 @@ ${toolName}
                                                 )
                                             })()}
                                         </div>
-                                    </div>
-                                )}
-                                {section.type === 'widget_preview' && (
-                                    <div>
-                                        {section.heading && (
-                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
-                                            </h2>
-                                        )}
-                                        {section.html && (
-                                            <div
-                                                className="prose"
-                                                dangerouslySetInnerHTML={{
-                                                    __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
-                                                }}
-                                            />
-                                        )}
                                     </div>
                                 )}
                                 {section.html && !section.type && (

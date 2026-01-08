@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 type Props = {
     code: string  // HTML код из body_blocks_json (с плейсхолдерами уже замененными)
@@ -9,6 +9,7 @@ type Props = {
 
 export default function WidgetCodeBlock({ code, widgetCode }: Props) {
     const [copied, setCopied] = useState(false)
+    const contentRef = useRef<HTMLDivElement>(null)
 
     const handleCopy = async () => {
         try {
@@ -20,10 +21,47 @@ export default function WidgetCodeBlock({ code, widgetCode }: Props) {
         }
     }
 
+    useEffect(() => {
+        // Заменяем ссылку на preview кнопкой после рендера
+        if (contentRef.current) {
+            const previewLink = contentRef.current.querySelector('a.widget-preview-link')
+            if (previewLink) {
+                const onclick = previewLink.getAttribute('onclick') || ''
+                const text = previewLink.textContent || 'Preview this widget'
+                
+                // Создаем кнопку
+                const button = document.createElement('button')
+                button.className = 'px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg'
+                button.textContent = text
+                button.type = 'button'
+                
+                // Обработчик клика для кнопки
+                button.addEventListener('click', (e) => {
+                    e.preventDefault()
+                    if (onclick) {
+                        // Выполняем onclick из оригинальной ссылки
+                        try {
+                            // Создаем временную функцию для выполнения onclick
+                            const func = new Function(onclick.replace(/return false;?/g, '').trim())
+                            func()
+                        } catch (err) {
+                            console.error('Error executing onclick:', err)
+                        }
+                    }
+                    return false
+                })
+                
+                // Заменяем ссылку на кнопку
+                previewLink.parentNode?.replaceChild(button, previewLink)
+            }
+        }
+    }, [code])
+
     return (
         <div className="my-6">
             {/* Показываем HTML из body_blocks_json (может содержать инструкции) */}
             <div
+                ref={contentRef}
                 className="prose mb-4"
                 dangerouslySetInnerHTML={{ __html: code }}
             />
