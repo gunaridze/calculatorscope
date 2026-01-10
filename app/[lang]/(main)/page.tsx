@@ -266,23 +266,34 @@ export default async function HomePage({ params }: Props) {
                                 </div>
                                 
                                 {/* Популярные категории - начинаются через 20px после последнего ряда */}
-                                {popularCategories.length > 0 && (
-                                    <div className="mt-[20px]">
-                                        <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                            {content.body_h2_2 || 'Popular Calculators'}
-                                        </h2>
-                                        <div className="grid grid-cols-3 gap-6">
-                                            {popularCategories.slice(0, 6).map((cat) => {
-                                                const catData = (cat as any).i18n[0]
-                                                if (!catData) return null
+                                {(() => {
+                                    // Фильтруем категории, у которых есть популярные инструменты
+                                    const categoriesWithPopularTools = popularCategories
+                                        .map((cat) => {
+                                            const catData = (cat as any).i18n[0]
+                                            if (!catData) return null
 
-                                                const popularTools = (cat as any).tools
-                                                    .filter(({ tool }: any) => tool.i18n.length > 0 && (tool.i18n[0] as any)?.is_popular === 1)
-                                                    .slice(0, 3)
+                                            const popularTools = (cat as any).tools
+                                                .filter(({ tool }: any) => tool.i18n.length > 0 && (tool.i18n[0] as any)?.is_popular === 1)
+                                                .slice(0, 3)
 
-                                                if (popularTools.length === 0) return null
+                                            if (popularTools.length === 0) return null
 
-                                                return (
+                                            return { cat, catData, popularTools }
+                                        })
+                                        .filter(Boolean)
+                                        .slice(0, 6)
+
+                                    // Показываем блок только если есть категории с популярными инструментами
+                                    if (categoriesWithPopularTools.length === 0) return null
+
+                                    return (
+                                        <div className="mt-[20px]">
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                                                {content.body_h2_2 || 'Popular Calculators'}
+                                            </h2>
+                                            <div className="grid grid-cols-3 gap-6">
+                                                {categoriesWithPopularTools.map(({ cat, catData, popularTools }: any) => (
                                                     <div key={cat.id} className="bg-white border border-gray-200 rounded-lg">
                                                         {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
                                                         <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
@@ -312,11 +323,11 @@ export default async function HomePage({ params }: Props) {
                                                             })}
                                                         </div>
                                                     </div>
-                                                )
-                                            })}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )
+                                })()}
                             </div>
                             
                             {/* Правая колонка: Баннеры (независимая высота) */}
