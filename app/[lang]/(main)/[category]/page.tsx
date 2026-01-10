@@ -463,7 +463,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             slug: tool.i18n[0]!.slug,
             h1: tool.i18n[0]!.h1,
             title: tool.i18n[0]!.title,
-            meta_title: (tool.i18n[0] as any).meta_title,
+            meta_description: (tool.i18n[0] as any).meta_description,
         }))
 
     // Получаем все инструменты категории
@@ -476,7 +476,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                 slug: toolI18n.slug,
                 h1: toolI18n.h1,
                 title: toolI18n.title,
-                meta_title: (toolI18n as any).meta_title,
+                meta_description: (toolI18n as any).meta_description,
             }
         })
         .filter((tool): tool is NonNullable<typeof tool> => tool !== null)
@@ -651,9 +651,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                     <h3 className="font-bold text-center mb-2 text-lg">
                                                         {tool.h1 || tool.title}
                                                     </h3>
-                                                    {tool.meta_title && (
+                                                    {tool.meta_description && (
                                                         <p className="text-center text-sm text-gray-600">
-                                                            {tool.meta_title}
+                                                            {tool.meta_description}
                                                         </p>
                                                     )}
                                                 </Link>
@@ -678,9 +678,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                     <h3 className="font-bold text-center mb-2 text-lg">
                                                         {tool.h1 || tool.title}
                                                     </h3>
-                                                    {tool.meta_title && (
+                                                    {tool.meta_description && (
                                                         <p className="text-center text-sm text-gray-600">
-                                                            {tool.meta_title}
+                                                            {tool.meta_description}
                                                         </p>
                                                     )}
                                                 </Link>
