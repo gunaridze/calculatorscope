@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   },
   icons: {
     apple: [
+      { url: "/apple-touch-icon.png", type: "image/png" }, // Стандартный без sizes для совместимости
       { url: "/apple-touch-icon-120.png", sizes: "120x120", type: "image/png" },
       { url: "/apple-touch-icon-152.png", sizes: "152x152", type: "image/png" },
       { url: "/apple-touch-icon-180.png", sizes: "180x180", type: "image/png" },

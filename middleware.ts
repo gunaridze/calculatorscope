@@ -9,7 +9,8 @@ const defaultLocale = 'en'
 
 // Зарезервированные пути, которые НЕ нужно обрабатывать
 const reservedPaths = [
-    '/api', '/_next', '/static', '/favicon.ico', '/robots.txt', '/sitemap.xml', '/widget.js', '/widget'
+    '/api', '/_next', '/static', '/favicon.ico', '/robots.txt', '/sitemap.xml', '/widget.js', '/widget',
+    '/apple-touch-icon', '/android-chrome', '/favicon'
 ]
 
 function getLocale(request: NextRequest): string {
@@ -58,6 +59,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    // Matcher: все пути, кроме api, static файлов и т.д.
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+    // Matcher: все пути, кроме api, static файлов, иконок и т.д.
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|apple-touch-icon|android-chrome|favicon|widget-|sw.js|offline.html).*)'],
 }
