@@ -11,6 +11,8 @@ type Props = {
     initialValues?: JsonEngineInput  // Для share links
     h1: string  // Заголовок для header виджета
     lang: string
+    toolId?: string  // ID инструмента для аналитики
+    h1En?: string  // H1 на английском языке для аналитики
     translations: {
         clear: string
         calculate: string
@@ -43,6 +45,8 @@ export default function CalculatorWidget({
     initialValues,
     h1,
     lang,
+    toolId,
+    h1En,
     translations,
     widgetPageSlug,
     toolSlug
@@ -99,6 +103,30 @@ export default function CalculatorWidget({
             }
         }
     }, [config])
+
+    // Отслеживание загрузки виджета в Google Analytics
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // Получаем referrer (URL страницы, с которой открыт виджет)
+            const referrer = document.referrer || window.location.href
+            
+            // Отправляем событие в Google Analytics через dataLayer
+            if ((window as any).dataLayer) {
+                (window as any).dataLayer.push({
+                    event: 'widget_load',
+                    eventCategory: 'Widget',
+                    eventAction: 'Widget Loaded',
+                    eventLabel: h1 || 'Unknown Widget',
+                    widgetToolId: toolId || 'unknown',
+                    widgetH1: h1 || 'Unknown',
+                    widgetH1En: h1En || h1 || 'Unknown',
+                    widgetLang: lang,
+                    widgetReferrer: referrer,
+                    widgetUrl: window.location.href
+                })
+            }
+        }
+    }, [toolId, h1, h1En, lang])
 
     // Обработка ввода
     const handleChange = (key: string, val: string | number) => {
@@ -414,13 +442,34 @@ export default function CalculatorWidget({
 
                 {/* Logo */}
                 <div className="mt-5 text-right" style={{ marginTop: '20px' }}>
-                    <Image
-                        src="/calculatorscope-logo.svg"
-                        alt="Calculator Scope"
-                        width={90}
-                        height={90}
-                        className="object-contain inline-block"
-                    />
+                    <Link 
+                        href={`/${lang}`}
+                        className="logo-widget inline-block"
+                        onClick={() => {
+                            // Отправка события в Google Analytics через dataLayer
+                            if (typeof window !== 'undefined' && (window as any).dataLayer) {
+                                (window as any).dataLayer.push({
+                                    event: 'logo_click',
+                                    eventCategory: 'Widget',
+                                    eventAction: 'Logo Click',
+                                    eventLabel: 'Logo Click',
+                                    widgetToolId: toolId || 'unknown',
+                                    widgetH1: h1 || 'Unknown',
+                                    widgetH1En: h1En || h1 || 'Unknown',
+                                    widgetLang: lang,
+                                    widgetReferrer: document.referrer || window.location.href
+                                })
+                            }
+                        }}
+                    >
+                        <Image
+                            src="/calculatorscope-logo.svg"
+                            alt="Calculator Scope"
+                            width={90}
+                            height={90}
+                            className="object-contain inline-block"
+                        />
+                    </Link>
                 </div>
             </div>
         </div>

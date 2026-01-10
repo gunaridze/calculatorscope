@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getToolData, getPageByCode } from '@/lib/db'
+import { getToolData, getPageByCode, prisma } from '@/lib/db'
 import CalculatorWidget from '@/components/CalculatorWidget'
 import { calculate, type JsonEngineConfig, type JsonEngineOutput } from '@/core/engines/json'
 import type { Metadata } from 'next'
@@ -149,6 +149,29 @@ export default async function ToolPage({ params, searchParams }: Props) {
             return notFound()
         }
 
+        // Получаем tool_id и h1 для lang='en' для аналитики
+        const toolId = (data as any).tool?.id || null
+        let h1En: string | undefined = undefined
+        
+        if (toolId) {
+            try {
+                // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
+                const toolI18nEn = await prisma.toolI18n.findFirst({
+                    where: {
+                        tool_id: toolId,
+                        lang: 'en'
+                    },
+                    select: {
+                        h1: true,
+                        title: true
+                    }
+                })
+                h1En = toolI18nEn?.h1 || toolI18nEn?.title || undefined
+            } catch (e) {
+                console.error('Error fetching h1_en for analytics:', e)
+            }
+        }
+
         return (
             <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
                 <CalculatorWidget
@@ -156,6 +179,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
                     interface={interfaceData}
                     h1={data.h1 || data.title}
                     lang={lang}
+                    toolId={toolId || undefined}
+                    h1En={h1En}
                     translations={{
                         clear: translations.widget_clear,
                         calculate: translations.widget_calculate,
@@ -242,6 +267,29 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
     // @ts-ignore
     const interfaceData = inputsJson || {} // Используем inputs_json вместо interface_json
+
+    // Получаем tool_id и h1 для lang='en' для аналитики
+    const toolId = (data as any).tool?.id || null
+    let h1En: string | undefined = undefined
+    
+    if (toolId) {
+        try {
+            // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
+            const toolI18nEn = await prisma.toolI18n.findFirst({
+                where: {
+                    tool_id: toolId,
+                    lang: 'en'
+                },
+                select: {
+                    h1: true,
+                    title: true
+                }
+            })
+            h1En = toolI18nEn?.h1 || toolI18nEn?.title || undefined
+        } catch (e) {
+            console.error('Error fetching h1_en for analytics:', e)
+        }
+    }
 
     // 5. Обработка share links (server-side calculation только для ?share=1)
     let initialValues: Record<string, number> | undefined = undefined
@@ -541,6 +589,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
                         initialValues={initialValues}
                         h1={data.h1 || data.title}
                         lang={lang}
+                        toolId={toolId || undefined}
+                        h1En={h1En}
                         translations={{
                             clear: translations.widget_clear,
                             calculate: translations.widget_calculate,
@@ -600,6 +650,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                 initialValues={initialValues}
                                 h1={data.h1 || data.title}
                                 lang={lang}
+                                toolId={toolId || undefined}
+                                h1En={h1En}
                                 translations={{
                                     clear: translations.widget_clear,
                                     calculate: translations.widget_calculate,
@@ -657,6 +709,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                 initialValues={initialValues}
                                 h1={data.h1 || data.title}
                                 lang={lang}
+                                toolId={toolId || undefined}
+                                h1En={h1En}
                                 translations={{
                                     clear: translations.widget_clear,
                                     calculate: translations.widget_calculate,

@@ -23,6 +23,7 @@ Reach ~3M visits/month (~100k/day) within 18 months via:
 - Database schema & guarantees → DATABASE.md
 - Admin & validation rules → ADMIN.md
 - Hard rules & conventions → CONVENTIONS.md
+- Google Analytics tracking classes → docs/GOOGLE_ANALYTICS_CLASSES.md
 
 ## Status
 Foundation phase
