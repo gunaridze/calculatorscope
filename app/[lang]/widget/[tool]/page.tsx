@@ -424,7 +424,35 @@ ${toolName}
                                             <div
                                                 className="prose"
                                                 dangerouslySetInnerHTML={{
-                                                    __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                    __html: (() => {
+                                                        let html = replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                        
+                                                        // Преобразуем ссылку widget-preview-link в кнопку
+                                                        html = html.replace(
+                                                            /<p><a\s+[^>]*class="widget-preview-link"[^>]*onclick="([^"]*)"[^>]*>([\s\S]*?)<\/a><\/p>/gi,
+                                                            (match, onclickAttr, linkText) => {
+                                                                // Извлекаем текст, удаляя все HTML теги, но сохраняя структуру для отображения
+                                                                // Если есть <strong>, извлекаем его содержимое, иначе берем весь текст
+                                                                let buttonText = linkText
+                                                                const strongMatch = buttonText.match(/<strong>(.*?)<\/strong>/i)
+                                                                if (strongMatch) {
+                                                                    buttonText = strongMatch[1]
+                                                                } else {
+                                                                    // Удаляем все HTML теги, оставляем только текст
+                                                                    buttonText = buttonText.replace(/<[^>]+>/g, '').trim()
+                                                                }
+                                                                
+                                                                // Экранируем двойные кавычки в onclick для безопасной вставки в HTML
+                                                                // (хотя в данном случае их там нет, но для безопасности)
+                                                                const escapedOnclick = onclickAttr.replace(/"/g, '&quot;')
+                                                                
+                                                                // Создаем кнопку с теми же стилями
+                                                                return `<p><button onclick="${escapedOnclick}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">${buttonText}</button></p>`
+                                                            }
+                                                        )
+                                                        
+                                                        return html
+                                                    })()
                                                 }}
                                             />
                                         </div>
@@ -615,7 +643,35 @@ ${toolName}
                                         <div
                                             className="prose"
                                             dangerouslySetInnerHTML={{
-                                                __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                __html: (() => {
+                                                    let html = replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                    
+                                                    // Преобразуем ссылку widget-preview-link в кнопку
+                                                    html = html.replace(
+                                                        /<p><a\s+[^>]*class="widget-preview-link"[^>]*onclick="([^"]*)"[^>]*>([\s\S]*?)<\/a><\/p>/gi,
+                                                        (match, onclickAttr, linkText) => {
+                                                            // Извлекаем текст, удаляя все HTML теги, но сохраняя структуру для отображения
+                                                            // Если есть <strong>, извлекаем его содержимое, иначе берем весь текст
+                                                            let buttonText = linkText
+                                                            const strongMatch = buttonText.match(/<strong>(.*?)<\/strong>/i)
+                                                            if (strongMatch) {
+                                                                buttonText = strongMatch[1]
+                                                            } else {
+                                                                // Удаляем все HTML теги, оставляем только текст
+                                                                buttonText = buttonText.replace(/<[^>]+>/g, '').trim()
+                                                            }
+                                                            
+                                                            // Экранируем двойные кавычки в onclick для безопасной вставки в HTML
+                                                            // (хотя в данном случае их там нет, но для безопасности)
+                                                            const escapedOnclick = onclickAttr.replace(/"/g, '&quot;')
+                                                            
+                                                            // Создаем кнопку с теми же стилями
+                                                            return `<p><button onclick="${escapedOnclick}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">${buttonText}</button></p>`
+                                                        }
+                                                    )
+                                                    
+                                                    return html
+                                                })()
                                             }}
                                         />
                                     </div>
