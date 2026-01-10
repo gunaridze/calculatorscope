@@ -463,6 +463,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             slug: tool.i18n[0]!.slug,
             h1: tool.i18n[0]!.h1,
             title: tool.i18n[0]!.title,
+            meta_title: (tool.i18n[0] as any).meta_title,
         }))
 
     // Получаем все инструменты категории
@@ -475,6 +476,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                 slug: toolI18n.slug,
                 h1: toolI18n.h1,
                 title: toolI18n.title,
+                meta_title: (toolI18n as any).meta_title,
             }
         })
         .filter((tool): tool is NonNullable<typeof tool> => tool !== null)
@@ -649,6 +651,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                     <h3 className="font-bold text-center mb-2 text-lg">
                                                         {tool.h1 || tool.title}
                                                     </h3>
+                                                    {tool.meta_title && (
+                                                        <p className="text-center text-sm text-gray-600">
+                                                            {tool.meta_title}
+                                                        </p>
+                                                    )}
                                                 </Link>
                                             ))}
                                         </div>
@@ -661,16 +668,21 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
                                             {content.body_h2_3}
                                         </h2>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="space-y-4">
                                             {allTools.map((tool) => (
                                                 <Link
                                                     key={tool.id}
                                                     href={`/${lang}/${slug}/${tool.slug}`}
-                                                    className="block text-blue-600 hover:text-blue-800 hover:underline p-2"
+                                                    className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                 >
-                                                    <h4 className="font-medium">
+                                                    <h3 className="font-bold text-center mb-2 text-lg">
                                                         {tool.h1 || tool.title}
-                                                    </h4>
+                                                    </h3>
+                                                    {tool.meta_title && (
+                                                        <p className="text-center text-sm text-gray-600">
+                                                            {tool.meta_title}
+                                                        </p>
+                                                    )}
                                                 </Link>
                                             ))}
                                         </div>
@@ -889,6 +901,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                         <h3 className="font-bold text-center mb-2 text-lg">
                                                             {tool.h1 || tool.title}
                                                         </h3>
+                                                        {tool.meta_title && (
+                                                            <p className="text-center text-sm text-gray-600">
+                                                                {tool.meta_title}
+                                                            </p>
+                                                        )}
                                                     </Link>
                                                     {showAdAfter1 && (
                                                         <div className="mt-5">
@@ -939,16 +956,21 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                     <h2 className="text-3xl font-bold text-gray-900 mb-6">
                                         {content.body_h2_3}
                                     </h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="space-y-4">
                                         {allTools.map((tool) => (
                                             <Link
                                                 key={tool.id}
                                                 href={`/${lang}/${slug}/${tool.slug}`}
-                                                className="block text-blue-600 hover:text-blue-800 hover:underline p-2"
+                                                className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                             >
-                                                <h4 className="font-medium">
+                                                <h3 className="font-bold text-center mb-2 text-lg">
                                                     {tool.h1 || tool.title}
-                                                </h4>
+                                                </h3>
+                                                {tool.meta_title && (
+                                                    <p className="text-center text-sm text-gray-600">
+                                                        {tool.meta_title}
+                                                    </p>
+                                                )}
                                             </Link>
                                         ))}
                                     </div>
