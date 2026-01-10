@@ -34,6 +34,8 @@ type Props = {
         titleCaseOption: string
         sentenceCaseOption: string
         plusVat: string
+        downloadWidget: string
+        installPrompt: string
     }
     widgetPageSlug?: string  // Slug страницы виджета (id105) - устаревший, используйте toolSlug
     toolSlug?: string  // Slug инструмента для генерации ссылки на виджет
@@ -74,6 +76,8 @@ export default function CalculatorWidget({
     const [values, setValues] = useState<JsonEngineInput>(defaultValues)
     const [result, setResult] = useState<JsonEngineOutput>({})
     const [copied, setCopied] = useState(false)
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+    const [isInstallable, setIsInstallable] = useState(false)
 
     // Применяем query params из URL (клиент-side)
     useEffect(() => {
@@ -127,6 +131,23 @@ export default function CalculatorWidget({
             }
         }
     }, [toolId, h1, h1En, lang])
+
+    // PWA Install Prompt - обработка beforeinstallprompt
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const handleBeforeInstallPrompt = (e: Event) => {
+                e.preventDefault()
+                setDeferredPrompt(e)
+                setIsInstallable(true)
+            }
+
+            window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+
+            return () => {
+                window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+            }
+        }
+    }, [])
 
     // Обработка ввода
     const handleChange = (key: string, val: string | number) => {
@@ -186,6 +207,39 @@ export default function CalculatorWidget({
                 setTimeout(() => setCopied(false), 2000)
             })
         }
+    }
+
+    // Установка PWA
+    const handleInstall = async () => {
+        if (!deferredPrompt) {
+            // Если prompt недоступен, можно показать инструкции
+            alert(translations.installPrompt)
+            return
+        }
+
+        // Показываем prompt установки
+        deferredPrompt.prompt()
+
+        // Ждем ответа пользователя
+        const { outcome } = await deferredPrompt.userChoice
+
+        // Отслеживание в Google Analytics
+        if (typeof window !== 'undefined' && (window as any).dataLayer) {
+            (window as any).dataLayer.push({
+                event: 'pwa_install_prompt',
+                eventCategory: 'Widget',
+                eventAction: 'PWA Install Prompt',
+                eventLabel: outcome === 'accepted' ? 'Installed' : 'Dismissed',
+                widgetToolId: toolId || 'unknown',
+                widgetH1: h1 || 'Unknown',
+                widgetH1En: h1En || h1 || 'Unknown',
+                widgetLang: lang
+            })
+        }
+
+        // Очищаем deferredPrompt после использования
+        setDeferredPrompt(null)
+        setIsInstallable(false)
     }
 
     // Получаем текущий режим конвертации из state
@@ -431,6 +485,16 @@ export default function CalculatorWidget({
                     >
                         {translations.suggest}
                     </Link>
+                    
+                    {/* PWA Install Button */}
+                    {isInstallable && (
+                        <button
+                            onClick={handleInstall}
+                            className="text-blue-600 hover:text-blue-800 hover:underline text-sm block mt-2"
+                        >
+                            {translations.downloadWidget}
+                        </button>
+                    )}
                     
                     <Link 
                         href={toolSlug ? `/${lang}/widget/${toolSlug}` : (widgetPageSlug ? `/${lang}/${widgetPageSlug}` : `/${lang}/widget`)}

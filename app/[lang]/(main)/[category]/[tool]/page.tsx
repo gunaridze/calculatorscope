@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getToolData, getPageByCode, prisma } from '@/lib/db'
 import CalculatorWidget from '@/components/CalculatorWidget'
+import PWASetup from '@/components/PWASetup'
 import { calculate, type JsonEngineConfig, type JsonEngineOutput } from '@/core/engines/json'
 import type { Metadata } from 'next'
 import Footer from '@/components/Footer'
@@ -173,38 +174,48 @@ export default async function ToolPage({ params, searchParams }: Props) {
         }
 
         return (
-            <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-                <CalculatorWidget
-                    config={config}
-                    interface={interfaceData}
-                    h1={data.h1 || data.title}
-                    lang={lang}
-                    toolId={toolId || undefined}
-                    h1En={h1En}
-                    translations={{
-                        clear: translations.widget_clear,
-                        calculate: translations.widget_calculate,
-                        result: translations.widget_result,
-                        copy: translations.widget_copy,
-                        suggest: translations.widget_suggest,
-                        getWidget: translations.widget_get_widget,
-                        inputLabel: translations.widget_input_label,
-                        inputPlaceholder: translations.widget_input_placeholder,
-                        formatLabel: translations.widget_format_label,
-                        wordsOption: translations.widget_words_option,
-                        checkWritingOption: translations.widget_check_writing_option,
-                        currencyOption: translations.widget_currency_option,
-                        currencyVatOption: translations.widget_currency_vat_option,
-                        letterCaseLabel: translations.widget_letter_case_label,
-                        lowercaseOption: translations.widget_lowercase_option,
-                        uppercaseOption: translations.widget_uppercase_option,
-                        titleCaseOption: translations.widget_title_case_option,
-                        sentenceCaseOption: translations.widget_sentence_case_option,
-                        plusVat: translations.widget_plus_vat,
-                    }}
+            <>
+                {/* PWA Setup для popup */}
+                <PWASetup 
+                    lang={lang} 
                     toolSlug={slug}
+                    toolName={data.h1 || data.title}
                 />
-            </div>
+                <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+                    <CalculatorWidget
+                        config={config}
+                        interface={interfaceData}
+                        h1={data.h1 || data.title}
+                        lang={lang}
+                        toolId={toolId || undefined}
+                        h1En={h1En}
+                        translations={{
+                            clear: translations.widget_clear,
+                            calculate: translations.widget_calculate,
+                            result: translations.widget_result,
+                            copy: translations.widget_copy,
+                            suggest: translations.widget_suggest,
+                            getWidget: translations.widget_get_widget,
+                            inputLabel: translations.widget_input_label,
+                            inputPlaceholder: translations.widget_input_placeholder,
+                            formatLabel: translations.widget_format_label,
+                            wordsOption: translations.widget_words_option,
+                            checkWritingOption: translations.widget_check_writing_option,
+                            currencyOption: translations.widget_currency_option,
+                            currencyVatOption: translations.widget_currency_vat_option,
+                            letterCaseLabel: translations.widget_letter_case_label,
+                            lowercaseOption: translations.widget_lowercase_option,
+                            uppercaseOption: translations.widget_uppercase_option,
+                            titleCaseOption: translations.widget_title_case_option,
+                            sentenceCaseOption: translations.widget_sentence_case_option,
+                            plusVat: translations.widget_plus_vat,
+                            downloadWidget: translations.widget_download_widget,
+                            installPrompt: translations.widget_install_prompt,
+                        }}
+                        toolSlug={slug}
+                    />
+                </div>
+            </>
         )
     }
 
@@ -611,6 +622,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
                             titleCaseOption: translations.widget_title_case_option,
                             sentenceCaseOption: translations.widget_sentence_case_option,
                             plusVat: translations.widget_plus_vat,
+                            downloadWidget: translations.widget_download_widget,
+                            installPrompt: translations.widget_install_prompt,
                         }}
                         widgetPageSlug={widgetPage?.slug}
                         toolSlug={slug}

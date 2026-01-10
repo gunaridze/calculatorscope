@@ -30,6 +30,8 @@ type TranslationKey =
   | 'widget_title_case_option'
   | 'widget_sentence_case_option'
   | 'widget_plus_vat'
+  | 'widget_download_widget'
+  | 'widget_install_prompt'
 
 type Lang = 'en' | 'de' | 'es' | 'fr' | 'it' | 'pl' | 'ru' | 'lv'
 
@@ -62,6 +64,8 @@ interface TranslationRow {
   widget_title_case_option: string
   widget_sentence_case_option: string
   widget_plus_vat: string
+  widget_download_widget: string
+  widget_install_prompt: string
 }
 
 let translationsCache: Map<Lang, TranslationRow> | null = null
@@ -128,6 +132,8 @@ const fallbackTranslations: Record<TranslationKey, string> = {
   widget_title_case_option: 'Title Case',
   widget_sentence_case_option: 'Sentence case',
   widget_plus_vat: '+ VAT',
+  widget_download_widget: 'Download Widget',
+  widget_install_prompt: 'Install CalculatorScope app?',
 }
 
 export function t(lang: string, key: TranslationKey): string {
@@ -171,5 +177,7 @@ export function getTranslations(lang: string): Record<TranslationKey, string> {
     widget_title_case_option: t(lang, 'widget_title_case_option'),
     widget_sentence_case_option: t(lang, 'widget_sentence_case_option'),
     widget_plus_vat: t(lang, 'widget_plus_vat'),
+    widget_download_widget: t(lang, 'widget_download_widget'),
+    widget_install_prompt: t(lang, 'widget_install_prompt'),
   }
 }

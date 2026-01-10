@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 import CalculatorWidget from '@/components/CalculatorWidget'
+import PWASetup from '@/components/PWASetup'
 
 type Props = {
     params: Promise<{ lang: string; category: string }>
@@ -139,37 +140,72 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             }
 
             if (config) {
+                // Получаем tool_id и h1 для lang='en' для аналитики
+                const toolId = (toolData as any).tool?.id || null
+                let h1En: string | undefined = undefined
+                
+                if (toolId) {
+                    try {
+                        // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
+                        const toolI18nEn = await prisma.toolI18n.findFirst({
+                            where: {
+                                tool_id: toolId,
+                                lang: 'en'
+                            },
+                            select: {
+                                h1: true,
+                                title: true
+                            }
+                        })
+                        h1En = toolI18nEn?.h1 || toolI18nEn?.title || undefined
+                    } catch (e) {
+                        console.error('Error fetching h1_en for analytics:', e)
+                    }
+                }
+
                 return (
-                    <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-                        <CalculatorWidget
-                            config={config}
-                            interface={interfaceData}
-                            h1={toolData.h1 || toolData.title}
-                            lang={lang}
-                            translations={{
-                                clear: translations.widget_clear,
-                                calculate: translations.widget_calculate,
-                                result: translations.widget_result,
-                                copy: translations.widget_copy,
-                                suggest: translations.widget_suggest,
-                                getWidget: translations.widget_get_widget,
-                                inputLabel: translations.widget_input_label,
-                                inputPlaceholder: translations.widget_input_placeholder,
-                                formatLabel: translations.widget_format_label,
-                                wordsOption: translations.widget_words_option,
-                                checkWritingOption: translations.widget_check_writing_option,
-                                currencyOption: translations.widget_currency_option,
-                                currencyVatOption: translations.widget_currency_vat_option,
-                                letterCaseLabel: translations.widget_letter_case_label,
-                                lowercaseOption: translations.widget_lowercase_option,
-                                uppercaseOption: translations.widget_uppercase_option,
-                                titleCaseOption: translations.widget_title_case_option,
-                                sentenceCaseOption: translations.widget_sentence_case_option,
-                                plusVat: translations.widget_plus_vat,
-                            }}
+                    <>
+                        {/* PWA Setup для popup */}
+                        <PWASetup 
+                            lang={lang} 
                             toolSlug={slug}
+                            toolName={toolData.h1 || toolData.title}
                         />
-                    </div>
+                        <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+                            <CalculatorWidget
+                                config={config}
+                                interface={interfaceData}
+                                h1={toolData.h1 || toolData.title}
+                                lang={lang}
+                                toolId={toolId || undefined}
+                                h1En={h1En}
+                                translations={{
+                                    clear: translations.widget_clear,
+                                    calculate: translations.widget_calculate,
+                                    result: translations.widget_result,
+                                    copy: translations.widget_copy,
+                                    suggest: translations.widget_suggest,
+                                    getWidget: translations.widget_get_widget,
+                                    inputLabel: translations.widget_input_label,
+                                    inputPlaceholder: translations.widget_input_placeholder,
+                                    formatLabel: translations.widget_format_label,
+                                    wordsOption: translations.widget_words_option,
+                                    checkWritingOption: translations.widget_check_writing_option,
+                                    currencyOption: translations.widget_currency_option,
+                                    currencyVatOption: translations.widget_currency_vat_option,
+                                    letterCaseLabel: translations.widget_letter_case_label,
+                                    lowercaseOption: translations.widget_lowercase_option,
+                                    uppercaseOption: translations.widget_uppercase_option,
+                                    titleCaseOption: translations.widget_title_case_option,
+                                    sentenceCaseOption: translations.widget_sentence_case_option,
+                                    plusVat: translations.widget_plus_vat,
+                                    downloadWidget: translations.widget_download_widget,
+                                    installPrompt: translations.widget_install_prompt,
+                                }}
+                                toolSlug={slug}
+                            />
+                        </div>
+                    </>
                 )
             }
         }
