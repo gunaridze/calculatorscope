@@ -212,34 +212,58 @@ export default function CalculatorWidget({
     // Установка PWA
     const handleInstall = async () => {
         if (!deferredPrompt) {
-            // Если prompt недоступен, можно показать инструкции
-            alert(translations.installPrompt)
+            // Если prompt недоступен, показываем инструкции или перенаправляем на страницу виджета
+            if (typeof window !== 'undefined') {
+                // Отслеживание попытки установки без доступного prompt
+                if ((window as any).dataLayer) {
+                    (window as any).dataLayer.push({
+                        event: 'pwa_install_attempt',
+                        eventCategory: 'Widget',
+                        eventAction: 'PWA Install Attempt',
+                        eventLabel: 'Prompt Not Available',
+                        widgetToolId: toolId || 'unknown',
+                        widgetH1: h1 || 'Unknown',
+                        widgetH1En: h1En || h1 || 'Unknown',
+                        widgetLang: lang
+                    })
+                }
+                // Показываем сообщение о том, что установка недоступна
+                alert(translations.installPrompt)
+            }
             return
         }
 
-        // Показываем prompt установки
-        deferredPrompt.prompt()
+        try {
+            // Показываем prompt установки
+            deferredPrompt.prompt()
 
-        // Ждем ответа пользователя
-        const { outcome } = await deferredPrompt.userChoice
+            // Ждем ответа пользователя
+            const { outcome } = await deferredPrompt.userChoice
 
-        // Отслеживание в Google Analytics
-        if (typeof window !== 'undefined' && (window as any).dataLayer) {
-            (window as any).dataLayer.push({
-                event: 'pwa_install_prompt',
-                eventCategory: 'Widget',
-                eventAction: 'PWA Install Prompt',
-                eventLabel: outcome === 'accepted' ? 'Installed' : 'Dismissed',
-                widgetToolId: toolId || 'unknown',
-                widgetH1: h1 || 'Unknown',
-                widgetH1En: h1En || h1 || 'Unknown',
-                widgetLang: lang
-            })
+            // Отслеживание в Google Analytics
+            if (typeof window !== 'undefined' && (window as any).dataLayer) {
+                (window as any).dataLayer.push({
+                    event: 'pwa_install_prompt',
+                    eventCategory: 'Widget',
+                    eventAction: 'PWA Install Prompt',
+                    eventLabel: outcome === 'accepted' ? 'Installed' : 'Dismissed',
+                    widgetToolId: toolId || 'unknown',
+                    widgetH1: h1 || 'Unknown',
+                    widgetH1En: h1En || h1 || 'Unknown',
+                    widgetLang: lang
+                })
+            }
+
+            // Очищаем deferredPrompt после использования
+            setDeferredPrompt(null)
+            setIsInstallable(false)
+        } catch (error) {
+            console.error('Error during PWA installation:', error)
+            // Если произошла ошибка, показываем сообщение
+            if (typeof window !== 'undefined') {
+                alert(translations.installPrompt)
+            }
         }
-
-        // Очищаем deferredPrompt после использования
-        setDeferredPrompt(null)
-        setIsInstallable(false)
     }
 
     // Получаем текущий режим конвертации из state
@@ -486,15 +510,15 @@ export default function CalculatorWidget({
                         {translations.suggest}
                     </Link>
                     
-                    {/* PWA Install Button */}
-                    {isInstallable && (
-                        <button
-                            onClick={handleInstall}
-                            className="text-blue-600 hover:text-blue-800 hover:underline text-sm block mt-2"
-                        >
-                            {translations.downloadWidget}
-                        </button>
-                    )}
+                    {/* PWA Install Button - всегда видна */}
+                    <button
+                        onClick={handleInstall}
+                        className="text-blue-600 hover:text-blue-800 hover:underline text-sm block mt-2 cursor-pointer text-left"
+                        type="button"
+                        style={{ background: 'none', border: 'none', padding: 0 }}
+                    >
+                        {translations.downloadWidget}
+                    </button>
                     
                     <Link 
                         href={toolSlug ? `/${lang}/widget/${toolSlug}` : (widgetPageSlug ? `/${lang}/${widgetPageSlug}` : `/${lang}/widget`)}
