@@ -137,11 +137,23 @@ export default function CalculatorWidget({
         if (typeof window !== 'undefined') {
             const handleBeforeInstallPrompt = (e: Event) => {
                 e.preventDefault()
+                console.log('beforeinstallprompt event fired')
                 setDeferredPrompt(e)
                 setIsInstallable(true)
             }
 
-            window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+            // Проверяем, может ли страница быть установлена
+            if ((window as any).navigator && (window as any).navigator.standalone) {
+                // iOS - уже установлено
+                console.log('PWA already installed (iOS standalone mode)')
+            } else if (window.matchMedia('(display-mode: standalone)').matches) {
+                // Уже установлено в standalone режиме
+                console.log('PWA already installed (standalone mode)')
+            } else {
+                // Слушаем событие beforeinstallprompt
+                window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+                console.log('Waiting for beforeinstallprompt event...')
+            }
 
             return () => {
                 window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -211,34 +223,56 @@ export default function CalculatorWidget({
 
     // Установка PWA
     const handleInstall = async () => {
+        console.log('handleInstall called, deferredPrompt:', !!deferredPrompt, 'isInstallable:', isInstallable)
+        
         if (!deferredPrompt) {
-            // Если prompt недоступен, показываем инструкции или перенаправляем на страницу виджета
+            // Если prompt недоступен, перенаправляем на popup страницу, где можно установить PWA
             if (typeof window !== 'undefined') {
-                // Отслеживание попытки установки без доступного prompt
-                if ((window as any).dataLayer) {
-                    (window as any).dataLayer.push({
-                        event: 'pwa_install_attempt',
-                        eventCategory: 'Widget',
-                        eventAction: 'PWA Install Attempt',
-                        eventLabel: 'Prompt Not Available',
-                        widgetToolId: toolId || 'unknown',
-                        widgetH1: h1 || 'Unknown',
-                        widgetH1En: h1En || h1 || 'Unknown',
-                        widgetLang: lang
-                    })
+                console.log('PWA install prompt not available')
+                
+                // Проверяем, не в popup ли мы уже
+                const isPopup = window.location.search.includes('do=pop')
+                
+                if (!isPopup) {
+                    // Если не в popup, открываем popup страницу
+                    const popupUrl = toolSlug 
+                        ? `/${lang}/${toolSlug}?do=pop`
+                        : `/${lang}?do=pop`
+                    
+                    // Отслеживание попытки установки без доступного prompt
+                    if ((window as any).dataLayer) {
+                        (window as any).dataLayer.push({
+                            event: 'pwa_install_attempt',
+                            eventCategory: 'Widget',
+                            eventAction: 'PWA Install Attempt',
+                            eventLabel: 'Redirecting to Popup',
+                            widgetToolId: toolId || 'unknown',
+                            widgetH1: h1 || 'Unknown',
+                            widgetH1En: h1En || h1 || 'Unknown',
+                            widgetLang: lang
+                        })
+                    }
+                    
+                    // Открываем в новом окне для установки PWA
+                    window.open(popupUrl, '_blank', 'width=400,height=600')
+                } else {
+                    // Уже в popup, показываем инструкции
+                    console.log('Already in popup mode, PWA install prompt not available')
+                    // Можно показать сообщение о том, что установка недоступна или инструкции
+                    // Но лучше просто ничего не делать, так как браузер сам покажет prompt, если возможно
                 }
-                // Показываем сообщение о том, что установка недоступна
-                alert(translations.installPrompt)
             }
             return
         }
 
         try {
+            console.log('Showing PWA install prompt')
             // Показываем prompt установки
             deferredPrompt.prompt()
 
             // Ждем ответа пользователя
             const { outcome } = await deferredPrompt.userChoice
+            console.log('User choice:', outcome)
 
             // Отслеживание в Google Analytics
             if (typeof window !== 'undefined' && (window as any).dataLayer) {
@@ -259,9 +293,12 @@ export default function CalculatorWidget({
             setIsInstallable(false)
         } catch (error) {
             console.error('Error during PWA installation:', error)
-            // Если произошла ошибка, показываем сообщение
+            // Если произошла ошибка, перенаправляем на popup страницу
             if (typeof window !== 'undefined') {
-                alert(translations.installPrompt)
+                const popupUrl = toolSlug 
+                    ? `/${lang}/${toolSlug}?do=pop`
+                    : `/${lang}?do=pop`
+                window.open(popupUrl, '_blank', 'width=400,height=600')
             }
         }
     }

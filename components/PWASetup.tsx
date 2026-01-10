@@ -42,16 +42,22 @@ export default function PWASetup({ lang, toolSlug, toolName }: PWASetupProps) {
             meta.content = content
         })
 
-        // Регистрация Service Worker
+        // Регистрация Service Worker - регистрируем сразу, не ждем load
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then((registration) => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope)
-                    })
-                    .catch((err) => {
-                        console.log('ServiceWorker registration failed: ', err)
-                    })
+            // Проверяем, не зарегистрирован ли уже service worker
+            navigator.serviceWorker.getRegistration('/').then((registration) => {
+                if (!registration) {
+                    // Регистрируем только если еще не зарегистрирован
+                    navigator.serviceWorker.register('/sw.js')
+                        .then((registration) => {
+                            console.log('ServiceWorker registration successful with scope: ', registration.scope)
+                        })
+                        .catch((err) => {
+                            console.log('ServiceWorker registration failed: ', err)
+                        })
+                } else {
+                    console.log('ServiceWorker already registered with scope: ', registration.scope)
+                }
             })
         }
 

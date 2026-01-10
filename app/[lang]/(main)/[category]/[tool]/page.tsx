@@ -635,6 +635,12 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
     return (
         <>
+            {/* PWA Setup для обычной страницы (не popup) */}
+            <PWASetup 
+                lang={lang} 
+                toolSlug={slug}
+                toolName={data.h1 || data.title}
+            />
             <Header 
                 lang={lang} 
                 h1={translations.header_h1}
