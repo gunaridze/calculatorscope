@@ -901,9 +901,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                         <h3 className="font-bold text-center mb-2 text-lg">
                                                             {tool.h1 || tool.title}
                                                         </h3>
-                                                        {tool.meta_title && (
+                                                        {tool.meta_description && (
                                                             <p className="text-center text-sm text-gray-600">
-                                                                {tool.meta_title}
+                                                                {tool.meta_description}
                                                             </p>
                                                         )}
                                                     </Link>
@@ -966,9 +966,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                 <h3 className="font-bold text-center mb-2 text-lg">
                                                     {tool.h1 || tool.title}
                                                 </h3>
-                                                {tool.meta_title && (
+                                                {tool.meta_description && (
                                                     <p className="text-center text-sm text-gray-600">
-                                                        {tool.meta_title}
+                                                        {tool.meta_description}
                                                     </p>
                                                 )}
                                             </Link>
