@@ -409,6 +409,13 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         include: {
             category: {
                 include: {
+                    parent: {
+                        include: {
+                            i18n: {
+                                where: { lang },
+                            },
+                        },
+                    },
                     children: {
                         include: {
                             i18n: {
@@ -500,11 +507,28 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         }
     }
 
-    // Хлебные крошки
+    // Хлебные крошки - строим иерархию с учетом родительской категории
     const breadcrumbs = [
         { name: 'Calculator Scope', href: `/${lang}` },
-        { name: categoryI18n.name, href: `/${lang}/${slug}` },
     ]
+    
+    // Если есть родительская категория, добавляем её в breadcrumbs
+    const categoryAny = category as any
+    if (categoryAny.parent && categoryAny.parent.i18n && Array.isArray(categoryAny.parent.i18n) && categoryAny.parent.i18n.length > 0) {
+        const parentI18n = categoryAny.parent.i18n[0]
+        if (parentI18n && parentI18n.name && parentI18n.slug) {
+            breadcrumbs.push({
+                name: parentI18n.name,
+                href: `/${lang}/${parentI18n.slug}`,
+            })
+        }
+    }
+    
+    // Добавляем текущую категорию
+    breadcrumbs.push({
+        name: categoryI18n.name,
+        href: `/${lang}/${slug}`,
+    })
 
     return (
         <>
