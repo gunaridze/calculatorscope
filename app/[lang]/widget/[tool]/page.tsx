@@ -404,8 +404,33 @@ ${toolName}
                                             </div>
                                         </div>
                                     )}
-                                    {/* Игнорируем секции widget_preview - они не нужны */}
-                                    {section.html && !section.type && section.type !== 'widget_preview' && (
+                                    {/* Секции типа intro - отображаем HTML */}
+                                    {section.type === 'intro' && section.html && (
+                                        <div
+                                            className="prose"
+                                            dangerouslySetInnerHTML={{
+                                                __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                            }}
+                                        />
+                                    )}
+                                    {/* Секции типа widget_preview - отображаем с заголовком и HTML */}
+                                    {section.type === 'widget_preview' && section.html && (
+                                        <div>
+                                            {section.heading && (
+                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                    {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
+                                                </h2>
+                                            )}
+                                            <div
+                                                className="prose"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                    {/* Остальные секции без типа или с другими типами */}
+                                    {section.html && !section.type && section.type !== 'widget_preview' && section.type !== 'intro' && (
                                         <div
                                             className="prose"
                                             dangerouslySetInnerHTML={{
@@ -570,8 +595,33 @@ ${toolName}
                                         </div>
                                     </div>
                                 )}
-                                {/* Игнорируем секции widget_preview - они не нужны */}
-                                {section.html && !section.type && section.type !== 'widget_preview' && (
+                                {/* Секции типа intro - отображаем HTML */}
+                                {section.type === 'intro' && section.html && (
+                                    <div
+                                        className="prose"
+                                        dangerouslySetInnerHTML={{
+                                            __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                        }}
+                                    />
+                                )}
+                                {/* Секции типа widget_preview - отображаем с заголовком и HTML */}
+                                {section.type === 'widget_preview' && section.html && (
+                                    <div>
+                                        {section.heading && (
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                {replacePlaceholders(section.heading, toolName, toolSlug, lang)}
+                                            </h2>
+                                        )}
+                                        <div
+                                            className="prose"
+                                            dangerouslySetInnerHTML={{
+                                                __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                                {/* Остальные секции без типа или с другими типами */}
+                                {section.html && !section.type && section.type !== 'widget_preview' && section.type !== 'intro' && (
                                     <div
                                         className="prose"
                                         dangerouslySetInnerHTML={{
