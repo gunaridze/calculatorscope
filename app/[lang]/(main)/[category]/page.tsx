@@ -421,17 +421,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                             i18n: {
                                 where: { lang },
                             },
-                            tools: {
-                                include: {
-                                    tool: {
-                                        include: {
-                                            i18n: {
-                                                where: { lang },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
                         },
                         orderBy: { sort_order: 'asc' },
                     },
@@ -463,136 +452,19 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     const category = categoryI18n.category
     const hasChildren = category.children.length > 0
 
-    // Получаем популярные инструменты из текущей категории
-    const popularToolsFromCurrent = category.tools
+    // Получаем популярные инструменты
+    const popularTools = category.tools
         .filter(({ tool }) => {
             const toolI18n = tool.i18n[0]
             return toolI18n && (toolI18n as any).is_popular === 1
         })
-        .map(({ tool }) => {
-            const toolI18n = tool.i18n[0]
-            if (!toolI18n) return null
-            // Нужно найти category slug для инструмента из текущей категории
-            const toolCategory = category.tools.find(tc => tc.tool.id === tool.id)
-            const toolCategorySlug = slug // Используем slug текущей категории
-            return {
-                id: tool.id,
-                slug: toolI18n.slug,
-                categorySlug: toolCategorySlug,
-                h1: toolI18n.h1,
-                title: toolI18n.title,
-                meta_description: (toolI18n as any).meta_description,
-            }
-        })
-        .filter((tool): tool is NonNullable<typeof tool> => tool !== null)
-
-    // Получаем популярные инструменты из дочерних категорий
-    // Сначала пытаемся получить из загруженных данных
-    let popularToolsFromChildren: Array<{
-        id: string
-        slug: string
-        categorySlug: string
-        h1: string | null
-        title: string
-        meta_description: any
-    }> = []
-    
-    if (hasChildren && category.children.length > 0) {
-        // Получаем популярные инструменты из всех дочерних категорий через отдельный запрос
-        const childCategoryIds = category.children.map(child => child.id)
-        
-        try {
-            // Получаем все ToolCategory для дочерних категорий, а затем фильтруем на стороне приложения
-            const popularToolsFromChildrenRaw = await prisma.toolCategory.findMany({
-                where: {
-                    category_id: { in: childCategoryIds }
-                },
-                include: {
-                    category: {
-                        include: {
-                            i18n: {
-                                where: { lang }
-                            }
-                        }
-                    },
-                    tool: {
-                        include: {
-                            i18n: {
-                                where: { lang }
-                            }
-                        }
-                    }
-                }
-            })
-            
-            // Фильтруем только популярные инструменты
-            popularToolsFromChildren = popularToolsFromChildrenRaw
-                .filter((toolCategory: any) => {
-                    const toolI18n = toolCategory.tool.i18n[0]
-                    return toolI18n && (toolI18n as any).is_popular === 1
-                })
-                .map((toolCategory: any) => {
-                    const toolI18n = toolCategory.tool.i18n[0]
-                    if (!toolI18n) return null
-                    
-                    // Находим slug дочерней категории
-                    const categoryI18n = toolCategory.category.i18n[0]
-                    const childCategorySlug = categoryI18n?.slug || slug
-                    
-                    return {
-                        id: toolCategory.tool.id,
-                        slug: toolI18n.slug,
-                        categorySlug: childCategorySlug,
-                        h1: toolI18n.h1,
-                        title: toolI18n.title,
-                        meta_description: (toolI18n as any).meta_description,
-                    }
-                })
-                .filter((tool): tool is NonNullable<typeof tool> => tool !== null)
-        } catch (error) {
-            console.error('Error fetching popular tools from children categories:', error)
-            // Fallback на получение из загруженных данных, если отдельный запрос не сработал
-            popularToolsFromChildren = category.children.flatMap((child) => {
-                const childTools = (child as any).tools || []
-                return childTools
-                    .filter(({ tool }: any) => {
-                        const toolI18n = tool.i18n[0]
-                        return toolI18n && (toolI18n as any).is_popular === 1
-                    })
-                    .map(({ tool }: any) => {
-                        const toolI18n = tool.i18n[0]
-                        if (!toolI18n) return null
-                        const childI18n = child.i18n[0]
-                        const childCategorySlug = childI18n?.slug || slug
-                        return {
-                            id: tool.id,
-                            slug: toolI18n.slug,
-                            categorySlug: childCategorySlug,
-                            h1: toolI18n.h1,
-                            title: toolI18n.title,
-                            meta_description: (toolI18n as any).meta_description,
-                        }
-                    })
-                    .filter((tool): tool is NonNullable<typeof tool> => tool !== null)
-            })
-        }
-    }
-
-    // Объединяем популярные инструменты из текущей категории и дочерних
-    // Убираем дубликаты по id инструмента (если инструмент есть в нескольких категориях)
-    const popularToolsMap = new Map<string, typeof popularToolsFromCurrent[0]>()
-    
-    // Сначала добавляем инструменты из дочерних категорий
-    popularToolsFromChildren.forEach(tool => {
-        popularToolsMap.set(tool.id, tool)
-    })
-    
-    // Затем добавляем инструменты из текущей категории (они имеют приоритет для slug)
-    popularToolsFromCurrent.forEach(tool => {
-        popularToolsMap.set(tool.id, tool)
-    })
-    
-    const popularTools = Array.from(popularToolsMap.values())
+        .map(({ tool }) => ({
+            id: tool.id,
+            slug: tool.i18n[0]!.slug,
+            h1: tool.i18n[0]!.h1,
+            title: tool.i18n[0]!.title,
+            meta_description: (tool.i18n[0] as any).meta_description,
+        }))
 
     // Получаем все инструменты категории
     const allTools = category.tools
@@ -746,7 +618,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                             {popularTools.map((tool) => (
                                                 <Link
                                                     key={tool.id}
-                                                    href={`/${lang}/${tool.categorySlug}/${tool.slug}`}
+                                                    href={`/${lang}/${slug}/${tool.slug}`}
                                                     className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                 >
                                                     <h3 className="font-bold text-center mb-2 text-lg">
@@ -778,7 +650,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                             {popularTools.map((tool) => (
                                                 <Link
                                                     key={tool.id}
-                                                    href={`/${lang}/${tool.categorySlug}/${tool.slug}`}
+                                                    href={`/${lang}/${slug}/${tool.slug}`}
                                                     className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                 >
                                                     <h3 className="font-bold text-center mb-2 text-lg">
@@ -944,7 +816,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                             return (
                                                 <div key={tool.id}>
                                                     <Link
-                                                        href={`/${lang}/${tool.categorySlug}/${tool.slug}`}
+                                                        href={`/${lang}/${slug}/${tool.slug}`}
                                                         className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                     >
                                                         <h3 className="font-bold text-center mb-2 text-lg">
@@ -1019,7 +891,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                             return (
                                                 <div key={tool.id}>
                                                     <Link
-                                                        href={`/${lang}/${tool.categorySlug}/${tool.slug}`}
+                                                        href={`/${lang}/${slug}/${tool.slug}`}
                                                         className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                     >
                                                         <h3 className="font-bold text-center mb-2 text-lg">
