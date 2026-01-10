@@ -16,6 +16,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Calculator Scope - Smart Online Calculators for Everything",
   description: "From math, science, finance, health, and construction to marketing, text tools, developer utilities, and more. All calculators in one fast, accurate, easy-to-use platform.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Calculator Scope",
+  },
+  icons: {
+    apple: [
+      { url: "/apple-touch-icon-120.png", sizes: "120x120", type: "image/png" },
+      { url: "/apple-touch-icon-152.png", sizes: "152x152", type: "image/png" },
+      { url: "/apple-touch-icon-180.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({

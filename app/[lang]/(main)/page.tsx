@@ -7,6 +7,7 @@ import type { Metadata } from 'next'
 import CategoryCard from '@/components/CategoryCard'
 import AdBanner from '@/components/AdBanner'
 import type { HomePageContent } from '@/lib/types'
+import PWASetup from '@/components/PWASetup'
 
 // Типы для параметров (params - это Promise)
 type Props = {
@@ -529,6 +530,7 @@ export default async function HomePage({ params }: Props) {
                         footer_copyright: translations.footer_copyright,
                     }}
                 />
+                <PWASetup lang={lang} toolName="Calculator Scope" />
             </>
         )
     } catch (error) {
@@ -563,6 +565,7 @@ export default async function HomePage({ params }: Props) {
                         footer_copyright: translations.footer_copyright,
                     }}
                 />
+                <PWASetup lang={lang} toolName="Calculator Scope" />
             </>
         )
     }

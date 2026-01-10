@@ -29,7 +29,7 @@ export default function PWASetup({ lang, toolSlug, toolName }: PWASetupProps) {
             { name: 'theme-color', content: '#1a73e8' },
             { name: 'apple-mobile-web-app-capable', content: 'yes' },
             { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
-            { name: 'apple-mobile-web-app-title', content: toolName || 'CalculatorScope Widget' }
+            { name: 'apple-mobile-web-app-title', content: toolName || 'Calculator Scope' }
         ]
 
         metaTags.forEach(({ name, content }) => {
@@ -43,10 +43,12 @@ export default function PWASetup({ lang, toolSlug, toolName }: PWASetupProps) {
         })
 
         // Добавляем Apple Touch Icons для iOS
+        // Для главной страницы используем основные иконки, для widget - widget иконки
+        const iconPrefix = toolSlug ? 'widget-apple' : 'apple-touch-icon'
         const appleIcons = [
-            { sizes: '120x120', href: '/widget-apple-120.png' },
-            { sizes: '152x152', href: '/widget-apple-152.png' },
-            { sizes: '180x180', href: '/widget-apple-180.png' }
+            { sizes: '120x120', href: `/${iconPrefix}-120.png` },
+            { sizes: '152x152', href: `/${iconPrefix}-152.png` },
+            { sizes: '180x180', href: `/${iconPrefix}-180.png` }
         ]
 
         appleIcons.forEach(({ sizes, href }) => {
@@ -67,7 +69,7 @@ export default function PWASetup({ lang, toolSlug, toolName }: PWASetupProps) {
             defaultAppleIcon.rel = 'apple-touch-icon'
             document.head.appendChild(defaultAppleIcon)
         }
-        defaultAppleIcon.href = '/widget-apple-180.png'
+        defaultAppleIcon.href = `/${iconPrefix}-180.png`
 
         // Регистрация Service Worker - регистрируем сразу, не ждем load
         if ('serviceWorker' in navigator) {

@@ -8,10 +8,15 @@ export async function GET(request: NextRequest) {
         const toolSlug = searchParams.get('tool')
         
         // Если указан tool slug, получаем данные инструмента
-        let toolName = 'CalculatorScope Widget'
+        let appName = 'Calculator Scope'
+        let shortName = 'Calc Scope'
+        let description = 'Calculator Scope - Smart Online Calculators for Everything'
         let startUrl = `/${lang}`
+        let isWidget = false
         
         if (toolSlug) {
+            isWidget = true
+            let toolName = 'CalculatorScope Widget'
             try {
                 const toolI18n = await prisma.toolI18n.findUnique({
                     where: {
@@ -35,15 +40,18 @@ export async function GET(request: NextRequest) {
             } catch (e) {
                 console.error('Error fetching tool data for manifest:', e)
             }
+            appName = `${toolName} - CalculatorScope`
+            shortName = 'Calc Widget'
+            description = 'CalculatorScope Widget - Free calculator widget'
         } else {
             // Если tool не указан, используем popup режим для главной
             startUrl = `/${lang}?do=pop`
         }
 
         const manifest = {
-            name: `${toolName} - CalculatorScope`,
-            short_name: 'Calc Widget',
-            description: 'CalculatorScope Widget - Free calculator widget',
+            name: appName,
+            short_name: shortName,
+            description: description,
             start_url: startUrl,
             display: 'standalone',
             background_color: '#ffffff',
@@ -108,8 +116,9 @@ export async function GET(request: NextRequest) {
         console.error('Error generating manifest:', error)
         // Fallback manifest
         const fallbackManifest = {
-            name: 'CalculatorScope Widget',
-            short_name: 'Calc Widget',
+            name: 'Calculator Scope',
+            short_name: 'Calc Scope',
+            description: 'Calculator Scope - Smart Online Calculators for Everything',
             start_url: '/',
             display: 'standalone',
             background_color: '#ffffff',
