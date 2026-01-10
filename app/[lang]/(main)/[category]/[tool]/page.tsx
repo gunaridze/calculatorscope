@@ -685,6 +685,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                     titleCaseOption: translations.widget_title_case_option,
                                     sentenceCaseOption: translations.widget_sentence_case_option,
                                     plusVat: translations.widget_plus_vat,
+                                    downloadWidget: translations.widget_download_widget,
+                                    installPrompt: translations.widget_install_prompt,
                                 }}
                                 widgetPageSlug={widgetPage?.slug}
                                 toolSlug={slug}
@@ -744,6 +746,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                     titleCaseOption: translations.widget_title_case_option,
                                     sentenceCaseOption: translations.widget_sentence_case_option,
                                     plusVat: translations.widget_plus_vat,
+                                    downloadWidget: translations.widget_download_widget,
+                                    installPrompt: translations.widget_install_prompt,
                                 }}
                                 widgetPageSlug={widgetPage?.slug}
                                 toolSlug={slug}
