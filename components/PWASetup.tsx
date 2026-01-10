@@ -42,6 +42,33 @@ export default function PWASetup({ lang, toolSlug, toolName }: PWASetupProps) {
             meta.content = content
         })
 
+        // Добавляем Apple Touch Icons для iOS
+        const appleIcons = [
+            { sizes: '120x120', href: '/widget-apple-120.png' },
+            { sizes: '152x152', href: '/widget-apple-152.png' },
+            { sizes: '180x180', href: '/widget-apple-180.png' }
+        ]
+
+        appleIcons.forEach(({ sizes, href }) => {
+            let link = document.querySelector(`link[rel="apple-touch-icon"][sizes="${sizes}"]`) as HTMLLinkElement
+            if (!link) {
+                link = document.createElement('link')
+                link.rel = 'apple-touch-icon'
+                link.sizes = sizes
+                document.head.appendChild(link)
+            }
+            link.href = href
+        })
+
+        // Добавляем стандартный apple-touch-icon (без sizes) для совместимости
+        let defaultAppleIcon = document.querySelector('link[rel="apple-touch-icon"]:not([sizes])') as HTMLLinkElement
+        if (!defaultAppleIcon) {
+            defaultAppleIcon = document.createElement('link')
+            defaultAppleIcon.rel = 'apple-touch-icon'
+            document.head.appendChild(defaultAppleIcon)
+        }
+        defaultAppleIcon.href = '/widget-apple-180.png'
+
         // Регистрация Service Worker - регистрируем сразу, не ждем load
         if ('serviceWorker' in navigator) {
             // Проверяем, не зарегистрирован ли уже service worker

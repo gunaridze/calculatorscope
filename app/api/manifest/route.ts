@@ -51,17 +51,49 @@ export async function GET(request: NextRequest) {
             orientation: 'portrait',
             scope: '/',
             icons: [
+                // Standard icons (any purpose)
+                {
+                    src: '/widget-96.png',
+                    sizes: '96x96',
+                    type: 'image/png',
+                    purpose: 'any'
+                },
+                {
+                    src: '/widget-144.png',
+                    sizes: '144x144',
+                    type: 'image/png',
+                    purpose: 'any'
+                },
                 {
                     src: '/widget-192.png',
                     sizes: '192x192',
                     type: 'image/png',
-                    purpose: 'any maskable'
+                    purpose: 'any'
+                },
+                {
+                    src: '/widget-384.png',
+                    sizes: '384x384',
+                    type: 'image/png',
+                    purpose: 'any'
                 },
                 {
                     src: '/widget-512.png',
                     sizes: '512x512',
                     type: 'image/png',
-                    purpose: 'any maskable'
+                    purpose: 'any'
+                },
+                // Maskable icons for Android (with safe zone padding)
+                {
+                    src: '/widget-maskable-190.png',
+                    sizes: '192x192',
+                    type: 'image/png',
+                    purpose: 'maskable'
+                },
+                {
+                    src: '/widget-maskable-512.png',
+                    sizes: '512x512',
+                    type: 'image/png',
+                    purpose: 'maskable'
                 }
             ]
         }
@@ -84,14 +116,46 @@ export async function GET(request: NextRequest) {
             theme_color: '#1a73e8',
             icons: [
                 {
+                    src: '/widget-96.png',
+                    sizes: '96x96',
+                    type: 'image/png',
+                    purpose: 'any'
+                },
+                {
+                    src: '/widget-144.png',
+                    sizes: '144x144',
+                    type: 'image/png',
+                    purpose: 'any'
+                },
+                {
                     src: '/widget-192.png',
                     sizes: '192x192',
-                    type: 'image/png'
+                    type: 'image/png',
+                    purpose: 'any'
+                },
+                {
+                    src: '/widget-384.png',
+                    sizes: '384x384',
+                    type: 'image/png',
+                    purpose: 'any'
                 },
                 {
                     src: '/widget-512.png',
                     sizes: '512x512',
-                    type: 'image/png'
+                    type: 'image/png',
+                    purpose: 'any'
+                },
+                {
+                    src: '/widget-maskable-190.png',
+                    sizes: '192x192',
+                    type: 'image/png',
+                    purpose: 'maskable'
+                },
+                {
+                    src: '/widget-maskable-512.png',
+                    sizes: '512x512',
+                    type: 'image/png',
+                    purpose: 'maskable'
                 }
             ]
         }
