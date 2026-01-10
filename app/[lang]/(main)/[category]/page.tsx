@@ -592,7 +592,23 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                     ))}
                                 </div>
 
-                                {/* Секция "Популярные калькуляторы" */}
+                                {/* SEO-описание */}
+                                {(ogTitle || ogDescription) && (
+                                    <div className="mb-12">
+                                        {ogTitle && (
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                {ogTitle}
+                                            </h2>
+                                        )}
+                                        {ogDescription && (
+                                            <p className="text-lg text-gray-700">
+                                                {ogDescription}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Секция "Популярные калькуляторы" - после SEO-описания */}
                                 {popularTools.length > 0 && (
                                     <div className="mb-12">
                                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
@@ -608,25 +624,14 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                     <h3 className="font-bold text-center mb-2 text-lg">
                                                         {tool.h1 || tool.title}
                                                     </h3>
+                                                    {tool.meta_description && (
+                                                        <p className="text-center text-sm text-gray-600">
+                                                            {tool.meta_description}
+                                                        </p>
+                                                    )}
                                                 </Link>
                                             ))}
                                         </div>
-                                    </div>
-                                )}
-
-                                {/* SEO-описание */}
-                                {(ogTitle || ogDescription) && (
-                                    <div className="mb-12">
-                                        {ogTitle && (
-                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                {ogTitle}
-                                            </h2>
-                                        )}
-                                        {ogDescription && (
-                                            <p className="text-lg text-gray-700">
-                                                {ogDescription}
-                                            </p>
-                                        )}
                                     </div>
                                 )}
                             </>
@@ -759,121 +764,112 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                 {categoryI18n.name}
                             </h2>
 
-                            {/* Смешанный список: Дочерние категории + Популярные инструменты */}
-                            <div className="space-y-[20px]">
-                                {/* Дочерние категории */}
-                                {childCategories.map((child, index) => {
-                                    const combinedIndex = index // Индекс в общем списке (начинается с 0)
-                                    const showAdAfter1 = combinedIndex === 1 // После 2-го баннера дочерней категории (index 1 = 2-й элемент)
-
-                                    return (
-                                        <div key={child.id}>
-                                            <Link
-                                                href={`/${lang}/${child.slug}`}
-                                                className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
-                                            >
-                                                <h3 className="font-bold text-center mb-2 text-lg">
-                                                    {child.name}
-                                                </h3>
-                                                {child.og_description && (
-                                                    <p className="text-center text-gray-600 text-sm">
-                                                        {child.og_description}
-                                                    </p>
-                                                )}
-                                            </Link>
-                                            {showAdAfter1 && (
-                                                <div className="mt-5">
-                                                    <AdBanner
-                                                        lang={lang}
-                                                        adNumber={1}
-                                                        href={content.ad_link_1}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                })}
-
-                                {/* Баннер рекламы №2: перед заголовком Popular */}
-                                {popularTools.length > 0 && (
-                                    <>
-                                        <div className="mt-5">
-                                            <AdBanner
-                                                lang={lang}
-                                                adNumber={2}
-                                                href={content.ad_link_2}
-                                            />
-                                        </div>
-                                        <h2 className="text-3xl font-bold text-gray-900 mb-6 mt-6">
-                                            Popular {categoryI18n.name}
-                                        </h2>
-                                    </>
-                                )}
-
-                                {/* Популярные инструменты */}
-                                {popularTools.map((tool, index) => {
-                                    const combinedIndex = childCategories.length + index // Общий индекс в смешанном списке
-                                    const showAdAfter3 = index === 1 // После 2-го баннера популярного инструмента (index 1 = 2-й элемент в секции Popular)
-                                    const showAdAfter4 = index === 4 // После 5-го баннера популярного инструмента (index 4 = 5-й элемент)
-                                    const showAdAfterLong = combinedIndex === 9 // После 10-го элемента в общем списке (index 9 = 10-й элемент)
-
-                                    return (
-                                        <div key={tool.id}>
-                                            <Link
-                                                href={`/${lang}/${slug}/${tool.slug}`}
-                                                className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
-                                            >
-                                                <h3 className="font-bold text-center mb-2 text-lg">
-                                                    {tool.h1 || tool.title}
-                                                </h3>
-                                            </Link>
-                                            {showAdAfter3 && (
-                                                <div className="mt-5">
-                                                    <AdBanner
-                                                        lang={lang}
-                                                        adNumber={3}
-                                                        href={content.ad_link_3}
-                                                    />
-                                                </div>
-                                            )}
-                                            {showAdAfter4 && (
-                                                <div className="mt-5">
-                                                    <AdBanner
-                                                        lang={lang}
-                                                        adNumber={4}
-                                                        href={content.ad_link_4}
-                                                    />
-                                                </div>
-                                            )}
-                                            {showAdAfterLong && (
-                                                <div className="mt-5">
-                                                    <AdBanner
-                                                        lang={lang}
-                                                        adNumber={1}
-                                                        href={content.ad_link_1}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                })}
-
-                                {/* SEO-описание */}
-                                {(ogTitle || ogDescription) && (
-                                    <div className="mt-12">
-                                        {ogTitle && (
-                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                {ogTitle}
-                                            </h2>
-                                        )}
-                                        {ogDescription && (
-                                            <p className="text-lg text-gray-700">
-                                                {ogDescription}
+                            {/* Список дочерних категорий */}
+                            <div className="space-y-4 mb-12">
+                                {childCategories.map((child) => (
+                                    <Link
+                                        key={child.id}
+                                        href={`/${lang}/${child.slug}`}
+                                        className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                    >
+                                        <h3 className="font-bold text-center mb-2 text-lg">
+                                            {child.name}
+                                        </h3>
+                                        {child.og_description && (
+                                            <p className="text-center text-gray-600 text-sm">
+                                                {child.og_description}
                                             </p>
                                         )}
-                                    </div>
-                                )}
+                                    </Link>
+                                ))}
                             </div>
+
+                            {/* SEO-описание */}
+                            {(ogTitle || ogDescription) && (
+                                <div className="mb-12">
+                                    {ogTitle && (
+                                        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                            {ogTitle}
+                                        </h2>
+                                    )}
+                                    {ogDescription && (
+                                        <p className="text-lg text-gray-700">
+                                            {ogDescription}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Секция "Популярные калькуляторы" - после SEO-описания */}
+                            {popularTools.length > 0 && (
+                                <div className="mb-12">
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                                        Popular {categoryI18n.name}
+                                    </h2>
+                                    <div className="space-y-[20px]">
+                                        {popularTools.map((tool, index) => {
+                                            const showAdAfter1 = index === 1 // После 2-го баннера
+                                            const showAdAfter2 = index === 3 // После 4-го баннера
+                                            const showAdAfter3 = index === 6 // После 7-го баннера
+                                            const showAdAfter4 = index === 8 // После 9-го баннера
+
+                                            return (
+                                                <div key={tool.id}>
+                                                    <Link
+                                                        href={`/${lang}/${slug}/${tool.slug}`}
+                                                        className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                                    >
+                                                        <h3 className="font-bold text-center mb-2 text-lg">
+                                                            {tool.h1 || tool.title}
+                                                        </h3>
+                                                        {tool.meta_description && (
+                                                            <p className="text-center text-sm text-gray-600">
+                                                                {tool.meta_description}
+                                                            </p>
+                                                        )}
+                                                    </Link>
+                                                    {showAdAfter1 && (
+                                                        <div className="mt-5">
+                                                            <AdBanner
+                                                                lang={lang}
+                                                                adNumber={1}
+                                                                href={content.ad_link_1}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {showAdAfter2 && (
+                                                        <div className="mt-5">
+                                                            <AdBanner
+                                                                lang={lang}
+                                                                adNumber={2}
+                                                                href={content.ad_link_2}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {showAdAfter3 && (
+                                                        <div className="mt-5">
+                                                            <AdBanner
+                                                                lang={lang}
+                                                                adNumber={3}
+                                                                href={content.ad_link_3}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {showAdAfter4 && (
+                                                        <div className="mt-5">
+                                                            <AdBanner
+                                                                lang={lang}
+                                                                adNumber={4}
+                                                                href={content.ad_link_4}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </>
                     ) : (
                         // Вариант Б: Мобильная версия конечной категории
