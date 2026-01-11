@@ -1,44 +1,17 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { headers } from 'next/headers'
+import { prisma } from '@/lib/db'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import { getTranslations } from '@/lib/translations'
 
-// Функция для получения локализованного текста 404
-function get404Text(lang: string) {
-    const texts: Record<string, { first: string; second: string }> = {
-        'ru': {
-            first: 'Мы не можем найти то, что вы ищете.',
-            second: 'Давайте вернёмся на главную страницу.'
-        },
-        'de': {
-            first: 'Wir können nicht finden, wonach Sie suchen.',
-            second: 'Gehen wir zurück zur Startseite.'
-        },
-        'es': {
-            first: 'No podemos encontrar lo que estás buscando.',
-            second: 'Volvamos a la página de inicio.'
-        },
-        'fr': {
-            first: 'Nous ne trouvons pas ce que vous recherchez.',
-            second: 'Revenons à la page d\'accueil.'
-        },
-        'it': {
-            first: 'Non riusciamo a trovare ciò che stai cercando.',
-            second: 'Torniamo alla pagina principale.'
-        },
-        'pl': {
-            first: 'Nie możemy znaleźć tego, czego szukasz.',
-            second: 'Wróćmy na stronę główną.'
-        },
-        'lv': {
-            first: 'Mēs nevaram atrast to, ko jūs meklējat.',
-            second: 'Atgriezīsimies uz sākumlapu.'
-        },
-    }
-
-    return texts[lang] || {
-        first: 'We can\'t find what you\'re looking for.',
-        second: 'Let\'s go back to Home page.'
-    }
+// Интерфейс для body_blocks_json страницы 404
+interface NotFoundContent {
+    headline?: string
+    subtitle?: string
+    button?: string
+    image?: string
 }
 
 // Функция для определения языка из заголовков
@@ -73,39 +46,100 @@ async function getLang(): Promise<string> {
 
 export default async function NotFound() {
     const lang = await getLang()
-    const text = get404Text(lang)
+    const translations = getTranslations(lang)
+
+    // Получаем данные страницы 404 из базы данных
+    // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
+    const pageData = await prisma.pageI18n.findFirst({
+        where: {
+            lang,
+            page: { code: '404' }
+        },
+        select: {
+            h1: true,
+            short_answer: true,
+            body_blocks_json: true,
+        }
+    })
+
+    // Парсим body_blocks_json
+    let content: NotFoundContent = {}
+    if (pageData?.body_blocks_json) {
+        try {
+            const parsed = typeof pageData.body_blocks_json === 'string'
+                ? JSON.parse(pageData.body_blocks_json)
+                : pageData.body_blocks_json
+            content = parsed as NotFoundContent
+        } catch (e) {
+            console.error('Error parsing body_blocks_json:', e)
+        }
+    }
+
+    // Используем данные из body_blocks_json или fallback на h1/short_answer
+    const headline = content.headline || pageData?.h1 || 'Page Not Found'
+    const subtitle = content.subtitle || pageData?.short_answer || ''
+    const buttonText = content.button || 'Go to Home page'
+    const imageUrl = content.image || '/404-calculatorscope.png'
     const homeUrl = `/${lang}`
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white">
-            <div className="flex flex-col items-center max-w-4xl w-full px-4">
-                {/* Картинка - чуть левее от центра */}
-                <div className="flex justify-center mb-8 relative" style={{ left: '-5%' }}>
-                    <Image
-                        src="/404-calculatorscope.png"
-                        alt="404"
-                        width={600}
-                        height={400}
-                        className="object-contain"
-                        priority
-                    />
-                </div>
+        <>
+            <Header 
+                lang={lang}
+                h1={headline}
+                metaDescription={subtitle}
+                translations={{
+                    burger_button: translations.burger_button,
+                    header_search_placeholder: translations.header_search_placeholder,
+                }}
+            />
+            <main>
+                <section className="page-404">
+                    <div className="container mx-auto px-4 py-12 md:py-20">
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 min-h-[60vh]">
+                            {/* Изображение - левая колонка на десктопе, первое на мобильных */}
+                            <div className="image-column flex-shrink-0 w-full md:w-auto order-1">
+                                <Image
+                                    src={imageUrl}
+                                    alt="404 illustration"
+                                    width={600}
+                                    height={400}
+                                    style={{ maxHeight: '800px', maxWidth: '100%', height: 'auto', width: 'auto' }}
+                                    className="object-contain"
+                                    priority
+                                />
+                            </div>
 
-                {/* Текст */}
-                <div className="text-center space-y-4">
-                    <p className="text-xl text-gray-900">
-                        {text.first}
-                    </p>
-                    <p className="text-xl text-gray-900">
-                        <Link 
-                            href={homeUrl}
-                            className="text-blue-600 hover:text-blue-800 hover:underline"
-                        >
-                            {text.second}
-                        </Link>
-                    </p>
-                </div>
-            </div>
-        </div>
+                            {/* Контент - правая колонка на десктопе, второе на мобильных */}
+                            <div className="content-column flex-1 w-full md:w-auto order-2 text-center md:text-left">
+                                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                                    {headline}
+                                </h1>
+                                {subtitle && (
+                                    <p className="subtitle text-lg md:text-xl text-gray-700 mb-6">
+                                        {subtitle}
+                                    </p>
+                                )}
+                                <Link 
+                                    href={homeUrl}
+                                    className="home-link inline-block px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-lg font-medium"
+                                >
+                                    {buttonText}
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+            <Footer 
+                lang={lang}
+                translations={{
+                    footer_link_1: translations.footer_link_1,
+                    footer_link_2: translations.footer_link_2,
+                    footer_link_3: translations.footer_link_3,
+                    footer_copyright: translations.footer_copyright,
+                }}
+            />
+        </>
     )
 }
