@@ -185,7 +185,7 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                     </div>
 
                     {/* Десктопная версия первого ряда: лого, бургер, поиск, язык */}
-                    <div className="hidden md:flex items-center justify-between h-16 gap-4">
+                    <div className="hidden md:flex items-center justify-between h-16">
                         {/* Лого */}
                         <Link href={`/${lang}`} className="flex items-center gap-2 flex-shrink-0">
                             <Image
@@ -198,11 +198,11 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                             />
                         </Link>
 
-                        {/* Бургер категорий */}
+                        {/* Бургер категорий - 30px от логотипа */}
                         <button
                             onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
                             className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex-shrink-0"
-                            style={{ color: '#1814E6' }}
+                            style={{ color: '#1814E6', marginLeft: '30px' }}
                         >
                             <img
                                 src={isCategoriesOpen ? "/burger-close.svg" : "/burger.svg"}
@@ -212,8 +212,8 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                             <span className="font-medium">{translations.burger_button}</span>
                         </button>
 
-                        {/* Поиск */}
-                        <div className="flex-1 max-w-md">
+                        {/* Поиск - 20px от бургера */}
+                        <div className="flex-1 max-w-md" style={{ marginLeft: '20px' }}>
                             <div className="relative">
                                 <input
                                     type="text"
