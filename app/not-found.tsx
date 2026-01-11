@@ -42,9 +42,9 @@ function get404Text(lang: string) {
 }
 
 // Функция для определения языка из заголовков
-function getLang(): string {
+async function getLang(): Promise<string> {
     try {
-        const headersList = headers()
+        const headersList = await headers()
         const referer = headersList.get('referer') || ''
         
         // Пытаемся извлечь язык из referer
@@ -72,7 +72,7 @@ function getLang(): string {
 }
 
 export default async function NotFound() {
-    const lang = getLang()
+    const lang = await getLang()
     const text = get404Text(lang)
     const homeUrl = `/${lang}`
 
