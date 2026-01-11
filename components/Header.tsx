@@ -126,172 +126,174 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
     }, [isCategoriesOpen])
 
     return (
-        <header className="sticky top-0 z-50 relative">
-            {/* Верхний блок */}
-            <div className="bg-[#FFFFFF] border-b border-[#000000]">
-                <div className="container mx-auto px-4">
-                    {/* Мобильная версия первого ряда: бургер, лого, язык */}
-                    <div className="flex items-center justify-between h-16 gap-4 md:hidden">
-                        {/* Бургер категорий - только на мобильных */}
-                        <button
-                            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                            className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-200 transition-colors flex-shrink-0"
-                            style={{ color: '#1814E6' }}
-                        >
-                            <img
-                                src={isCategoriesOpen ? "/burger-close.svg" : "/burger.svg"}
-                                alt={isCategoriesOpen ? "Close menu" : "Open menu"}
-                                className="w-5 h-auto"
-                            />
-                        </button>
-
-                        {/* Лого - по центру на мобильных */}
-                        <Link href={`/${lang}`} className="flex items-center gap-2 flex-shrink-0">
-                            <Image
-                                src="/calculatorscope-logo.svg"
-                                alt="Calculator Scope"
-                                height={50}
-                                width={222}
-                                className="h-7 w-auto"
-                                priority
-                            />
-                        </Link>
-
-                        {/* Выбор языка - мобильная версия */}
-                        <div className="relative flex-shrink-0">
-                            <select
-                                value={lang}
-                                onChange={(e) => handleLanguageChange(e.target.value)}
-                                disabled={isSwitchingLang}
-                                className="appearance-none bg-transparent border-none pl-2 pr-8 py-2 cursor-pointer focus:outline-none text-sm disabled:opacity-50"
+        <header className="relative">
+            {/* Верхний блок - sticky (логотип, бургер, поиск, язык) */}
+            <div className="sticky top-0 z-50 bg-[#FFFFFF]">
+                <div className="border-b border-[#000000]">
+                    <div className="container mx-auto px-4">
+                        {/* Мобильная версия первого ряда: бургер, лого, язык */}
+                        <div className="flex items-center justify-between h-16 gap-4 md:hidden">
+                            {/* Бургер категорий - только на мобильных */}
+                            <button
+                                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                                className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-200 transition-colors flex-shrink-0"
                                 style={{ color: '#1814E6' }}
                             >
-                                {sortedLanguages.map((langOption) => (
-                                    <option key={langOption.code} value={langOption.code}>
-                                        {langOption.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <svg
-                                className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                style={{ color: '#1814E6' }}
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                    </div>
-
-                    {/* Десктопная версия первого ряда: лого, бургер, поиск, язык */}
-                    <div className="hidden md:flex items-center h-16">
-                        {/* Лого */}
-                        <Link href={`/${lang}`} className="flex items-center gap-2 flex-shrink-0">
-                            <Image
-                                src="/calculatorscope-logo.svg"
-                                alt="Calculator Scope"
-                                height={50}
-                                width={222}
-                                className="h-8 w-auto"
-                                priority
-                            />
-                        </Link>
-
-                        {/* Бургер категорий - 30px от логотипа */}
-                        <button
-                            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex-shrink-0 ml-[30px]"
-                            style={{ color: '#1814E6' }}
-                        >
-                            <img
-                                src={isCategoriesOpen ? "/burger-close.svg" : "/burger.svg"}
-                                alt={isCategoriesOpen ? "Close menu" : "Open menu"}
-                                className="w-6 h-auto"
-                            />
-                            <span className="font-medium">{translations.burger_button}</span>
-                        </button>
-
-                        {/* Поиск - 20px от бургера */}
-                        <div className="flex-1 max-w-md ml-[20px]">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder={translations.header_search_placeholder}
-                                    className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
-                                    style={{ color: '#9A9898' }}
+                                <img
+                                    src={isCategoriesOpen ? "/burger-close.svg" : "/burger.svg"}
+                                    alt={isCategoriesOpen ? "Close menu" : "Open menu"}
+                                    className="w-5 h-auto"
                                 />
+                            </button>
+
+                            {/* Лого - по центру на мобильных */}
+                            <Link href={`/${lang}`} className="flex items-center gap-2 flex-shrink-0">
+                                <Image
+                                    src="/calculatorscope-logo.svg"
+                                    alt="Calculator Scope"
+                                    height={50}
+                                    width={222}
+                                    className="h-7 w-auto"
+                                    priority
+                                />
+                            </Link>
+
+                            {/* Выбор языка - мобильная версия */}
+                            <div className="relative flex-shrink-0">
+                                <select
+                                    value={lang}
+                                    onChange={(e) => handleLanguageChange(e.target.value)}
+                                    disabled={isSwitchingLang}
+                                    className="appearance-none bg-transparent border-none pl-2 pr-8 py-2 cursor-pointer focus:outline-none text-sm disabled:opacity-50"
+                                    style={{ color: '#1814E6' }}
+                                >
+                                    {sortedLanguages.map((langOption) => (
+                                        <option key={langOption.code} value={langOption.code}>
+                                            {langOption.name}
+                                        </option>
+                                    ))}
+                                </select>
                                 <svg
-                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none w-4 h-4"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
-                                    style={{ color: '#9A9898' }}
+                                    style={{ color: '#1814E6' }}
                                 >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
 
-                        {/* Выбор языка */}
-                        <div className="relative flex-shrink-0 ml-auto">
-                            <select
-                                value={lang}
-                                onChange={(e) => handleLanguageChange(e.target.value)}
-                                disabled={isSwitchingLang}
-                                className="appearance-none bg-transparent border-none pl-3 pr-8 py-2 cursor-pointer focus:outline-none"
+                        {/* Десктопная версия первого ряда: лого, бургер, поиск, язык */}
+                        <div className="hidden md:flex items-center h-16">
+                            {/* Лого */}
+                            <Link href={`/${lang}`} className="flex items-center gap-2 flex-shrink-0">
+                                <Image
+                                    src="/calculatorscope-logo.svg"
+                                    alt="Calculator Scope"
+                                    height={50}
+                                    width={222}
+                                    className="h-8 w-auto"
+                                    priority
+                                />
+                            </Link>
+
+                            {/* Бургер категорий - 30px от логотипа */}
+                            <button
+                                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex-shrink-0 ml-[30px]"
                                 style={{ color: '#1814E6' }}
                             >
-                                {sortedLanguages.map((langOption) => (
-                                    <option key={langOption.code} value={langOption.code}>
-                                        {langOption.name}
-                                    </option>
-                                ))}
-                            </select>
+                                <img
+                                    src={isCategoriesOpen ? "/burger-close.svg" : "/burger.svg"}
+                                    alt={isCategoriesOpen ? "Close menu" : "Open menu"}
+                                    className="w-6 h-auto"
+                                />
+                                <span className="font-medium">{translations.burger_button}</span>
+                            </button>
+
+                            {/* Поиск - 20px от бургера */}
+                            <div className="flex-1 max-w-md ml-[20px]">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder={translations.header_search_placeholder}
+                                        className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
+                                        style={{ color: '#9A9898' }}
+                                    />
+                                    <svg
+                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        style={{ color: '#9A9898' }}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {/* Выбор языка */}
+                            <div className="relative flex-shrink-0 ml-auto">
+                                <select
+                                    value={lang}
+                                    onChange={(e) => handleLanguageChange(e.target.value)}
+                                    disabled={isSwitchingLang}
+                                    className="appearance-none bg-transparent border-none pl-3 pr-8 py-2 cursor-pointer focus:outline-none"
+                                    style={{ color: '#1814E6' }}
+                                >
+                                    {sortedLanguages.map((langOption) => (
+                                        <option key={langOption.code} value={langOption.code}>
+                                            {langOption.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <svg
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    style={{ color: '#1814E6' }}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Разделительная линия */}
+                <div className="h-px bg-[#000000]"></div>
+
+                {/* Второй ряд - поиск на мобильных */}
+                <div className="bg-[#FFFFFF] border-b border-[#000000] md:hidden">
+                    <div className="container mx-auto px-4 py-3">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder={translations.header_search_placeholder}
+                                className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
+                                style={{ color: '#9A9898' }}
+                            />
                             <svg
-                                className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none w-4 h-4"
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
-                                style={{ color: '#1814E6' }}
+                                style={{ color: '#9A9898' }}
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
                     </div>
                 </div>
+
+                {/* Разделительная линия для мобильных */}
+                <div className="h-px bg-[#000000] md:hidden"></div>
             </div>
 
-            {/* Разделительная линия */}
-            <div className="h-px bg-[#000000]"></div>
-
-            {/* Второй ряд - поиск на мобильных */}
-            <div className="bg-[#FFFFFF] border-b border-[#000000] md:hidden">
-                <div className="container mx-auto px-4 py-3">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder={translations.header_search_placeholder}
-                            className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
-                            style={{ color: '#9A9898' }}
-                        />
-                        <svg
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            style={{ color: '#9A9898' }}
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            {/* Разделительная линия для мобильных */}
-            <div className="h-px bg-[#000000] md:hidden"></div>
-
-            {/* Нижний блок */}
+            {/* Нижний блок - не sticky, скроллится вместе с контентом */}
             <div className="bg-[#F5F5F5]">
                 <div className="container mx-auto px-4">
                     {/* Мобильная версия: только текст */}
