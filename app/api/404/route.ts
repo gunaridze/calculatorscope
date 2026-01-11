@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
                 page: { code: '404' }
             },
             select: {
-                h1: true,
-                short_answer: true,
+                meta_title: true,
+                meta_description: true,
                 body_blocks_json: true,
             }
         })
@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Используем данные из body_blocks_json или fallback на h1/short_answer
-        const headline = content.headline || pageData?.h1 || 'Page Not Found'
-        const subtitle = content.subtitle || pageData?.short_answer || ''
+        // Используем meta_title и meta_description из page_i18n
+        const headline = pageData?.meta_title || content.headline || 'Page Not Found'
+        const subtitle = pageData?.meta_description || content.subtitle || ''
         const buttonText = content.button || 'Go to Home page'
         const imageUrl = content.image || '/404-calculatorscope.png'
 
