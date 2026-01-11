@@ -121,6 +121,20 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         return popularMap[lang] || `Popular ${categoryName}`
     }
 
+    // Функция для получения локализованного "All converters and calculators from this category"
+    const getAllToolsText = (lang: string): string => {
+        const allToolsMap: Record<string, string> = {
+            'ru': 'Все конвертеры и калькуляторы из этой категории',
+            'de': 'Alle Konverter und Rechner aus dieser Kategorie',
+            'es': 'Todos los convertidores y calculadoras de esta categoría',
+            'fr': 'Tous les convertisseurs et calculateurs de cette catégorie',
+            'it': 'Tutti i convertitori e i calcolatori di questa categoria',
+            'pl': 'Wszystkie konwertery i kalkulatory z tej kategorii',
+            'lv': 'Visi šīs kategorijas pārveidotāji un kalkulatori',
+        }
+        return allToolsMap[lang] || 'All converters and calculators from this category'
+    }
+
     // Проверяем, не является ли это попапом инструмента: /{lang}/{tool-slug}?do=pop
     const isPopup = search?.do === 'pop'
     if (isPopup) {
@@ -681,33 +695,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                     </div>
                                 )}
 
-                                {/* Секция "Все калькуляторы" */}
-                                {content.body_h2_3 && (
-                                    <section className="mb-12">
-                                        <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                            {content.body_h2_3}
-                                        </h2>
-                                        <div className="space-y-4">
-                                            {allTools.map((tool) => (
-                                                <Link
-                                                    key={tool.id}
-                                                    href={`/${lang}/${slug}/${tool.slug}`}
-                                                    className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
-                                                >
-                                                    <h3 className="font-bold text-center mb-2 text-lg">
-                                                        {tool.h1 || tool.title}
-                                                    </h3>
-                                                    {tool.meta_description && (
-                                                        <p className="text-center text-sm text-gray-600">
-                                                            {tool.meta_description}
-                                                        </p>
-                                                    )}
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    </section>
-                                )}
-
                                 {/* SEO-описание */}
                                 {(ogTitle || ogDescription) && (
                                     <div className="mb-12">
@@ -722,6 +709,28 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                             </p>
                                         )}
                                     </div>
+                                )}
+
+                                {/* Секция "Все калькуляторы" */}
+                                {allTools.length > 0 && (
+                                    <section className="mb-12">
+                                        <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                                            {getAllToolsText(lang)}
+                                        </h2>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {allTools.map((tool) => (
+                                                <Link
+                                                    key={tool.id}
+                                                    href={`/${lang}/${slug}/${tool.slug}`}
+                                                    className="block text-blue-600 hover:text-blue-800 hover:underline p-2"
+                                                >
+                                                    <h4 className="font-medium">
+                                                        {tool.h1 || tool.title}
+                                                    </h4>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </section>
                                 )}
                             </>
                         )}
@@ -960,33 +969,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                 </div>
                             )}
 
-                            {/* Секция "Все калькуляторы" */}
-                            {content.body_h2_3 && (
-                                <section className="mb-12">
-                                    <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                        {content.body_h2_3}
-                                    </h2>
-                                    <div className="space-y-4">
-                                        {allTools.map((tool) => (
-                                            <Link
-                                                key={tool.id}
-                                                href={`/${lang}/${slug}/${tool.slug}`}
-                                                className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
-                                            >
-                                                <h3 className="font-bold text-center mb-2 text-lg">
-                                                    {tool.h1 || tool.title}
-                                                </h3>
-                                                {tool.meta_description && (
-                                                    <p className="text-center text-sm text-gray-600">
-                                                        {tool.meta_description}
-                                                    </p>
-                                                )}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </section>
-                            )}
-
                             {/* SEO-описание */}
                             {(ogTitle || ogDescription) && (
                                 <div className="mb-12">
@@ -1001,6 +983,28 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                         </p>
                                     )}
                                 </div>
+                            )}
+
+                            {/* Секция "Все калькуляторы" */}
+                            {allTools.length > 0 && (
+                                <section className="mb-12">
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                                        {getAllToolsText(lang)}
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {allTools.map((tool) => (
+                                            <Link
+                                                key={tool.id}
+                                                href={`/${lang}/${slug}/${tool.slug}`}
+                                                className="block text-blue-600 hover:text-blue-800 hover:underline p-2"
+                                            >
+                                                <h4 className="font-medium">
+                                                    {tool.h1 || tool.title}
+                                                </h4>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </section>
                             )}
                         </>
                     )}
