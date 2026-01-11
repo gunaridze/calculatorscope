@@ -9,6 +9,8 @@ import Footer from '@/components/Footer'
 
 // Интерфейс для данных страницы 404
 interface NotFoundData {
+    headerTitle: string
+    headerDescription: string
     headline: string
     subtitle: string
     buttonText: string
@@ -105,6 +107,8 @@ export default function NotFoundClient() {
                 } else {
                     // Fallback данные
                     setPageData({
+                        headerTitle: 'Page Not Found',
+                        headerDescription: '',
                         headline: 'Page Not Found',
                         subtitle: '',
                         buttonText: 'Go to Home page',
@@ -148,8 +152,8 @@ export default function NotFoundClient() {
         <>
             <Header 
                 lang={lang}
-                h1={pageData.headline}
-                metaDescription={pageData.subtitle}
+                h1={pageData.headerTitle}
+                metaDescription={pageData.headerDescription}
                 translations={{
                     burger_button: pageData.translations.burger_button,
                     header_search_placeholder: pageData.translations.header_search_placeholder,
@@ -174,20 +178,20 @@ export default function NotFoundClient() {
 
                             {/* Контент - правая колонка на десктопе, второе на мобильных */}
                             <div className="content-column flex-1 w-full md:w-auto order-2 text-center md:text-left">
-                                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
                                     {pageData.headline}
-                                </h1>
-                                {pageData.subtitle && (
-                                    <p className="subtitle text-lg md:text-xl text-gray-700 mb-6">
-                                        {pageData.subtitle}
-                                    </p>
+                                </h2>
+                                {(pageData.subtitle || pageData.buttonText) && (
+                                    <div className="mb-6">
+                                        <Link 
+                                            href={homeUrl}
+                                            className="home-link inline-block px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-lg font-medium"
+                                        >
+                                            {pageData.subtitle && <span>{pageData.subtitle} </span>}
+                                            {pageData.buttonText}
+                                        </Link>
+                                    </div>
                                 )}
-                                <Link 
-                                    href={homeUrl}
-                                    className="home-link inline-block px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-lg font-medium"
-                                >
-                                    {pageData.buttonText}
-                                </Link>
                             </div>
                         </div>
                     </div>

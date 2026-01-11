@@ -42,9 +42,13 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Приоритет: body_blocks_json → meta_title/meta_description → fallback
-        const headline = content.headline || pageData?.meta_title || 'Page Not Found'
-        const subtitle = content.subtitle || pageData?.meta_description || ''
+        // Данные для Header (meta_title и meta_description)
+        const headerTitle = pageData?.meta_title || 'Page Not Found'
+        const headerDescription = pageData?.meta_description || ''
+
+        // Данные для основного контента (body_blocks_json)
+        const headline = content.headline || 'Page Not Found'
+        const subtitle = content.subtitle || ''
         const buttonText = content.button || 'Go to Home page'
         const imageUrl = content.image || '/404-calculatorscope.png'
 
@@ -52,6 +56,8 @@ export async function GET(request: NextRequest) {
         const translations = getTranslations(lang)
 
         const response = NextResponse.json({
+            headerTitle,
+            headerDescription,
             headline,
             subtitle,
             buttonText,
