@@ -578,7 +578,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                         <Link
                                             key={child.id}
                                             href={`/${lang}/${child.slug}`}
-                                            className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                            className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                         >
                                             <h3 className="font-bold text-center mb-2 text-lg">
                                                 {child.name}
@@ -619,7 +619,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                 <Link
                                                     key={tool.id}
                                                     href={`/${lang}/${slug}/${tool.slug}`}
-                                                    className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                                    className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                 >
                                                     <h3 className="font-bold text-center mb-2 text-lg">
                                                         {tool.h1 || tool.title}
@@ -651,7 +651,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                 <Link
                                                     key={tool.id}
                                                     href={`/${lang}/${slug}/${tool.slug}`}
-                                                    className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                                    className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                 >
                                                     <h3 className="font-bold text-center mb-2 text-lg">
                                                         {tool.h1 || tool.title}
@@ -678,7 +678,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                 <Link
                                                     key={tool.id}
                                                     href={`/${lang}/${slug}/${tool.slug}`}
-                                                    className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                                    className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                 >
                                                     <h3 className="font-bold text-center mb-2 text-lg">
                                                         {tool.h1 || tool.title}
@@ -770,7 +770,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                     <Link
                                         key={child.id}
                                         href={`/${lang}/${child.slug}`}
-                                        className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                        className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                     >
                                         <h3 className="font-bold text-center mb-2 text-lg">
                                             {child.name}
@@ -817,7 +817,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                 <div key={tool.id}>
                                                     <Link
                                                         href={`/${lang}/${slug}/${tool.slug}`}
-                                                        className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                                        className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                     >
                                                         <h3 className="font-bold text-center mb-2 text-lg">
                                                             {tool.h1 || tool.title}
@@ -892,7 +892,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                 <div key={tool.id}>
                                                     <Link
                                                         href={`/${lang}/${slug}/${tool.slug}`}
-                                                        className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                                        className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                                     >
                                                         <h3 className="font-bold text-center mb-2 text-lg">
                                                             {tool.h1 || tool.title}
@@ -957,7 +957,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                             <Link
                                                 key={tool.id}
                                                 href={`/${lang}/${slug}/${tool.slug}`}
-                                                className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
+                                                className="block bg-[#eff6ff] border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow h-[110px] flex flex-col justify-center"
                                             >
                                                 <h3 className="font-bold text-center mb-2 text-lg">
                                                     {tool.h1 || tool.title}

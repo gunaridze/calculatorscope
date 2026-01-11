@@ -294,7 +294,7 @@ export default async function HomePage({ params }: Props) {
                                             </h2>
                                             <div className="grid grid-cols-3 gap-6">
                                                 {categoriesWithPopularTools.map(({ cat, catData, popularTools }: any) => (
-                                                    <div key={cat.id} className="bg-white border border-gray-200 rounded-lg">
+                                                    <div key={cat.id} className="bg-[#eff6ff] border border-gray-200 rounded-lg">
                                                         {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
                                                         <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
                                                             {catData.name}
@@ -409,7 +409,7 @@ export default async function HomePage({ params }: Props) {
                                             if (popularTools.length === 0) return null
 
                                             return (
-                                                <div key={cat.id} className="bg-white border border-gray-200 rounded-lg">
+                                                <div key={cat.id} className="bg-[#eff6ff] border border-gray-200 rounded-lg">
                                                     {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
                                                     <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
                                                         {catData.name}
