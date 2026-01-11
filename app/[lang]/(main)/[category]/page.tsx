@@ -107,6 +107,20 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     const search = await searchParams
     const translations = getTranslations(lang)
 
+    // Функция для получения локализованного "Popular"
+    const getPopularText = (lang: string, categoryName: string): string => {
+        const popularMap: Record<string, string> = {
+            'ru': `Популярные ${categoryName}`,
+            'de': `Beliebte ${categoryName}`,
+            'es': `${categoryName} populares`,
+            'fr': `${categoryName} populaires`,
+            'it': `${categoryName} popolari`,
+            'pl': `Popularne ${categoryName}`,
+            'lv': `Populāri ${categoryName}`,
+        }
+        return popularMap[lang] || `Popular ${categoryName}`
+    }
+
     // Проверяем, не является ли это попапом инструмента: /{lang}/{tool-slug}?do=pop
     const isPopup = search?.do === 'pop'
     if (isPopup) {
@@ -612,7 +626,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                 {popularTools.length > 0 && (
                                     <div className="mb-12">
                                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                            Popular {categoryI18n.name}
+                                            {getPopularText(lang, categoryI18n.name)}
                                         </h2>
                                         <div className="space-y-4">
                                             {popularTools.map((tool) => (
@@ -644,7 +658,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                 {popularTools.length > 0 && (
                                     <div className="mb-12">
                                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                            Popular {categoryI18n.name}
+                                            {getPopularText(lang, categoryI18n.name)}
                                         </h2>
                                         <div className="space-y-4">
                                             {popularTools.map((tool) => (
@@ -804,7 +818,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                             {popularTools.length > 0 && (
                                 <div className="mb-12">
                                     <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                        Popular {categoryI18n.name}
+                                        {getPopularText(lang, categoryI18n.name)}
                                     </h2>
                                     <div className="space-y-[20px]">
                                         {popularTools.map((tool, index) => {
@@ -878,7 +892,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                             {popularTools.length > 0 && (
                                 <div className="mb-12">
                                     <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                        Popular {categoryI18n.name}
+                                        {getPopularText(lang, categoryI18n.name)}
                                     </h2>
                                     <div className="space-y-[20px]">
                                         {popularTools.map((tool, index) => {

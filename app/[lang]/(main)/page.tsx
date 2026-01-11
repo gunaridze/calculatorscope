@@ -314,7 +314,7 @@ export default async function HomePage({ params }: Props) {
                                                                             className="block text-blue-600 hover:text-blue-800 hover:underline"
                                                                         >
                                                                             {/* h1 из tool_i18n размечается как h3 */}
-                                                                            <h3 className="font-medium">
+                                                                            <h3 className="font-medium text-center">
                                                                                 {toolData.h1 || toolData.title}
                                                                             </h3>
                                                                         </Link>
@@ -429,7 +429,7 @@ export default async function HomePage({ params }: Props) {
                                                                         className="block text-blue-600 hover:text-blue-800 hover:underline"
                                                                     >
                                                                         {/* h1 из tool_i18n размечается как h3 */}
-                                                                        <h3 className="font-medium">
+                                                                        <h3 className="font-medium text-center">
                                                                             {toolData.h1 || toolData.title}
                                                                         </h3>
                                                                     </Link>
