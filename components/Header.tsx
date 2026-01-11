@@ -184,7 +184,7 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                         </div>
                     </div>
 
-                    {/* Десктопная версия первого ряда: лого, поиск, язык */}
+                    {/* Десктопная версия первого ряда: лого, бургер, поиск, язык */}
                     <div className="hidden md:flex items-center justify-between h-16 gap-4">
                         {/* Лого */}
                         <Link href={`/${lang}`} className="flex items-center gap-2 flex-shrink-0">
@@ -197,6 +197,20 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                                 priority
                             />
                         </Link>
+
+                        {/* Бургер категорий */}
+                        <button
+                            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex-shrink-0"
+                            style={{ color: '#1814E6' }}
+                        >
+                            <img
+                                src={isCategoriesOpen ? "/burger-close.svg" : "/burger.svg"}
+                                alt={isCategoriesOpen ? "Close menu" : "Open menu"}
+                                className="w-6 h-auto"
+                            />
+                            <span className="font-medium">{translations.burger_button}</span>
+                        </button>
 
                         {/* Поиск */}
                         <div className="flex-1 max-w-md">
@@ -294,22 +308,8 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                         )}
                     </div>
 
-                    {/* Десктопная версия: бургер, текст, пустое место */}
+                    {/* Десктопная версия: текст по центру */}
                     <div className="hidden md:flex items-center gap-4 py-4">
-                        {/* Бургер категорий */}
-                        <button
-                            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex-shrink-0"
-                            style={{ color: '#1814E6' }}
-                        >
-                            <img
-                                src={isCategoriesOpen ? "/burger-close.svg" : "/burger.svg"}
-                                alt={isCategoriesOpen ? "Close menu" : "Open menu"}
-                                className="w-6 h-auto"
-                            />
-                            <span className="font-medium">{translations.burger_button}</span>
-                        </button>
-
                         {/* H1 и meta_description - по центру с адаптивными размерами */}
                         <div className="flex-1 text-center">
                             {h1 && (
@@ -323,9 +323,6 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                                 </p>
                             )}
                         </div>
-
-                        {/* Пустое место справа для баланса */}
-                        <div className="flex-shrink-0 min-w-[120px]"></div>
                     </div>
                 </div>
             </div>
