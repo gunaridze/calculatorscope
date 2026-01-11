@@ -161,6 +161,8 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                             {/* Выбор языка - мобильная версия */}
                             <div className="relative flex-shrink-0">
                                 <select
+                                    id="lang-select-mobile"
+                                    name="lang-select-mobile"
                                     value={lang}
                                     onChange={(e) => handleLanguageChange(e.target.value)}
                                     disabled={isSwitchingLang}
@@ -217,6 +219,8 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                             <div className="flex-1 max-w-md ml-[20px]">
                                 <div className="relative">
                                     <input
+                                        id="search-input-desktop"
+                                        name="search-input-desktop"
                                         type="text"
                                         placeholder={translations.header_search_placeholder}
                                         className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
@@ -237,6 +241,8 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                             {/* Выбор языка */}
                             <div className="relative flex-shrink-0 ml-auto">
                                 <select
+                                    id="lang-select-desktop"
+                                    name="lang-select-desktop"
                                     value={lang}
                                     onChange={(e) => handleLanguageChange(e.target.value)}
                                     disabled={isSwitchingLang}
@@ -271,6 +277,8 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                     <div className="container mx-auto px-4 py-3">
                         <div className="relative">
                             <input
+                                id="search-input-mobile"
+                                name="search-input-mobile"
                                 type="text"
                                 placeholder={translations.header_search_placeholder}
                                 className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
