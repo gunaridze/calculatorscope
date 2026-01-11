@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Используем meta_title и meta_description из page_i18n
-        const headline = pageData?.meta_title || content.headline || 'Page Not Found'
-        const subtitle = pageData?.meta_description || content.subtitle || ''
+        // Приоритет: body_blocks_json → meta_title/meta_description → fallback
+        const headline = content.headline || pageData?.meta_title || 'Page Not Found'
+        const subtitle = content.subtitle || pageData?.meta_description || ''
         const buttonText = content.button || 'Go to Home page'
         const imageUrl = content.image || '/404-calculatorscope.png'
 
