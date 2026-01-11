@@ -26,7 +26,13 @@ interface NotFoundData {
 // Функция для получения данных страницы 404
 async function get404Data(lang: string): Promise<NotFoundData | null> {
     try {
-        const response = await fetch(`/api/404?lang=${lang}`)
+        // Отключаем кеширование
+        const response = await fetch(`/api/404?lang=${lang}`, {
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache',
+            },
+        })
         if (response.ok) {
             return await response.json()
         }
@@ -36,42 +42,64 @@ async function get404Data(lang: string): Promise<NotFoundData | null> {
     return null
 }
 
+// Функция для определения языка из URL
+function detectLangFromUrl(): string {
+    const supportedLangs = ['en', 'de', 'es', 'fr', 'it', 'pl', 'ru', 'lv']
+    
+    if (typeof window === 'undefined') {
+        return 'en'
+    }
+
+    // Пытаемся извлечь язык из текущего URL
+    const currentPath = window.location.pathname
+    
+    // Более точный паттерн для извлечения языка
+    const langMatch = currentPath.match(/^\/([a-z]{2})(?:\/|$)/)
+    
+    if (langMatch && langMatch[1]) {
+        const detectedLang = langMatch[1]
+        if (supportedLangs.includes(detectedLang)) {
+            return detectedLang
+        }
+    }
+
+    // Fallback на язык браузера
+    if (typeof navigator !== 'undefined' && navigator.language) {
+        const browserLang = navigator.language.split('-')[0].toLowerCase()
+        if (supportedLangs.includes(browserLang)) {
+            return browserLang
+        }
+    }
+
+    return 'en' // Дефолтный язык
+}
+
 export default function NotFoundClient() {
     const pathname = usePathname()
-    const [lang, setLang] = useState('en')
+    // Определяем язык сразу при инициализации
+    const [lang, setLang] = useState(() => detectLangFromUrl())
     const [pageData, setPageData] = useState<NotFoundData | null>(null)
     const [loading, setLoading] = useState(true)
 
-    // Определяем язык из URL
+    // Обновляем язык при изменении pathname (на случай если URL изменился)
     useEffect(() => {
-        const supportedLangs = ['en', 'de', 'es', 'fr', 'it', 'pl', 'ru', 'lv']
-        
-        // Пытаемся извлечь язык из текущего URL
-        const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname || ''
-        const langMatch = currentPath.match(/^\/([a-z]{2})(?:\/|$)/)
-        
-        if (langMatch) {
-            const detectedLang = langMatch[1]
-            if (supportedLangs.includes(detectedLang)) {
-                setLang(detectedLang)
-                return
-            }
+        const detectedLang = detectLangFromUrl()
+        if (detectedLang !== lang) {
+            setLang(detectedLang)
         }
-
-        // Fallback на язык браузера
-        if (typeof window !== 'undefined') {
-            const browserLang = navigator.language.split('-')[0].toLowerCase()
-            if (supportedLangs.includes(browserLang)) {
-                setLang(browserLang)
-            }
-        }
-    }, [pathname])
+    }, [pathname, lang])
 
     // Загружаем данные страницы 404
     useEffect(() => {
-        if (lang) {
-            setLoading(true)
-            get404Data(lang).then((data) => {
+        if (!lang) return
+
+        let cancelled = false
+        setLoading(true)
+
+        get404Data(lang)
+            .then((data) => {
+                if (cancelled) return
+
                 if (data) {
                     setPageData(data)
                 } else {
@@ -93,6 +121,14 @@ export default function NotFoundClient() {
                 }
                 setLoading(false)
             })
+            .catch((error) => {
+                if (cancelled) return
+                console.error('Error loading 404 data:', error)
+                setLoading(false)
+            })
+
+        return () => {
+            cancelled = true
         }
     }, [lang])
 
