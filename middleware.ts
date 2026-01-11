@@ -34,28 +34,41 @@ export async function middleware(request: NextRequest) {
 
     // 1. Игнорируем служебные файлы и API
     if (reservedPaths.some((path) => pathname.startsWith(path)) || pathname.includes('.')) {
-        return
+        return NextResponse.next()
     }
 
-    // 2. Проверяем, есть ли уже локаль в URL
+    // 2. Явная обработка корневого пути
+    if (pathname === '/') {
+        const locale = getLocale(request)
+        const redirectUrl = new URL(`/${locale}`, request.url)
+        // Сохраняем query параметры, если есть
+        if (searchParams.toString()) {
+            redirectUrl.search = searchParams.toString()
+        }
+        return NextResponse.redirect(redirectUrl, 307) // 307 Temporary Redirect для SEO
+    }
+
+    // 3. Проверяем, есть ли уже локаль в URL
     const pathnameIsMissingLocale = locales.every(
         (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
     )
 
-    // 3. Если локали нет -> Редирект
+    // 4. Если локали нет -> Редирект
     if (pathnameIsMissingLocale) {
         const locale = getLocale(request)
-
-        // Сохраняем "хвост" URL (например, если зашли на /some-old-link)
-        // Но так как у нас localized slugs, то чаще всего редирект будет просто на корень языка
-        return NextResponse.redirect(
-            new URL(`/${locale}${pathname === '/' ? '' : pathname}`, request.url)
-        )
+        const redirectUrl = new URL(`/${locale}${pathname}`, request.url)
+        // Сохраняем query параметры, если есть
+        if (searchParams.toString()) {
+            redirectUrl.search = searchParams.toString()
+        }
+        return NextResponse.redirect(redirectUrl, 307) // 307 Temporary Redirect для SEO
     }
 
-    // 4. Обработка попапа: /{lang}/{tool-slug}?do=pop
+    // 5. Обработка попапа: /{lang}/{tool-slug}?do=pop
     // Попап обрабатывается на уровне страницы [category]/[tool], где category может быть любым
     // Если это попап, страница сама определит правильный category или покажет попап без category
+    
+    return NextResponse.next()
 }
 
 export const config = {
