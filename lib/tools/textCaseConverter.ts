@@ -4,19 +4,19 @@
  */
 
 export type TextCaseMode = 
-    | 'lowercase'           // все строчные
-    | 'UPPERCASE'           // все заглавные
-    | 'Title Case'          // каждое слово с заглавной
-    | 'Sentence case'       // как в предложении
-    | 'Alternating case'    // чередование регистров
-    | 'Random case'         // случайный регистр
+    | 'lower'           // все строчные
+    | 'upper'           // все заглавные
+    | 'title'           // каждое слово с заглавной
+    | 'sentence'         // как в предложении
+    | 'alternating'     // чередование регистров
+    | 'random'           // случайный регистр
 
 export interface TextCaseConverterOptions {
     mode: TextCaseMode
 }
 
 export interface TextCaseConverterResult {
-    textResult: string
+    result: string
 }
 
 /**
@@ -27,26 +27,26 @@ export function textCaseConverter(
     options: TextCaseConverterOptions
 ): TextCaseConverterResult {
     if (!text && text !== 0) {
-        return { textResult: '' }
+        return { result: '' }
     }
 
     const inputText = String(text).trim()
     if (!inputText) {
-        return { textResult: '' }
+        return { result: '' }
     }
 
     let result = ''
 
     switch (options.mode) {
-        case 'lowercase':
+        case 'lower':
             result = inputText.toLowerCase()
             break
 
-        case 'UPPERCASE':
+        case 'upper':
             result = inputText.toUpperCase()
             break
 
-        case 'Title Case':
+        case 'title':
             // Каждое слово начинается с заглавной буквы
             result = inputText
                 .toLowerCase()
@@ -58,7 +58,7 @@ export function textCaseConverter(
                 .join(' ')
             break
 
-        case 'Sentence case':
+        case 'sentence':
             // Первая буква каждого предложения заглавная, остальное строчное
             const lowerText = inputText.toLowerCase()
             // Разбиваем по знакам препинания, сохраняя их
@@ -82,7 +82,7 @@ export function textCaseConverter(
             }
             break
 
-        case 'Alternating case':
+        case 'alternating':
             // Чередование заглавных и строчных букв (начинаем с маленькой)
             result = inputText
                 .split('')
@@ -95,7 +95,7 @@ export function textCaseConverter(
                 .join('')
             break
 
-        case 'Random case':
+        case 'random':
             // Случайный регистр для каждой буквы
             result = inputText
                 .split('')
@@ -112,5 +112,5 @@ export function textCaseConverter(
             result = inputText
     }
 
-    return { textResult: result }
+    return { result: result }
 }

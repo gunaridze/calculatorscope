@@ -46,7 +46,7 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     textCaseConverter: (params: Record<string, any>) => {
         const { text, mode } = params
         const options: TextCaseConverterOptions = {
-            mode: mode || 'lowercase'
+            mode: mode || 'lower'
         }
         return textCaseConverter(text, options)
     }

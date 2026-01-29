@@ -210,8 +210,8 @@ export default function CalculatorWidget({
     const handleCopy = () => {
         if (Object.keys(result).length === 0) return
         
-        // Копируем только textResult (видимый текст)
-        const resultText = result.textResult ? String(result.textResult) : ''
+        // Копируем result или textResult (видимый текст)
+        const resultText = result.result ? String(result.result) : (result.textResult ? String(result.textResult) : '')
         
         if (resultText) {
             navigator.clipboard.writeText(resultText).then(() => {
@@ -316,8 +316,8 @@ export default function CalculatorWidget({
     }
 
     const inputNumberConfig = getFieldConfig('inputNumber')
-    const inputTextConfig = getFieldConfig('inputText') // Для text case converter
-    const caseModeConfig = getFieldConfig('caseMode') // Для text case converter
+    const textConfig = getFieldConfig('text') // Для text case converter
+    const modeConfig = getFieldConfig('mode') // Для text case converter
     const currencyConfig = getFieldConfig('currency')
     const vatRateConfig = getFieldConfig('vatRate')
     const textCaseConfig = getFieldConfig('textCase')
@@ -339,15 +339,15 @@ export default function CalculatorWidget({
         { value: 'Sentence case', label: translations.sentenceCaseOption }
     ]
 
-    // Опции для Case Mode (text case converter)
-    const caseModeOptions = caseModeConfig?.options || []
+    // Опции для Mode (text case converter)
+    const modeOptions = modeConfig?.options || []
 
     // Определяем, это text case converter или number-to-words
-    const isTextCaseConverter = config.inputs.some((inp: any) => inp.key === 'inputText')
+    const isTextCaseConverter = config.inputs.some((inp: any) => inp.key === 'text')
     const isNumberToWords = config.inputs.some((inp: any) => inp.key === 'inputNumber')
 
     // Получаем текст результата для отображения
-    const resultText = result.textResult ? String(result.textResult) : ''
+    const resultText = result.result ? String(result.result) : (result.textResult ? String(result.textResult) : '')
 
     return (
         <div className="w-full lg:w-[420px] lg:float-left lg:mr-5 mb-5 relative mx-auto lg:mx-0" style={{ maxWidth: '420px' }}>
@@ -364,28 +364,28 @@ export default function CalculatorWidget({
                         {/* Поле ввода текста (textarea для text case converter) */}
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {inputTextConfig?.label || 'Enter text:'}
+                                {textConfig?.label || 'Add text:'}
                             </label>
                             <textarea
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none resize-y"
                                 rows={4}
-                                placeholder={inputTextConfig?.placeholder || 'Enter your text here...'}
-                                onChange={(e) => handleChange('inputText', e.target.value)}
-                                value={values.inputText !== undefined ? String(values.inputText) : ''}
+                                placeholder={textConfig?.placeholder || 'Enter your text here...'}
+                                onChange={(e) => handleChange('text', e.target.value)}
+                                value={values.text !== undefined ? String(values.text) : ''}
                             />
                         </div>
                         {/* Выбор режима регистра */}
-                        {caseModeConfig && (
+                        {modeConfig && (
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    {caseModeConfig.label || 'Convert to:'}
+                                    {modeConfig.label || 'To format:'}
                                 </label>
                                 <select
                                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                    onChange={(e) => handleChange('caseMode', e.target.value)}
-                                    value={values.caseMode !== undefined ? String(values.caseMode) : (config.inputs.find((i: any) => i.key === 'caseMode')?.default || 'lowercase')}
+                                    onChange={(e) => handleChange('mode', e.target.value)}
+                                    value={values.mode !== undefined ? String(values.mode) : (config.inputs.find((i: any) => i.key === 'mode')?.default || 'lower')}
                                 >
-                                    {caseModeOptions.map((option: any) => (
+                                    {modeOptions.map((option: any) => (
                                         <option key={option.value} value={option.value}>
                                             {option.label}
                                         </option>
