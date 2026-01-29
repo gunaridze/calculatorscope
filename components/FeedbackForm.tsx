@@ -82,14 +82,16 @@ export default function FeedbackForm({ lang, translations }: Props) {
     return (
         <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
             {/* Header */}
-            <div className="bg-blue-600 px-6 py-4 rounded-t-lg">
-                <h2 className="text-white font-bold text-xl">
+            <div className="bg-blue-600 px-5 py-3 rounded-t-lg">
+                <h2 className="text-white font-bold text-lg">
                     {translations.title}
                 </h2>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Form Container - как в калькуляторе */}
+            <div className="bg-white border border-gray-200 border-t-0 p-5">
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name Field */}
                 <div>
                     <label htmlFor="name" className="block text-gray-900 font-medium mb-1">
@@ -172,22 +174,25 @@ export default function FeedbackForm({ lang, translations }: Props) {
                         {submitMessage}
                     </div>
                 )}
-            </form>
+                </form>
 
-            {/* Logo - как в виджетах калькуляторов */}
-            <div className="mt-5 text-right" style={{ marginTop: '20px' }}>
-                <Link 
-                    href={`/${lang}`} 
-                    className="logo-widget inline-block"
-                >
-                    <Image
-                        src="/calculatorscope-logo.svg"
-                        alt="Calculator Scope"
-                        width={90}
-                        height={90}
-                        className="object-contain inline-block"
-                    />
-                </Link>
+                {/* Logo - как в виджетах калькуляторов */}
+                <div className="p-4" style={{ paddingBottom: '20px' }}>
+                    <div className="mt-5 text-right" style={{ marginTop: '20px' }}>
+                        <Link 
+                            href={`/${lang}`} 
+                            className="logo-widget inline-block"
+                        >
+                            <Image
+                                src="/calculatorscope-logo.svg"
+                                alt="Calculator Scope"
+                                width={90}
+                                height={90}
+                                className="object-contain inline-block"
+                            />
+                        </Link>
+                    </div>
+                </div>
             </div>
         </div>
     )
