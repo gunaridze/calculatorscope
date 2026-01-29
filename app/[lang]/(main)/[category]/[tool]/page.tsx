@@ -224,6 +224,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     const introText = dataAny.intro_text
     const shortAnswer = dataAny.short_answer
     const keyPointsJson = dataAny.key_points_json
+    const howtoJson = dataAny.howto_json
     const formulaMd = dataAny.formula_md
     const assumptionsMd = dataAny.assumptions_md
     const faqJson = dataAny.faq_json
@@ -367,7 +368,21 @@ export default async function ToolPage({ params, searchParams }: Props) {
     // Подготавливаем контент для мобильной версии (с маркерами секций для баннеров)
     const contentSections: Array<{ node: React.ReactNode, sectionType?: string }> = []
 
-    // Intro text
+    // 1. Short Answer Section (первый)
+    if (shortAnswer) {
+        contentSections.push({
+            node: (
+                <div 
+                    key="short-answer" 
+                    className="mb-4 prose lg:prose-xl"
+                    dangerouslySetInnerHTML={{ __html: shortAnswer }}
+                />
+            ),
+            sectionType: 'short_answer'
+        })
+    }
+
+    // 2. Intro text (второй)
     if (data.intro_text) {
         contentSections.push({
             node: (
@@ -380,7 +395,72 @@ export default async function ToolPage({ params, searchParams }: Props) {
         })
     }
 
-    // Рендерим content_blocks_json (если есть)
+    // 3. Key Points Section (третий)
+    if (keyPointsJson) {
+        try {
+            // @ts-ignore
+            const keyPoints = typeof keyPointsJson === 'string'
+                ? JSON.parse(keyPointsJson)
+                : keyPointsJson
+            
+            if (Array.isArray(keyPoints) && keyPoints.length > 0) {
+                contentSections.push({
+                    node: (
+                        <section key="key-points" id="key-points" className="mb-12 prose lg:prose-xl">
+                            <ul className="list-disc list-inside space-y-2">
+                                {keyPoints.map((point: string, idx: number) => (
+                                    <li 
+                                        key={idx} 
+                                        className="text-gray-700"
+                                        dangerouslySetInnerHTML={{ __html: point }}
+                                    />
+                                ))}
+                            </ul>
+                        </section>
+                    ),
+                    sectionType: 'key_points'
+                })
+            }
+        } catch (e) {
+            console.error('Error parsing key_points_json:', e)
+        }
+    }
+
+    // 4. How To Section (четвертый)
+    if (howtoJson) {
+        try {
+            // @ts-ignore
+            const howto = typeof howtoJson === 'string'
+                ? JSON.parse(howtoJson)
+                : howtoJson
+            
+            if (Array.isArray(howto) && howto.length > 0) {
+                contentSections.push({
+                    node: (
+                        <section key="howto" id="howto" className="mb-12 prose lg:prose-xl">
+                            <h2 className="text-3xl font-bold mb-6 mt-8">How To</h2>
+                            <div className="space-y-6">
+                                {howto.map((item: { question: string; answer: string }, idx: number) => (
+                                    <div key={idx} className="bg-gray-50 p-6 rounded-lg">
+                                        <h3 className="text-xl font-semibold mb-3">{item.question}</h3>
+                                        <div 
+                                            className="prose lg:prose-xl"
+                                            dangerouslySetInnerHTML={{ __html: item.answer }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    ),
+                    sectionType: 'howto'
+                })
+            }
+        } catch (e) {
+            console.error('Error parsing howto_json:', e)
+        }
+    }
+
+    // Рендерим content_blocks_json (если есть) - после основных секций
     if (contentBlocks.length > 0) {
         contentBlocks.forEach((block, idx) => {
             switch (block.type) {
@@ -432,51 +512,6 @@ export default async function ToolPage({ params, searchParams }: Props) {
                     break
             }
         })
-    }
-
-    // Short Answer Section
-    if (shortAnswer) {
-        contentSections.push({
-            node: (
-                <div 
-                    key="short-answer" 
-                    className="mb-4 prose lg:prose-xl"
-                    dangerouslySetInnerHTML={{ __html: shortAnswer }}
-                />
-            ),
-            sectionType: 'short_answer'
-        })
-    }
-
-    // Key Points Section
-    if (keyPointsJson) {
-        try {
-            // @ts-ignore
-            const keyPoints = typeof keyPointsJson === 'string'
-                ? JSON.parse(keyPointsJson)
-                : keyPointsJson
-            
-            if (Array.isArray(keyPoints) && keyPoints.length > 0) {
-                contentSections.push({
-                    node: (
-                        <section key="key-points" id="key-points" className="mb-12 prose lg:prose-xl">
-                            <ul className="list-disc list-inside space-y-2">
-                                {keyPoints.map((point: string, idx: number) => (
-                                    <li 
-                                        key={idx} 
-                                        className="text-gray-700"
-                                        dangerouslySetInnerHTML={{ __html: point }}
-                                    />
-                                ))}
-                            </ul>
-                        </section>
-                    ),
-                    sectionType: 'key_points'
-                })
-            }
-        } catch (e) {
-            console.error('Error parsing key_points_json:', e)
-        }
     }
 
     // Examples Section
