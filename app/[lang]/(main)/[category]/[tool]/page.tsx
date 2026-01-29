@@ -437,20 +437,17 @@ export default async function ToolPage({ params, searchParams }: Props) {
             if (Array.isArray(howto) && howto.length > 0) {
                 contentSections.push({
                     node: (
-                        <section key="howto" id="howto" className="mb-12 prose lg:prose-xl">
-                            <h2 className="text-3xl font-bold mb-6 mt-8">How To</h2>
-                            <div className="space-y-6">
-                                {howto.map((item: { question: string; answer: string }, idx: number) => (
-                                    <div key={idx} className="bg-gray-50 p-6 rounded-lg">
-                                        <h3 className="text-xl font-semibold mb-3">{item.question}</h3>
-                                        <div 
-                                            className="prose lg:prose-xl"
-                                            dangerouslySetInnerHTML={{ __html: item.answer }}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
+                        <div key="howto" className="mb-4 prose lg:prose-xl">
+                            {howto.map((item: { question: string; answer: string }, idx: number) => (
+                                <div key={idx} className="mb-6">
+                                    <h3 className="text-xl font-semibold mb-3 text-gray-900">{item.question}</h3>
+                                    <div 
+                                        className="text-gray-700"
+                                        dangerouslySetInnerHTML={{ __html: item.answer }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     ),
                     sectionType: 'howto'
                 })
