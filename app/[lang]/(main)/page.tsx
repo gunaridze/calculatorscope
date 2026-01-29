@@ -163,6 +163,7 @@ export default async function HomePage({ params }: Props) {
             },
             select: {
                 id: true,
+                parent_id: true,
                 sort_order: true,
                 i18n: {
                     where: { lang },
@@ -230,6 +231,45 @@ export default async function HomePage({ params }: Props) {
             })
             .slice(0, 21) // Максимум 21 категория для сетки
 
+        // Популярные категории с инструментами: каждый инструмент только в конечной категории (не дублируем в родителе)
+        const popCats = popularCategories as unknown as Array<{ id: string; parent_id: string | null; tools: Array<{ tool: { id: string; i18n: any[] } }>; i18n: any[] }>
+        const getDescendantIds = (categoryId: string): Set<string> => {
+            const out = new Set<string>()
+            const stack = popCats.filter((c) => c.parent_id === categoryId).map((c) => c.id)
+            while (stack.length) {
+                const id = stack.pop()!
+                if (out.has(id)) continue
+                out.add(id)
+                for (const c of popCats) {
+                    if (c.parent_id === id) stack.push(c.id)
+                }
+            }
+            return out
+        }
+        const categoriesWithPopularTools = popCats
+            .map((cat) => {
+                const catData = cat.i18n[0]
+                if (!catData) return null
+                const descendantIds = getDescendantIds(cat.id)
+                const toolIdsInDescendants = new Set<string>()
+                for (const c of popCats) {
+                    if (descendantIds.has(c.id)) {
+                        for (const { tool } of c.tools) {
+                            if (tool.i18n?.length > 0 && (tool.i18n[0] as any)?.is_popular === 1) {
+                                toolIdsInDescendants.add(tool.id)
+                            }
+                        }
+                    }
+                }
+                const popularTools = cat.tools
+                    .filter(({ tool }: any) => tool.i18n?.length > 0 && (tool.i18n[0] as any)?.is_popular === 1 && !toolIdsInDescendants.has(tool.id))
+                    .slice(0, 3)
+                if (popularTools.length === 0) return null
+                return { cat, catData, popularTools }
+            })
+            .filter(Boolean)
+            .slice(0, 6)
+
         return (
             <>
                 <Header 
@@ -272,68 +312,41 @@ export default async function HomePage({ params }: Props) {
                                 </div>
                                 
                                 {/* Популярные категории - начинаются через 20px после последнего ряда */}
-                                {(() => {
-                                    // Фильтруем категории, у которых есть популярные инструменты
-                                    const categoriesWithPopularTools = popularCategories
-                                        .map((cat) => {
-                                            const catData = (cat as any).i18n[0]
-                                            if (!catData) return null
-
-                                            const popularTools = (cat as any).tools
-                                                .filter(({ tool }: any) => tool.i18n.length > 0 && (tool.i18n[0] as any)?.is_popular === 1)
-                                                .slice(0, 3)
-
-                                            if (popularTools.length === 0) return null
-
-                                            return { cat, catData, popularTools }
-                                        })
-                                        .filter(Boolean)
-                                        .slice(0, 6)
-
-                                    // Показываем блок только если есть категории с популярными инструментами
-                                    if (categoriesWithPopularTools.length === 0) return null
-
-                                    return (
-                                        <div className="mt-[20px]">
-                                            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                                                {content.body_h2_2 || 'Popular Calculators'}
-                                            </h2>
-                                            <div className="grid grid-cols-3 gap-6">
-                                                {categoriesWithPopularTools.map(({ cat, catData, popularTools }: any) => (
-                                                    <div key={cat.id} className="bg-[#eff6ff] border border-gray-200 rounded-lg">
-                                                        {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
-                                                        <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
-                                                            {catData.name}
-                                                        </h3>
-                                                        
-                                                        {/* Три ряда со ссылками на инструменты */}
-                                                        <div className="px-[50px] pb-4 space-y-2">
-                                                            {popularTools.map(({ tool }: any) => {
-                                                                const toolData = tool.i18n[0]
-                                                                const categorySlug = catData.slug
-                                                                if (!toolData) return null
-                                                                
-                                                                return (
-                                                                    <div key={tool.id}>
-                                                                        <Link
-                                                                            href={`/${lang}/${categorySlug}/${toolData.slug}`}
-                                                                            className="block text-blue-600 hover:text-blue-800 hover:underline"
-                                                                        >
-                                                                            {/* h1 из tool_i18n размечается как h3 */}
-                                                                            <h3 className="font-medium text-center">
-                                                                                {toolData.h1 || toolData.title}
-                                                                            </h3>
-                                                                        </Link>
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
+                                {categoriesWithPopularTools.length > 0 && (
+                                    <div className="mt-[20px]">
+                                        <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                                            {content.body_h2_2 || 'Popular Calculators'}
+                                        </h2>
+                                        <div className="grid grid-cols-3 gap-6">
+                                            {categoriesWithPopularTools.map(({ cat, catData, popularTools }: any) => (
+                                                <div key={cat.id} className="bg-[#eff6ff] border border-gray-200 rounded-lg">
+                                                    <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
+                                                        {catData.name}
+                                                    </h3>
+                                                    <div className="px-[50px] pb-4 space-y-2">
+                                                        {popularTools.map(({ tool }: any) => {
+                                                            const toolData = tool.i18n[0]
+                                                            const categorySlug = catData.slug
+                                                            if (!toolData) return null
+                                                            return (
+                                                                <div key={tool.id}>
+                                                                    <Link
+                                                                        href={`/${lang}/${categorySlug}/${toolData.slug}`}
+                                                                        className="block text-blue-600 hover:text-blue-800 hover:underline"
+                                                                    >
+                                                                        <h3 className="font-medium text-center">
+                                                                            {toolData.h1 || toolData.title}
+                                                                        </h3>
+                                                                    </Link>
+                                                                </div>
+                                                            )
+                                                        })}
                                                     </div>
-                                                ))}
-                                            </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                    )
-                                })()}
+                                    </div>
+                                )}
                             </div>
                             
                             {/* Правая колонка: Баннеры (независимая высота) */}
@@ -398,54 +411,38 @@ export default async function HomePage({ params }: Props) {
                             })}
                             
                             {/* Мобильная версия: Популярные калькуляторы */}
-                            {popularCategories.length > 0 && (
+                            {categoriesWithPopularTools.length > 0 && (
                                 <div className="mt-5">
                                     <h2 className="text-3xl font-bold text-gray-900 mb-6">
                                         {content.body_h2_2 || 'Popular Calculators'}
                                     </h2>
                                     <div className="grid grid-cols-1 gap-6">
-                                        {popularCategories.slice(0, 6).map((cat) => {
-                                            const catData = (cat as any).i18n[0]
-                                            if (!catData) return null
-
-                                            const popularTools = (cat as any).tools
-                                                .filter(({ tool }: any) => tool.i18n.length > 0 && (tool.i18n[0] as any)?.is_popular === 1)
-                                                .slice(0, 3)
-
-                                            if (popularTools.length === 0) return null
-
-                                            return (
-                                                <div key={cat.id} className="bg-[#eff6ff] border border-gray-200 rounded-lg">
-                                                    {/* Название категории: по центру сверху, отступ 10px, жирный, отступы минимум 50px */}
-                                                    <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
-                                                        {catData.name}
-                                                    </h3>
-                                                    
-                                                    {/* Три ряда со ссылками на инструменты */}
-                                                    <div className="px-[50px] pb-4 space-y-2">
-                                                        {popularTools.map(({ tool }: any) => {
-                                                            const toolData = tool.i18n[0]
-                                                            const categorySlug = catData.slug
-                                                            if (!toolData) return null
-                                                            
-                                                            return (
-                                                                <div key={tool.id}>
-                                                                    <Link
-                                                                        href={`/${lang}/${categorySlug}/${toolData.slug}`}
-                                                                        className="block text-blue-600 hover:text-blue-800 hover:underline"
-                                                                    >
-                                                                        {/* h1 из tool_i18n размечается как h3 */}
-                                                                        <h3 className="font-medium text-center">
-                                                                            {toolData.h1 || toolData.title}
-                                                                        </h3>
-                                                                    </Link>
-                                                                </div>
-                                                            )
-                                                        })}
-                                                    </div>
+                                        {categoriesWithPopularTools.map(({ cat, catData, popularTools }: any) => (
+                                            <div key={cat.id} className="bg-[#eff6ff] border border-gray-200 rounded-lg">
+                                                <h3 className="font-bold text-center pt-[10px] text-lg px-[50px]">
+                                                    {catData.name}
+                                                </h3>
+                                                <div className="px-[50px] pb-4 space-y-2">
+                                                    {popularTools.map(({ tool }: any) => {
+                                                        const toolData = tool.i18n[0]
+                                                        const categorySlug = catData.slug
+                                                        if (!toolData) return null
+                                                        return (
+                                                            <div key={tool.id}>
+                                                                <Link
+                                                                    href={`/${lang}/${categorySlug}/${toolData.slug}`}
+                                                                    className="block text-blue-600 hover:text-blue-800 hover:underline"
+                                                                >
+                                                                    <h3 className="font-medium text-center">
+                                                                        {toolData.h1 || toolData.title}
+                                                                    </h3>
+                                                                </Link>
+                                                            </div>
+                                                        )
+                                                    })}
                                                 </div>
-                                            )
-                                        })}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
