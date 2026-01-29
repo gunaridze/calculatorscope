@@ -49,7 +49,19 @@ export default function TextCaseConverterWidget({
     const modeConfig = getFieldConfig('mode')
 
     // Опции для режимов
-    const modeOptions = modeConfig?.options || []
+    let modeOptions = modeConfig?.options || []
+    
+    // Fallback: если options не загрузились, используем стандартные
+    if (!modeOptions || modeOptions.length === 0) {
+        modeOptions = [
+            { value: 'lower', label: 'lower case' },
+            { value: 'upper', label: 'UPPER CASE' },
+            { value: 'title', label: 'Title Case' },
+            { value: 'sentence', label: 'Sentence case' },
+            { value: 'alternating', label: 'aLtErNaTiNg cAsE' },
+            { value: 'random', label: 'ranDOM cAsE' }
+        ]
+    }
 
     // Инициализация значений
     const getInitialValues = (): JsonEngineInput => {
@@ -217,6 +229,32 @@ export default function TextCaseConverterWidget({
                             </button>
                         )
                     })}
+                </div>
+
+                {/* Обязательный блок с ссылками */}
+                <div className="mt-5">
+                    <Link 
+                        href={`/${lang}/contact`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline text-sm block"
+                    >
+                        {translations.suggest}
+                    </Link>
+                    <button
+                        onClick={handleSave}
+                        className="text-blue-600 hover:text-blue-800 hover:underline text-sm block mt-2 cursor-pointer text-left"
+                        type="button"
+                        style={{ background: 'none', border: 'none', padding: 0 }}
+                    >
+                        {translations.downloadWidget}
+                    </button>
+                    {toolSlug && (
+                        <Link
+                            href={`/${lang}/widget/${toolSlug}`}
+                            className="text-blue-600 hover:text-blue-800 hover:underline text-sm block text-center mt-[50px]"
+                        >
+                            {translations.getWidget}
+                        </Link>
+                    )}
                 </div>
 
                 {/* Logo */}
