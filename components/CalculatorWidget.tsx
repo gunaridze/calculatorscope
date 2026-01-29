@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { calculate, type JsonEngineConfig, type JsonEngineInput, type JsonEngineOutput } from '@/core/engines/json'
+import TextCaseConverterWidget from './tools/TextCaseConverterWidget'
 
 type Props = {
     config: JsonEngineConfig
@@ -53,6 +54,22 @@ export default function CalculatorWidget({
     widgetPageSlug,
     toolSlug
 }: Props) {
+    // Для tool_id=1002 используем специальный компонент TextCaseConverterWidget
+    if (toolId === '1002' || String(toolId) === '1002') {
+        return (
+            <TextCaseConverterWidget
+                config={config}
+                interface={ui}
+                initialValues={initialValues}
+                h1={h1}
+                lang={lang}
+                toolId={toolId}
+                h1En={h1En}
+                translations={translations}
+                toolSlug={toolSlug}
+            />
+        )
+    }
     // Храним значения всех инпутов
     // Инициализируем с default значениями из config
     const getInitialValues = (): JsonEngineInput => {
