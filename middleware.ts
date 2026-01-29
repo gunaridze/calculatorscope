@@ -34,7 +34,10 @@ export async function middleware(request: NextRequest) {
 
     // 1. Игнорируем служебные файлы и API
     if (reservedPaths.some((path) => pathname.startsWith(path)) || pathname.includes('.')) {
-        return NextResponse.next()
+        const response = NextResponse.next()
+        // Для служебных путей используем default locale
+        response.headers.set('x-lang', defaultLocale)
+        return response
     }
 
     // 2. Явная обработка корневого пути
@@ -64,11 +67,23 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(redirectUrl, 307) // 307 Temporary Redirect для SEO
     }
 
-    // 5. Обработка попапа: /{lang}/{tool-slug}?do=pop
+    // 5. Извлекаем язык из пути и добавляем в cookies для использования в layout
+    const pathParts = pathname.split('/').filter(Boolean)
+    const lang = pathParts[0] && locales.includes(pathParts[0]) ? pathParts[0] : defaultLocale
+    
+    // Создаем response и добавляем cookie с языком для использования в layout
+    const response = NextResponse.next()
+    response.cookies.set('x-lang', lang, {
+        path: '/',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365 // 1 год
+    })
+    
+    return response
+
+    // 6. Обработка попапа: /{lang}/{tool-slug}?do=pop
     // Попап обрабатывается на уровне страницы [category]/[tool], где category может быть любым
     // Если это попап, страница сама определит правильный category или покажет попап без category
-    
-    return NextResponse.next()
 }
 
 export const config = {

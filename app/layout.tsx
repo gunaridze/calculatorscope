@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,13 +32,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+// Поддерживаемые языки
+const locales = ['en', 'de', 'es', 'fr', 'it', 'pl', 'ru', 'lv']
+const defaultLocale = 'en'
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Получаем язык из cookies, установленных middleware
+  const cookieStore = await cookies()
+  const lang = cookieStore.get('x-lang')?.value || defaultLocale
+  
   return (
-    <html lang="en">
+    <html lang={lang}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
