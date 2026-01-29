@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { calculate, type JsonEngineConfig, type JsonEngineInput, type JsonEngineOutput } from '@/core/engines/json'
+import { getTextCaseConverterTranslations, getTextCaseConverterModeOptions } from '@/lib/text-case-converter-translations'
 
 type Props = {
     config: JsonEngineConfig
@@ -48,20 +49,13 @@ export default function TextCaseConverterWidget({
     const textConfig = getFieldConfig('text')
     const modeConfig = getFieldConfig('mode')
 
-    // Опции для режимов
-    let modeOptions = modeConfig?.options || []
-    
-    // Fallback: если options не загрузились, используем стандартные
-    if (!modeOptions || modeOptions.length === 0) {
-        modeOptions = [
-            { value: 'lower', label: 'lower case' },
-            { value: 'upper', label: 'UPPER CASE' },
-            { value: 'title', label: 'Title Case' },
-            { value: 'sentence', label: 'Sentence case' },
-            { value: 'alternating', label: 'aLtErNaTiNg cAsE' },
-            { value: 'random', label: 'ranDOM cAsE' }
-        ]
-    }
+    // Переводы виджета (приоритет — локальные переводы)
+    const t = getTextCaseConverterTranslations(lang)
+
+    // Опции для режимов: из локальных переводов или из БД
+    let modeOptions = modeConfig?.options?.length
+        ? modeConfig.options
+        : getTextCaseConverterModeOptions(lang)
 
     // Инициализация значений
     const getInitialValues = (): JsonEngineInput => {
@@ -171,7 +165,7 @@ export default function TextCaseConverterWidget({
                     <textarea
                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none resize-y"
                         rows={8}
-                        placeholder={textConfig?.placeholder || 'Добавьте текст...'}
+                        placeholder={textConfig?.placeholder ?? t.text_label}
                         value={displayText}
                         onChange={(e) => handleTextChange(e.target.value)}
                     />
@@ -183,30 +177,26 @@ export default function TextCaseConverterWidget({
                         onClick={handleClear}
                         className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors text-sm"
                     >
-                        {translations.clear}
+                        {t.actions.clear}
                     </button>
                     <button
                         onClick={handleSave}
                         className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors text-sm"
                     >
-                        Save
+                        {t.actions.save}
                     </button>
                     <button
                         onClick={handleCopy}
-                        className={`flex-1 font-medium py-2 px-4 rounded-md transition-colors text-sm ${
-                            copied
-                                ? 'bg-green-600 text-white'
-                                : 'bg-blue-600 hover:bg-blue-700 text-white'
-                        }`}
+                        className="flex-1 font-medium py-2 px-4 rounded-md transition-colors text-sm bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                        {copied ? 'Copied!' : translations.copy}
+                        {copied ? '✓' : t.actions.copy}
                     </button>
                 </div>
 
                 {/* Заголовок "В формат:" */}
                 <div className="mb-3">
                     <label className="block text-sm font-medium text-gray-700">
-                        {modeConfig?.label || 'To format:'}
+                        {modeConfig?.label ?? t.to_format_label}
                     </label>
                 </div>
 

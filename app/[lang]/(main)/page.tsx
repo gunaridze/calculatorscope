@@ -143,14 +143,21 @@ export default async function HomePage({ params }: Props) {
             orderBy: { sort_order: 'asc' }
         })
 
-        // Получаем популярные категории с инструментами (для секции "Popular Calculators")
+        // Получаем категории, у которых есть хотя бы один популярный инструмент (для секции "Popular Calculators")
+        // Показываем категорию, если в ней есть инструмент с tool_i18n.is_popular=1 (не требуем category_i18n.is_popular)
         const popularCategories = await prisma.category.findMany({
             where: {
-                i18n: {
+                tools: {
                     some: {
-                        lang,
-                        // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
-                        is_popular: 1
+                        tool: {
+                            i18n: {
+                                some: {
+                                    lang,
+                                    // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
+                                    is_popular: 1
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -158,8 +165,7 @@ export default async function HomePage({ params }: Props) {
                 id: true,
                 sort_order: true,
                 i18n: {
-                    // @ts-ignore - TypeScript не всегда правильно выводит типы из Prisma
-                    where: { lang, is_popular: 1 },
+                    where: { lang },
                     select: {
                         slug: true,
                         name: true,
@@ -171,7 +177,7 @@ export default async function HomePage({ params }: Props) {
                             select: {
                                 id: true,
                                 i18n: {
-                                    where: { 
+                                    where: {
                                         lang,
                                         is_popular: 1
                                     } as any
