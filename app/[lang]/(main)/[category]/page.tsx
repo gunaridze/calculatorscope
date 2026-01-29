@@ -4,11 +4,13 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import AdBanner from '@/components/AdBanner'
 import { getTranslations } from '@/lib/translations'
+import { getFeedbackTranslations } from '@/lib/feedback-translations'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 import CalculatorWidget from '@/components/CalculatorWidget'
 import PWASetup from '@/components/PWASetup'
+import FeedbackForm from '@/components/FeedbackForm'
 
 type Props = {
     params: Promise<{ lang: string; category: string }>
@@ -242,6 +244,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     // Проверяем, не является ли это статической страницей
     const staticPage = await getPageBySlug(slug, lang)
     if (staticPage && staticPage.page.status === 'published') {
+        // Проверяем, является ли это страницей contact
+        const isContactPage = staticPage.page.code === 'contact'
+        const feedbackTranslations = getFeedbackTranslations(lang)
+        
         // Это статическая страница - рендерим её
         // Получаем данные для рекламных баннеров (используем те же ссылки что и на главной)
         let content: {
@@ -356,6 +362,13 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                     ))}
                                 </div>
                             )}
+                            
+                            {/* Feedback Form для страницы contact */}
+                            {isContactPage && (
+                                <div className="mt-8">
+                                    <FeedbackForm lang={lang} translations={feedbackTranslations} />
+                                </div>
+                            )}
                         </div>
                         
                         {/* Правая колонка: Баннеры (не отображается на мобильных) */}
@@ -409,6 +422,13 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                         )}
                                     </section>
                                 ))}
+                            </div>
+                        )}
+                        
+                        {/* Feedback Form для страницы contact */}
+                        {isContactPage && (
+                            <div className="mt-8">
+                                <FeedbackForm lang={lang} translations={feedbackTranslations} />
                             </div>
                         )}
                     </div>
