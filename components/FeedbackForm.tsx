@@ -80,7 +80,7 @@ export default function FeedbackForm({ lang, translations }: Props) {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-2xl mx-auto" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
             {/* Header */}
             <div className="bg-blue-600 px-6 py-4 rounded-t-lg">
                 <h2 className="text-white font-bold text-xl">
@@ -175,22 +175,18 @@ export default function FeedbackForm({ lang, translations }: Props) {
             </form>
 
             {/* Logo - как в виджетах калькуляторов */}
-            <div className="px-6 pb-4 flex justify-end">
+            <div className="mt-5 text-right" style={{ marginTop: '20px' }}>
                 <Link 
                     href={`/${lang}`} 
-                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                    className="logo-widget inline-block"
                 >
                     <Image
                         src="/calculatorscope-logo.svg"
                         alt="Calculator Scope"
-                        width={20}
-                        height={20}
-                        className="w-5 h-5 object-contain"
+                        width={90}
+                        height={90}
+                        className="object-contain inline-block"
                     />
-                    <div className="flex flex-col">
-                        <span className="font-medium">Calculator Scope</span>
-                        <span className="text-xs text-gray-500">Online Calculators for Everything</span>
-                    </div>
                 </Link>
             </div>
         </div>

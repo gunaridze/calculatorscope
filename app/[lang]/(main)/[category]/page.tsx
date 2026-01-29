@@ -332,106 +332,208 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                     }}
                 />
                 <main className="container mx-auto px-4 py-12">
-                    {/* Desktop: Двухколоночная сетка */}
-                    <div className="hidden lg:flex lg:gap-[20px] lg:items-start">
-                        {/* Левая колонка: Контент */}
-                        <div className="flex-1">
-                            {/* H1 */}
-                            <h1 className="text-4xl font-bold text-gray-900 mb-6">
-                                {staticPage.h1}
-                            </h1>
-                            
-                            {/* Body content */}
-                            {bodyContent && bodyContent}
-                            {bodyContentSections.length > 0 && (
-                                <div className="prose lg:prose-xl max-w-none">
-                                    {bodyContentSections.map((section, index) => (
-                                        <section key={index} className={index > 0 ? 'mt-8' : ''}>
-                                            {section.heading && (
-                                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                    {section.heading}
-                                                </h2>
-                                            )}
-                                            {section.html && (
-                                                <div 
-                                                    className="prose"
-                                                    dangerouslySetInnerHTML={{ __html: section.html }}
-                                                />
-                                            )}
-                                        </section>
-                                    ))}
+                    {/* H1 */}
+                    <h1 className="text-4xl font-bold text-gray-900 mb-6">
+                        {staticPage.h1}
+                    </h1>
+
+                    {/* Desktop Layout для contact: Float Layout как у калькулятора */}
+                    {isContactPage ? (
+                        <>
+                            <div className="hidden lg:block">
+                                <div className="overflow-hidden">
+                                    {/* FeedbackForm (Left Float) - первая колонка */}
+                                    <div className="float-left mr-5" style={{ width: '380px', flexShrink: 0 }}>
+                                        <FeedbackForm lang={lang} translations={feedbackTranslations} />
+                                    </div>
+
+                                    {/* Сайдбар с рекламой (Right Float) - четвертая колонка */}
+                                    <div className="float-right w-[300px] space-y-5 ml-5">
+                                        <AdBanner 
+                                            lang={lang} 
+                                            adNumber={1} 
+                                            href={content.ad_link_1}
+                                        />
+                                        <AdBanner 
+                                            lang={lang} 
+                                            adNumber={2} 
+                                            href={content.ad_link_2}
+                                        />
+                                        <AdBanner 
+                                            lang={lang} 
+                                            adNumber={3} 
+                                            href={content.ad_link_3}
+                                        />
+                                        <AdBanner 
+                                            lang={lang} 
+                                            adNumber={4} 
+                                            href={content.ad_link_4}
+                                        />
+                                    </div>
+
+                                    {/* Текстовый контент (обтекает форму и сайдбар) - колонки 2-3 */}
+                                    <div className="prose lg:prose-xl max-w-none">
+                                        {bodyContent && bodyContent}
+                                        {bodyContentSections.length > 0 && (
+                                            <>
+                                                {bodyContentSections.map((section, index) => (
+                                                    <section key={index} className={index > 0 ? 'mt-8' : ''}>
+                                                        {section.heading && (
+                                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                                {section.heading}
+                                                            </h2>
+                                                        )}
+                                                        {section.html && (
+                                                            <div 
+                                                                className="prose"
+                                                                dangerouslySetInnerHTML={{ __html: section.html }}
+                                                            />
+                                                        )}
+                                                    </section>
+                                                ))}
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* Clear float в конце */}
+                                    <div className="clear-both"></div>
                                 </div>
-                            )}
-                            
-                            {/* Feedback Form для страницы contact */}
-                            {isContactPage && (
-                                <div className="mt-8">
+                            </div>
+
+                            {/* Mobile Layout для contact */}
+                            <div className="lg:hidden">
+                                {/* FeedbackForm */}
+                                <div className="mb-8">
                                     <FeedbackForm lang={lang} translations={feedbackTranslations} />
                                 </div>
-                            )}
-                        </div>
-                        
-                        {/* Правая колонка: Баннеры (не отображается на мобильных) */}
-                        <div className="w-[300px] space-y-5" style={{ marginTop: '21px' }}>
-                            <AdBanner 
-                                lang={lang} 
-                                adNumber={1} 
-                                href={content.ad_link_1}
-                            />
-                            <AdBanner 
-                                lang={lang} 
-                                adNumber={2} 
-                                href={content.ad_link_2}
-                            />
-                            <AdBanner 
-                                lang={lang} 
-                                adNumber={3} 
-                                href={content.ad_link_3}
-                            />
-                            <AdBanner 
-                                lang={lang} 
-                                adNumber={4} 
-                                href={content.ad_link_4}
-                            />
-                        </div>
-                    </div>
 
-                    {/* Mobile: Только контент, без рекламной колонки */}
-                    <div className="lg:hidden">
-                        {/* H1 */}
-                        <h1 className="text-4xl font-bold text-gray-900 mb-6">
-                            {staticPage.h1}
-                        </h1>
-                        
-                        {/* Body content */}
-                        {bodyContent && bodyContent}
-                        {bodyContentSections.length > 0 && (
-                            <div className="prose lg:prose-xl max-w-none">
-                                {bodyContentSections.map((section, index) => (
-                                    <section key={index} className={index > 0 ? 'mt-8' : ''}>
-                                        {section.heading && (
-                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                                {section.heading}
-                                            </h2>
-                                        )}
-                                        {section.html && (
-                                            <div 
-                                                className="prose"
-                                                dangerouslySetInnerHTML={{ __html: section.html }}
-                                            />
-                                        )}
-                                    </section>
-                                ))}
+                                {/* Body content */}
+                                {bodyContent && bodyContent}
+                                {bodyContentSections.length > 0 && (
+                                    <div className="prose lg:prose-xl max-w-none">
+                                        {bodyContentSections.map((section, index) => (
+                                            <section key={index} className={index > 0 ? 'mt-8' : ''}>
+                                                {section.heading && (
+                                                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                        {section.heading}
+                                                    </h2>
+                                                )}
+                                                {section.html && (
+                                                    <div 
+                                                        className="prose"
+                                                        dangerouslySetInnerHTML={{ __html: section.html }}
+                                                    />
+                                                )}
+                                            </section>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Баннеры после текста на мобильных */}
+                                <div className="mt-8 space-y-5">
+                                    <AdBanner 
+                                        lang={lang} 
+                                        adNumber={1} 
+                                        href={content.ad_link_1}
+                                    />
+                                    <AdBanner 
+                                        lang={lang} 
+                                        adNumber={2} 
+                                        href={content.ad_link_2}
+                                    />
+                                    <AdBanner 
+                                        lang={lang} 
+                                        adNumber={3} 
+                                        href={content.ad_link_3}
+                                    />
+                                    <AdBanner 
+                                        lang={lang} 
+                                        adNumber={4} 
+                                        href={content.ad_link_4}
+                                    />
+                                </div>
                             </div>
-                        )}
-                        
-                        {/* Feedback Form для страницы contact */}
-                        {isContactPage && (
-                            <div className="mt-8">
-                                <FeedbackForm lang={lang} translations={feedbackTranslations} />
+                        </>
+                    ) : (
+                        <>
+                            {/* Desktop: Двухколоночная сетка для других страниц */}
+                            <div className="hidden lg:flex lg:gap-[20px] lg:items-start">
+                                {/* Левая колонка: Контент */}
+                                <div className="flex-1">
+                                    {/* Body content */}
+                                    {bodyContent && bodyContent}
+                                    {bodyContentSections.length > 0 && (
+                                        <div className="prose lg:prose-xl max-w-none">
+                                            {bodyContentSections.map((section, index) => (
+                                                <section key={index} className={index > 0 ? 'mt-8' : ''}>
+                                                    {section.heading && (
+                                                        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                            {section.heading}
+                                                        </h2>
+                                                    )}
+                                                    {section.html && (
+                                                        <div 
+                                                            className="prose"
+                                                            dangerouslySetInnerHTML={{ __html: section.html }}
+                                                        />
+                                                    )}
+                                                </section>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* Правая колонка: Баннеры (не отображается на мобильных) */}
+                                <div className="w-[300px] space-y-5" style={{ marginTop: '21px' }}>
+                                    <AdBanner 
+                                        lang={lang} 
+                                        adNumber={1} 
+                                        href={content.ad_link_1}
+                                    />
+                                    <AdBanner 
+                                        lang={lang} 
+                                        adNumber={2} 
+                                        href={content.ad_link_2}
+                                    />
+                                    <AdBanner 
+                                        lang={lang} 
+                                        adNumber={3} 
+                                        href={content.ad_link_3}
+                                    />
+                                    <AdBanner 
+                                        lang={lang} 
+                                        adNumber={4} 
+                                        href={content.ad_link_4}
+                                    />
+                                </div>
                             </div>
-                        )}
-                    </div>
+
+                            {/* Mobile: Только контент, без рекламной колонки */}
+                            <div className="lg:hidden">
+                                {/* Body content */}
+                                {bodyContent && bodyContent}
+                                {bodyContentSections.length > 0 && (
+                                    <div className="prose lg:prose-xl max-w-none">
+                                        {bodyContentSections.map((section, index) => (
+                                            <section key={index} className={index > 0 ? 'mt-8' : ''}>
+                                                {section.heading && (
+                                                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                                        {section.heading}
+                                                    </h2>
+                                                )}
+                                                {section.html && (
+                                                    <div 
+                                                        className="prose"
+                                                        dangerouslySetInnerHTML={{ __html: section.html }}
+                                                    />
+                                                )}
+                                            </section>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </main>
                 <Footer 
                     lang={lang} 
