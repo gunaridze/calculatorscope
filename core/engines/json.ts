@@ -1,5 +1,6 @@
 import * as math from 'mathjs'
 import { numberToWords, type NumberToWordsOptions } from '@/lib/tools/numberToWords'
+import { textCaseConverter, type TextCaseConverterOptions } from '@/lib/tools/textCaseConverter'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -41,6 +42,13 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
             language: language || 'en'
         }
         return numberToWords(value, options)
+    },
+    textCaseConverter: (params: Record<string, any>) => {
+        const { text, mode } = params
+        const options: TextCaseConverterOptions = {
+            mode: mode || 'lowercase'
+        }
+        return textCaseConverter(text, options)
     }
 }
 

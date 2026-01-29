@@ -1,0 +1,408 @@
+{
+  "config_json": {
+    "inputs": [
+      {
+        "key": "inputText",
+        "default": ""
+      },
+      {
+        "key": "caseMode",
+        "default": "lowercase"
+      }
+    ],
+    "functions": {
+      "textResult": {
+        "type": "function",
+        "functionName": "textCaseConverter",
+        "params": {
+          "text": "inputText",
+          "mode": "caseMode"
+        }
+      }
+    },
+    "outputs": [
+      {
+        "key": "textResult",
+        "precision": 0
+      }
+    ]
+  },
+  "inputs_json": {
+    "en": [
+      {
+        "name": "inputText",
+        "label": "Enter text:",
+        "type": "textarea",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "The text you want to convert to a different case.",
+        "placeholder": "Enter your text here..."
+      },
+      {
+        "name": "caseMode",
+        "label": "Convert to:",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Select the case format you want to apply to your text.",
+        "options": [
+          {
+            "value": "lowercase",
+            "label": "lower case"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "UPPER CASE"
+          },
+          {
+            "value": "Title Case",
+            "label": "Title Case"
+          },
+          {
+            "value": "Sentence case",
+            "label": "Sentence case"
+          },
+          {
+            "value": "Alternating case",
+            "label": "Alternating case"
+          },
+          {
+            "value": "Random case",
+            "label": "Random case"
+          }
+        ]
+      }
+    ],
+    "ru": [
+      {
+        "name": "inputText",
+        "label": "Введите текст:",
+        "type": "textarea",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Текст, который вы хотите преобразовать в другой регистр.",
+        "placeholder": "Введите ваш текст здесь..."
+      },
+      {
+        "name": "caseMode",
+        "label": "Преобразовать в:",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Выберите формат регистра, который вы хотите применить к вашему тексту.",
+        "options": [
+          {
+            "value": "lowercase",
+            "label": "все строчные"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "ВСЕ ЗАГЛАВНЫЕ"
+          },
+          {
+            "value": "Title Case",
+            "label": "Каждое Слово С Заглавной"
+          },
+          {
+            "value": "Sentence case",
+            "label": "Как в предложении"
+          },
+          {
+            "value": "Alternating case",
+            "label": "чЕрЕдОвАнИе рЕгИсТрОв"
+          },
+          {
+            "value": "Random case",
+            "label": "ПРоиЗВольнОЕ нАПисанИе"
+          }
+        ]
+      }
+    ],
+    "de": [
+      {
+        "name": "inputText",
+        "label": "Text eingeben:",
+        "type": "textarea",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Der Text, den Sie in einen anderen Fall umwandeln möchten.",
+        "placeholder": "Geben Sie Ihren Text hier ein..."
+      },
+      {
+        "name": "caseMode",
+        "label": "Umwandeln in:",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wählen Sie das Groß-/Kleinschreibungsformat aus, das Sie auf Ihren Text anwenden möchten.",
+        "options": [
+          {
+            "value": "lowercase",
+            "label": "kleinschreibung"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "GROSSSCHREIBUNG"
+          },
+          {
+            "value": "Title Case",
+            "label": "Wortanfänge Groß"
+          },
+          {
+            "value": "Sentence case",
+            "label": "Wie im Satz"
+          },
+          {
+            "value": "Alternating case",
+            "label": "wEcHsElNdE GrOß-/KlEiNsChReIbUnG"
+          },
+          {
+            "value": "Random case",
+            "label": "zUFäLlIge GroSS-/KlEinSCHreIBung"
+          }
+        ]
+      }
+    ],
+    "es": [
+      {
+        "name": "inputText",
+        "label": "Introduce el texto:",
+        "type": "textarea",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "El texto que deseas convertir a otro caso.",
+        "placeholder": "Introduce tu texto aquí..."
+      },
+      {
+        "name": "caseMode",
+        "label": "Convertir a:",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Selecciona el formato de caso que deseas aplicar a tu texto.",
+        "options": [
+          {
+            "value": "lowercase",
+            "label": "minúsculas"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "MAYÚSCULAS"
+          },
+          {
+            "value": "Title Case",
+            "label": "Mayúsculas Iniciales"
+          },
+          {
+            "value": "Sentence case",
+            "label": "Tipo oración"
+          },
+          {
+            "value": "Alternating case",
+            "label": "mAyÚsCuLaS AlTeRnAs"
+          },
+          {
+            "value": "Random case",
+            "label": "maYúScUlAs AleAtorIAs"
+          }
+        ]
+      }
+    ],
+    "fr": [
+      {
+        "name": "inputText",
+        "label": "Entrez le texte:",
+        "type": "textarea",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Le texte que vous souhaitez convertir dans un autre cas.",
+        "placeholder": "Entrez votre texte ici..."
+      },
+      {
+        "name": "caseMode",
+        "label": "Convertir en:",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Sélectionnez le format de casse que vous souhaitez appliquer à votre texte.",
+        "options": [
+          {
+            "value": "lowercase",
+            "label": "tout en minuscules"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "TOUT EN MAJUSCULES"
+          },
+          {
+            "value": "Title Case",
+            "label": "Chaque Mot En Majuscule"
+          },
+          {
+            "value": "Sentence case",
+            "label": "Type phrase"
+          },
+          {
+            "value": "Alternating case",
+            "label": "cAsSe aLtErNéE"
+          },
+          {
+            "value": "Random case",
+            "label": "Casse aléatOirE"
+          }
+        ]
+      }
+    ],
+    "it": [
+      {
+        "name": "inputText",
+        "label": "Inserisci il testo:",
+        "type": "textarea",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Il testo che desideri convertire in un altro caso.",
+        "placeholder": "Inserisci il tuo testo qui..."
+      },
+      {
+        "name": "caseMode",
+        "label": "Converti in:",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleziona il formato del caso che desideri applicare al tuo testo.",
+        "options": [
+          {
+            "value": "lowercase",
+            "label": "tutto minuscolo"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "TUTTO MAIUSCOLO"
+          },
+          {
+            "value": "Title Case",
+            "label": "Iniziali Maiuscole"
+          },
+          {
+            "value": "Sentence case",
+            "label": "Come in una frase"
+          },
+          {
+            "value": "Alternating case",
+            "label": "aLtErNaNzA MaIuScOlE/MiNuScOlE"
+          },
+          {
+            "value": "Random case",
+            "label": "MaiuSCOLE/miNuscOLE cASuali"
+          }
+        ]
+      }
+    ],
+    "pl": [
+      {
+        "name": "inputText",
+        "label": "Wprowadź tekst:",
+        "type": "textarea",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Tekst, który chcesz przekonwertować na inny przypadek.",
+        "placeholder": "Wprowadź swój tekst tutaj..."
+      },
+      {
+        "name": "caseMode",
+        "label": "Konwertuj na:",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wybierz format wielkości liter, który chcesz zastosować do swojego tekstu.",
+        "options": [
+          {
+            "value": "lowercase",
+            "label": "małe litery"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "WIELKIE LITERY"
+          },
+          {
+            "value": "Title Case",
+            "label": "Każdy Wyraz Wielką"
+          },
+          {
+            "value": "Sentence case",
+            "label": "Jak w zdaniu"
+          },
+          {
+            "value": "Alternating case",
+            "label": "nApRzEmIeNnA WiElKoŚć lItEr"
+          },
+          {
+            "value": "Random case",
+            "label": "lOsowa wieLKoŚĆ LiTeR"
+          }
+        ]
+      }
+    ],
+    "lv": [
+      {
+        "name": "inputText",
+        "label": "Ievadiet tekstu:",
+        "type": "textarea",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Teksts, kuru vēlaties pārveidot citā reģistrā.",
+        "placeholder": "Ievadiet savu tekstu šeit..."
+      },
+      {
+        "name": "caseMode",
+        "label": "Pārveidot uz:",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Izvēlieties reģistra formātu, kuru vēlaties piemērot savam tekstam.",
+        "options": [
+          {
+            "value": "lowercase",
+            "label": "mazie burti"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "LIELIE BURTI"
+          },
+          {
+            "value": "Title Case",
+            "label": "Katrs Vārds Ar Lielo"
+          },
+          {
+            "value": "Sentence case",
+            "label": "Teikuma reģistrs"
+          },
+          {
+            "value": "Alternating case",
+            "label": "mAiŅīGs bUrTu rEģIsTrS"
+          },
+          {
+            "value": "Random case",
+            "label": "NeJaUšS BurtU rEĢIStrs"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -179,8 +179,8 @@ export default function CalculatorWidget({
 
     // Главная функция расчета через единый движок
     const handleCalculate = () => {
-        // Удаляем пробелы из inputNumber перед расчетом
         const cleanedValues = { ...values }
+        // Удаляем пробелы из inputNumber перед расчетом (только для number-to-words)
         if (cleanedValues.inputNumber) {
             cleanedValues.inputNumber = String(cleanedValues.inputNumber).replace(/\s/g, '')
             setValues(cleanedValues)
@@ -316,6 +316,8 @@ export default function CalculatorWidget({
     }
 
     const inputNumberConfig = getFieldConfig('inputNumber')
+    const inputTextConfig = getFieldConfig('inputText') // Для text case converter
+    const caseModeConfig = getFieldConfig('caseMode') // Для text case converter
     const currencyConfig = getFieldConfig('currency')
     const vatRateConfig = getFieldConfig('vatRate')
     const textCaseConfig = getFieldConfig('textCase')
@@ -337,6 +339,13 @@ export default function CalculatorWidget({
         { value: 'Sentence case', label: translations.sentenceCaseOption }
     ]
 
+    // Опции для Case Mode (text case converter)
+    const caseModeOptions = caseModeConfig?.options || []
+
+    // Определяем, это text case converter или number-to-words
+    const isTextCaseConverter = config.inputs.some((inp: any) => inp.key === 'inputText')
+    const isNumberToWords = config.inputs.some((inp: any) => inp.key === 'inputNumber')
+
     // Получаем текст результата для отображения
     const resultText = result.textResult ? String(result.textResult) : ''
 
@@ -349,29 +358,71 @@ export default function CalculatorWidget({
 
             {/* Тело Калькулятора */}
             <div className="bg-white border border-gray-200 border-t-0 p-5 mx-auto relative" style={{ width: '100%', maxWidth: '400px' }}>
-                {/* Поле ввода числа */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {translations.inputLabel}
-                    </label>
-                    <input
-                        type="text"
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                        placeholder={inputNumberConfig?.placeholder || translations.inputPlaceholder}
-                        onChange={(e) => handleChange('inputNumber', e.target.value)}
-                        value={values.inputNumber !== undefined ? String(values.inputNumber) : ''}
-                    />
-                </div>
+                {/* Универсальное поле ввода - поддерживает text, textarea, select */}
+                {isTextCaseConverter ? (
+                    <>
+                        {/* Поле ввода текста (textarea для text case converter) */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {inputTextConfig?.label || 'Enter text:'}
+                            </label>
+                            <textarea
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none resize-y"
+                                rows={4}
+                                placeholder={inputTextConfig?.placeholder || 'Enter your text here...'}
+                                onChange={(e) => handleChange('inputText', e.target.value)}
+                                value={values.inputText !== undefined ? String(values.inputText) : ''}
+                            />
+                        </div>
+                        {/* Выбор режима регистра */}
+                        {caseModeConfig && (
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {caseModeConfig.label || 'Convert to:'}
+                                </label>
+                                <select
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                    onChange={(e) => handleChange('caseMode', e.target.value)}
+                                    value={values.caseMode !== undefined ? String(values.caseMode) : (config.inputs.find((i: any) => i.key === 'caseMode')?.default || 'lowercase')}
+                                >
+                                    {caseModeOptions.map((option: any) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                    </>
+                ) : isNumberToWords ? (
+                    <>
+                        {/* Поле ввода числа (для number-to-words) */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {translations.inputLabel}
+                            </label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder={inputNumberConfig?.placeholder || translations.inputPlaceholder}
+                                onChange={(e) => handleChange('inputNumber', e.target.value)}
+                                value={values.inputNumber !== undefined ? String(values.inputNumber) : ''}
+                            />
+                        </div>
+                    </>
+                ) : null}
 
-                {/* Заголовок "To:" */}
-                <div className="mt-[15px] mb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                        {translations.formatLabel}
-                    </label>
-                </div>
+                {/* Кнопки-переключатели для выбора формата (только для number-to-words) */}
+                {isNumberToWords && (
+                    <>
+                        {/* Заголовок "To:" */}
+                        <div className="mt-[15px] mb-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                {translations.formatLabel}
+                            </label>
+                        </div>
 
-                {/* Кнопки-переключатели для выбора формата */}
-                <div className="space-y-[15px] mb-4">
+                        <div className="space-y-[15px] mb-4">
                     {/* Words */}
                     <div className="flex items-center">
                         <button
@@ -474,24 +525,28 @@ export default function CalculatorWidget({
                     </div>
                 </div>
 
-                {/* Letter Case */}
-                <div className="flex items-center mb-4">
-                    <label className="text-sm font-medium text-gray-700 mr-[15px]">
-                        {translations.letterCaseLabel}
-                    </label>
-                    <select
-                        className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                        style={{ width: '180px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
-                        onChange={(e) => handleChange('textCase', e.target.value)}
-                        value={values.textCase !== undefined ? String(values.textCase) : (config.inputs.find(i => i.key === 'textCase')?.default || 'Sentence case')}
-                    >
-                        {textCaseOptions.map((opt: any) => (
-                            <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                        {/* Letter Case (только для number-to-words) */}
+                        {isNumberToWords && (
+                            <div className="flex items-center mb-4">
+                                <label className="text-sm font-medium text-gray-700 mr-[15px]">
+                                    {translations.letterCaseLabel}
+                                </label>
+                                <select
+                                    className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                    style={{ width: '180px', height: '29px', paddingLeft: '8px', paddingRight: '20px', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23333\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
+                                    onChange={(e) => handleChange('textCase', e.target.value)}
+                                    value={values.textCase !== undefined ? String(values.textCase) : (config.inputs.find((i: any) => i.key === 'textCase')?.default || 'Sentence case')}
+                                >
+                                    {textCaseOptions.map((opt: any) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                    </>
+                )}
 
                 {/* Action Row */}
                 <div className="flex gap-2 mb-4">
