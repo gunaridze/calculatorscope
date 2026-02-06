@@ -468,7 +468,7 @@ export default function BMICalculatorWidget({
                             </div>
                         </div>
                         <div className="text-xs text-gray-500 text-center">
-                            < 18.5 | 18.5-25 | 25-30 | ≥ 30
+                            &lt; 18.5 | 18.5-25 | 25-30 | &ge; 30
                         </div>
                     </div>
 
