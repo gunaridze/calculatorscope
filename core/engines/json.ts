@@ -1,6 +1,7 @@
 import * as math from 'mathjs'
 import { numberToWords, type NumberToWordsOptions } from '@/lib/tools/numberToWords'
 import { textCaseConverter, type TextCaseConverterOptions } from '@/lib/tools/textCaseConverter'
+import { bmiCalculator, type BMICalculatorOptions } from '@/lib/tools/bmiCalculator'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -49,6 +50,35 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
             mode: mode || 'lower'
         }
         return textCaseConverter(text, options)
+    },
+    bmiCalculator: (params: Record<string, any>) => {
+        const {
+            age,
+            gender,
+            height_unit,
+            height_value,
+            height_ft,
+            height_in,
+            height_m,
+            height_cm,
+            weight_unit,
+            weight_value
+        } = params
+
+        const options: BMICalculatorOptions = {
+            age: age ? Number(age) : 25,
+            gender: gender || 'male',
+            height_unit: height_unit || 'ft_in',
+            height_value: height_value !== undefined ? Number(height_value) : undefined,
+            height_ft: height_ft !== undefined ? Number(height_ft) : undefined,
+            height_in: height_in !== undefined ? Number(height_in) : undefined,
+            height_m: height_m !== undefined ? Number(height_m) : undefined,
+            height_cm: height_cm !== undefined ? Number(height_cm) : undefined,
+            weight_unit: weight_unit || 'lb',
+            weight_value: weight_value ? Number(weight_value) : 160
+        }
+
+        return bmiCalculator(options)
     }
 }
 

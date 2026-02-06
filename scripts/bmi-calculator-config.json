@@ -1,0 +1,977 @@
+{
+  "config_json": {
+    "inputs": [
+      { "key": "age", "default": 25 },
+      { "key": "gender", "default": "male" },
+      { "key": "height_unit", "default": "ft_in" },
+      { "key": "height_value", "default": null },
+      { "key": "height_ft", "default": 5 },
+      { "key": "height_in", "default": 10 },
+      { "key": "height_m", "default": 1 },
+      { "key": "height_cm", "default": 78 },
+      { "key": "weight_unit", "default": "lb" },
+      { "key": "weight_value", "default": 160 }
+    ],
+    "functions": {
+      "bmi": {
+        "type": "function",
+        "functionName": "bmiCalculator",
+        "params": {
+          "age": "age",
+          "gender": "gender",
+          "height_unit": "height_unit",
+          "height_value": "height_value",
+          "height_ft": "height_ft",
+          "height_in": "height_in",
+          "height_m": "height_m",
+          "height_cm": "height_cm",
+          "weight_unit": "weight_unit",
+          "weight_value": "weight_value"
+        }
+      }
+    },
+    "outputs": [
+      { "key": "bmi", "precision": 1 },
+      { "key": "bmi_status", "precision": 0 },
+      { "key": "healthy_bmi_min", "precision": 1 },
+      { "key": "healthy_bmi_max", "precision": 1 },
+      { "key": "healthy_weight_min", "precision": 1 },
+      { "key": "healthy_weight_max", "precision": 1 },
+      { "key": "weight_to_target", "precision": 1 },
+      { "key": "bmi_prime", "precision": 2 },
+      { "key": "ponderal_index", "precision": 1 },
+      { "key": "height_meters", "precision": 3 },
+      { "key": "weight_kg", "precision": 2 }
+    ]
+  },
+  "inputs_json": {
+    "en": [
+      {
+        "name": "age",
+        "label": "Age",
+        "type": "number",
+        "unit": null,
+        "min": 2,
+        "max": 120,
+        "description": "Enter your age (2-120 years)",
+        "placeholder": "25"
+      },
+      {
+        "name": "gender",
+        "label": "Gender",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Select your gender",
+        "options": [
+          { "value": "male", "label": "Male" },
+          { "value": "female", "label": "Female" }
+        ]
+      },
+      {
+        "name": "height_unit",
+        "label": "Height Unit",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Select height measurement unit",
+        "options": [
+          { "value": "cm", "label": "centimeters (cm)" },
+          { "value": "m", "label": "meters (m)" },
+          { "value": "in", "label": "inches (in)" },
+          { "value": "ft", "label": "feet (ft)" },
+          { "value": "ft_in", "label": "feet / inches (ft / in)" },
+          { "value": "m_cm", "label": "meters / centimeters (m / cm)" }
+        ]
+      },
+      {
+        "name": "height_value",
+        "label": "Height",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Enter height value",
+        "placeholder": "70"
+      },
+      {
+        "name": "height_ft",
+        "label": "Feet",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Enter feet (for ft/in mode)",
+        "placeholder": "5"
+      },
+      {
+        "name": "height_in",
+        "label": "Inches",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 11,
+        "description": "Enter inches (0-11, for ft/in mode)",
+        "placeholder": "10"
+      },
+      {
+        "name": "height_m",
+        "label": "Meters",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Enter meters (for m/cm mode)",
+        "placeholder": "1"
+      },
+      {
+        "name": "height_cm",
+        "label": "Centimeters",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 99,
+        "description": "Enter centimeters (0-99, for m/cm mode)",
+        "placeholder": "78"
+      },
+      {
+        "name": "weight_unit",
+        "label": "Weight Unit",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Select weight measurement unit",
+        "options": [
+          { "value": "kg", "label": "kilograms (kg)" },
+          { "value": "lb", "label": "pounds (lb)" },
+          { "value": "st", "label": "stones (st)" }
+        ]
+      },
+      {
+        "name": "weight_value",
+        "label": "Weight",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Enter weight value",
+        "placeholder": "160"
+      }
+    ],
+    "ru": [
+      {
+        "name": "age",
+        "label": "Возраст",
+        "type": "number",
+        "unit": null,
+        "min": 2,
+        "max": 120,
+        "description": "Введите ваш возраст (2-120 лет)",
+        "placeholder": "25"
+      },
+      {
+        "name": "gender",
+        "label": "Пол",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Выберите ваш пол",
+        "options": [
+          { "value": "male", "label": "Мужской" },
+          { "value": "female", "label": "Женский" }
+        ]
+      },
+      {
+        "name": "height_unit",
+        "label": "Единица измерения роста",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Выберите единицу измерения роста",
+        "options": [
+          { "value": "cm", "label": "сантиметры (см)" },
+          { "value": "m", "label": "метры (м)" },
+          { "value": "in", "label": "дюймы (in)" },
+          { "value": "ft", "label": "футы (ft)" },
+          { "value": "ft_in", "label": "футы / дюймы (ft / in)" },
+          { "value": "m_cm", "label": "метры / сантиметры (м / см)" }
+        ]
+      },
+      {
+        "name": "height_value",
+        "label": "Рост",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Введите значение роста",
+        "placeholder": "178"
+      },
+      {
+        "name": "height_ft",
+        "label": "Футы",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Введите футы (для режима ft/in)",
+        "placeholder": "5"
+      },
+      {
+        "name": "height_in",
+        "label": "Дюймы",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 11,
+        "description": "Введите дюймы (0-11, для режима ft/in)",
+        "placeholder": "10"
+      },
+      {
+        "name": "height_m",
+        "label": "Метры",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Введите метры (для режима м/см)",
+        "placeholder": "1"
+      },
+      {
+        "name": "height_cm",
+        "label": "Сантиметры",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 99,
+        "description": "Введите сантиметры (0-99, для режима м/см)",
+        "placeholder": "78"
+      },
+      {
+        "name": "weight_unit",
+        "label": "Единица измерения веса",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Выберите единицу измерения веса",
+        "options": [
+          { "value": "kg", "label": "килограммы (кг)" },
+          { "value": "lb", "label": "фунты (lb)" },
+          { "value": "st", "label": "стоуны (st)" }
+        ]
+      },
+      {
+        "name": "weight_value",
+        "label": "Вес",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Введите значение веса",
+        "placeholder": "72"
+      }
+    ],
+    "de": [
+      {
+        "name": "age",
+        "label": "Alter",
+        "type": "number",
+        "unit": null,
+        "min": 2,
+        "max": 120,
+        "description": "Geben Sie Ihr Alter ein (2-120 Jahre)",
+        "placeholder": "25"
+      },
+      {
+        "name": "gender",
+        "label": "Geschlecht",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wählen Sie Ihr Geschlecht",
+        "options": [
+          { "value": "male", "label": "Männlich" },
+          { "value": "female", "label": "Weiblich" }
+        ]
+      },
+      {
+        "name": "height_unit",
+        "label": "Größeneinheit",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wählen Sie die Größeneinheit",
+        "options": [
+          { "value": "cm", "label": "Zentimeter (cm)" },
+          { "value": "m", "label": "Meter (m)" },
+          { "value": "in", "label": "Zoll (in)" },
+          { "value": "ft", "label": "Fuß (ft)" },
+          { "value": "ft_in", "label": "Fuß / Zoll (ft / in)" },
+          { "value": "m_cm", "label": "Meter / Zentimeter (m / cm)" }
+        ]
+      },
+      {
+        "name": "height_value",
+        "label": "Größe",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Geben Sie die Größe ein",
+        "placeholder": "178"
+      },
+      {
+        "name": "height_ft",
+        "label": "Fuß",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Geben Sie Fuß ein (für ft/in Modus)",
+        "placeholder": "5"
+      },
+      {
+        "name": "height_in",
+        "label": "Zoll",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 11,
+        "description": "Geben Sie Zoll ein (0-11, für ft/in Modus)",
+        "placeholder": "10"
+      },
+      {
+        "name": "height_m",
+        "label": "Meter",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Geben Sie Meter ein (für m/cm Modus)",
+        "placeholder": "1"
+      },
+      {
+        "name": "height_cm",
+        "label": "Zentimeter",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 99,
+        "description": "Geben Sie Zentimeter ein (0-99, für m/cm Modus)",
+        "placeholder": "78"
+      },
+      {
+        "name": "weight_unit",
+        "label": "Gewichtseinheit",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wählen Sie die Gewichtseinheit",
+        "options": [
+          { "value": "kg", "label": "Kilogramm (kg)" },
+          { "value": "lb", "label": "Pfund (lb)" },
+          { "value": "st", "label": "Steine (st)" }
+        ]
+      },
+      {
+        "name": "weight_value",
+        "label": "Gewicht",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Geben Sie das Gewicht ein",
+        "placeholder": "72"
+      }
+    ],
+    "es": [
+      {
+        "name": "age",
+        "label": "Edad",
+        "type": "number",
+        "unit": null,
+        "min": 2,
+        "max": 120,
+        "description": "Ingrese su edad (2-120 años)",
+        "placeholder": "25"
+      },
+      {
+        "name": "gender",
+        "label": "Género",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleccione su género",
+        "options": [
+          { "value": "male", "label": "Masculino" },
+          { "value": "female", "label": "Femenino" }
+        ]
+      },
+      {
+        "name": "height_unit",
+        "label": "Unidad de altura",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleccione la unidad de altura",
+        "options": [
+          { "value": "cm", "label": "centímetros (cm)" },
+          { "value": "m", "label": "metros (m)" },
+          { "value": "in", "label": "pulgadas (in)" },
+          { "value": "ft", "label": "pies (ft)" },
+          { "value": "ft_in", "label": "pies / pulgadas (ft / in)" },
+          { "value": "m_cm", "label": "metros / centímetros (m / cm)" }
+        ]
+      },
+      {
+        "name": "height_value",
+        "label": "Altura",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Ingrese el valor de altura",
+        "placeholder": "178"
+      },
+      {
+        "name": "height_ft",
+        "label": "Pies",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Ingrese pies (para modo ft/in)",
+        "placeholder": "5"
+      },
+      {
+        "name": "height_in",
+        "label": "Pulgadas",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 11,
+        "description": "Ingrese pulgadas (0-11, para modo ft/in)",
+        "placeholder": "10"
+      },
+      {
+        "name": "height_m",
+        "label": "Metros",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Ingrese metros (para modo m/cm)",
+        "placeholder": "1"
+      },
+      {
+        "name": "height_cm",
+        "label": "Centímetros",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 99,
+        "description": "Ingrese centímetros (0-99, para modo m/cm)",
+        "placeholder": "78"
+      },
+      {
+        "name": "weight_unit",
+        "label": "Unidad de peso",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleccione la unidad de peso",
+        "options": [
+          { "value": "kg", "label": "kilogramos (kg)" },
+          { "value": "lb", "label": "libras (lb)" },
+          { "value": "st", "label": "piedras (st)" }
+        ]
+      },
+      {
+        "name": "weight_value",
+        "label": "Peso",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Ingrese el valor de peso",
+        "placeholder": "72"
+      }
+    ],
+    "fr": [
+      {
+        "name": "age",
+        "label": "Âge",
+        "type": "number",
+        "unit": null,
+        "min": 2,
+        "max": 120,
+        "description": "Entrez votre âge (2-120 ans)",
+        "placeholder": "25"
+      },
+      {
+        "name": "gender",
+        "label": "Genre",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Sélectionnez votre genre",
+        "options": [
+          { "value": "male", "label": "Masculin" },
+          { "value": "female", "label": "Féminin" }
+        ]
+      },
+      {
+        "name": "height_unit",
+        "label": "Unité de taille",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Sélectionnez l'unité de taille",
+        "options": [
+          { "value": "cm", "label": "centimètres (cm)" },
+          { "value": "m", "label": "mètres (m)" },
+          { "value": "in", "label": "pouces (in)" },
+          { "value": "ft", "label": "pieds (ft)" },
+          { "value": "ft_in", "label": "pieds / pouces (ft / in)" },
+          { "value": "m_cm", "label": "mètres / centimètres (m / cm)" }
+        ]
+      },
+      {
+        "name": "height_value",
+        "label": "Taille",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Entrez la valeur de taille",
+        "placeholder": "178"
+      },
+      {
+        "name": "height_ft",
+        "label": "Pieds",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Entrez les pieds (pour le mode ft/in)",
+        "placeholder": "5"
+      },
+      {
+        "name": "height_in",
+        "label": "Pouces",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 11,
+        "description": "Entrez les pouces (0-11, pour le mode ft/in)",
+        "placeholder": "10"
+      },
+      {
+        "name": "height_m",
+        "label": "Mètres",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Entrez les mètres (pour le mode m/cm)",
+        "placeholder": "1"
+      },
+      {
+        "name": "height_cm",
+        "label": "Centimètres",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 99,
+        "description": "Entrez les centimètres (0-99, pour le mode m/cm)",
+        "placeholder": "78"
+      },
+      {
+        "name": "weight_unit",
+        "label": "Unité de poids",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Sélectionnez l'unité de poids",
+        "options": [
+          { "value": "kg", "label": "kilogrammes (kg)" },
+          { "value": "lb", "label": "livres (lb)" },
+          { "value": "st", "label": "pierres (st)" }
+        ]
+      },
+      {
+        "name": "weight_value",
+        "label": "Poids",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Entrez la valeur de poids",
+        "placeholder": "72"
+      }
+    ],
+    "it": [
+      {
+        "name": "age",
+        "label": "Età",
+        "type": "number",
+        "unit": null,
+        "min": 2,
+        "max": 120,
+        "description": "Inserisci la tua età (2-120 anni)",
+        "placeholder": "25"
+      },
+      {
+        "name": "gender",
+        "label": "Genere",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleziona il tuo genere",
+        "options": [
+          { "value": "male", "label": "Maschio" },
+          { "value": "female", "label": "Femmina" }
+        ]
+      },
+      {
+        "name": "height_unit",
+        "label": "Unità di altezza",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleziona l'unità di altezza",
+        "options": [
+          { "value": "cm", "label": "centimetri (cm)" },
+          { "value": "m", "label": "metri (m)" },
+          { "value": "in", "label": "pollici (in)" },
+          { "value": "ft", "label": "piedi (ft)" },
+          { "value": "ft_in", "label": "piedi / pollici (ft / in)" },
+          { "value": "m_cm", "label": "metri / centimetri (m / cm)" }
+        ]
+      },
+      {
+        "name": "height_value",
+        "label": "Altezza",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Inserisci il valore di altezza",
+        "placeholder": "178"
+      },
+      {
+        "name": "height_ft",
+        "label": "Piedi",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Inserisci i piedi (per modalità ft/in)",
+        "placeholder": "5"
+      },
+      {
+        "name": "height_in",
+        "label": "Pollici",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 11,
+        "description": "Inserisci i pollici (0-11, per modalità ft/in)",
+        "placeholder": "10"
+      },
+      {
+        "name": "height_m",
+        "label": "Metri",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Inserisci i metri (per modalità m/cm)",
+        "placeholder": "1"
+      },
+      {
+        "name": "height_cm",
+        "label": "Centimetri",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 99,
+        "description": "Inserisci i centimetri (0-99, per modalità m/cm)",
+        "placeholder": "78"
+      },
+      {
+        "name": "weight_unit",
+        "label": "Unità di peso",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Seleziona l'unità di peso",
+        "options": [
+          { "value": "kg", "label": "chilogrammi (kg)" },
+          { "value": "lb", "label": "libbre (lb)" },
+          { "value": "st", "label": "pietre (st)" }
+        ]
+      },
+      {
+        "name": "weight_value",
+        "label": "Peso",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Inserisci il valore di peso",
+        "placeholder": "72"
+      }
+    ],
+    "pl": [
+      {
+        "name": "age",
+        "label": "Wiek",
+        "type": "number",
+        "unit": null,
+        "min": 2,
+        "max": 120,
+        "description": "Wprowadź swój wiek (2-120 lat)",
+        "placeholder": "25"
+      },
+      {
+        "name": "gender",
+        "label": "Płeć",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wybierz swoją płeć",
+        "options": [
+          { "value": "male", "label": "Mężczyzna" },
+          { "value": "female", "label": "Kobieta" }
+        ]
+      },
+      {
+        "name": "height_unit",
+        "label": "Jednostka wzrostu",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wybierz jednostkę wzrostu",
+        "options": [
+          { "value": "cm", "label": "centymetry (cm)" },
+          { "value": "m", "label": "metry (m)" },
+          { "value": "in", "label": "cale (in)" },
+          { "value": "ft", "label": "stopy (ft)" },
+          { "value": "ft_in", "label": "stopy / cale (ft / in)" },
+          { "value": "m_cm", "label": "metry / centymetry (m / cm)" }
+        ]
+      },
+      {
+        "name": "height_value",
+        "label": "Wzrost",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wprowadź wartość wzrostu",
+        "placeholder": "178"
+      },
+      {
+        "name": "height_ft",
+        "label": "Stopy",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wprowadź stopy (dla trybu ft/in)",
+        "placeholder": "5"
+      },
+      {
+        "name": "height_in",
+        "label": "Cale",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 11,
+        "description": "Wprowadź cale (0-11, dla trybu ft/in)",
+        "placeholder": "10"
+      },
+      {
+        "name": "height_m",
+        "label": "Metry",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wprowadź metry (dla trybu m/cm)",
+        "placeholder": "1"
+      },
+      {
+        "name": "height_cm",
+        "label": "Centymetry",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 99,
+        "description": "Wprowadź centymetry (0-99, dla trybu m/cm)",
+        "placeholder": "78"
+      },
+      {
+        "name": "weight_unit",
+        "label": "Jednostka wagi",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wybierz jednostkę wagi",
+        "options": [
+          { "value": "kg", "label": "kilogramy (kg)" },
+          { "value": "lb", "label": "funty (lb)" },
+          { "value": "st", "label": "kamienie (st)" }
+        ]
+      },
+      {
+        "name": "weight_value",
+        "label": "Waga",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Wprowadź wartość wagi",
+        "placeholder": "72"
+      }
+    ],
+    "lv": [
+      {
+        "name": "age",
+        "label": "Vecums",
+        "type": "number",
+        "unit": null,
+        "min": 2,
+        "max": 120,
+        "description": "Ievadiet savu vecumu (2-120 gadi)",
+        "placeholder": "25"
+      },
+      {
+        "name": "gender",
+        "label": "Dzimums",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Izvēlieties savu dzimumu",
+        "options": [
+          { "value": "male", "label": "Vīrietis" },
+          { "value": "female", "label": "Sieviete" }
+        ]
+      },
+      {
+        "name": "height_unit",
+        "label": "Auguma mērvienība",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Izvēlieties auguma mērvienību",
+        "options": [
+          { "value": "cm", "label": "centimetri (cm)" },
+          { "value": "m", "label": "metri (m)" },
+          { "value": "in", "label": "collas (in)" },
+          { "value": "ft", "label": "pēdas (ft)" },
+          { "value": "ft_in", "label": "pēdas / collas (ft / in)" },
+          { "value": "m_cm", "label": "metri / centimetri (m / cm)" }
+        ]
+      },
+      {
+        "name": "height_value",
+        "label": "Augums",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Ievadiet auguma vērtību",
+        "placeholder": "178"
+      },
+      {
+        "name": "height_ft",
+        "label": "Pēdas",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Ievadiet pēdas (ft/in režīmam)",
+        "placeholder": "5"
+      },
+      {
+        "name": "height_in",
+        "label": "Collas",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 11,
+        "description": "Ievadiet collas (0-11, ft/in režīmam)",
+        "placeholder": "10"
+      },
+      {
+        "name": "height_m",
+        "label": "Metri",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Ievadiet metrus (m/cm režīmam)",
+        "placeholder": "1"
+      },
+      {
+        "name": "height_cm",
+        "label": "Centimetri",
+        "type": "number",
+        "unit": null,
+        "min": 0,
+        "max": 99,
+        "description": "Ievadiet centimetrus (0-99, m/cm režīmam)",
+        "placeholder": "78"
+      },
+      {
+        "name": "weight_unit",
+        "label": "Svara mērvienība",
+        "type": "select",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Izvēlieties svara mērvienību",
+        "options": [
+          { "value": "kg", "label": "kilogrami (kg)" },
+          { "value": "lb", "label": "mārciņas (lb)" },
+          { "value": "st", "label": "akmeņi (st)" }
+        ]
+      },
+      {
+        "name": "weight_value",
+        "label": "Svars",
+        "type": "number",
+        "unit": null,
+        "min": null,
+        "max": null,
+        "description": "Ievadiet svara vērtību",
+        "placeholder": "72"
+      }
+    ]
+  }
+}
