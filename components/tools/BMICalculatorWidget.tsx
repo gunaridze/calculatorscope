@@ -27,7 +27,7 @@ type Props = {
 }
 
 export default function BMICalculatorWidget({
-    config, ui, initialValues, h1, lang, toolId, h1En, translations, toolSlug
+    config, interface: ui, initialValues, h1, lang, toolId, h1En, translations, toolSlug
 }: Props) {
     // Получаем переводы для UI результата
     const t = getBMICalculatorTranslations(lang as BMICalculatorLang)
