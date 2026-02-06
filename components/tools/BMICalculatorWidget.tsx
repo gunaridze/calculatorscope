@@ -33,15 +33,20 @@ export default function BMICalculatorWidget({
     // Получаем переводы для UI результата
     const t = getBMICalculatorTranslations(lang as BMICalculatorLang)
 
-    // Инициализация значений
+    // Инициализация: только единицы и пол — из конфига; Age, Weight, Height, Feet, Inches — пустые (образец в placeholder)
     const getInitialValues = (): JsonEngineInput => {
         const defaults: JsonEngineInput = {}
+        const keysWithDefaults = ['height_unit', 'gender', 'weight_unit']
         config.inputs.forEach((inp) => {
-            if (inp.default !== undefined && inp.default !== null) {
+            if (keysWithDefaults.includes(inp.key) && inp.default !== undefined && inp.default !== null) {
                 defaults[inp.key] = inp.default
             }
         })
-        return { ...defaults, ...(initialValues || {}) }
+        const merged = { ...defaults, ...(initialValues || {}) }
+        if (merged.height_unit !== 'cm' && merged.height_unit !== 'ft_in') {
+            merged.height_unit = 'ft_in'
+        }
+        return merged
     }
 
     const defaultValues = getInitialValues()
@@ -102,22 +107,15 @@ export default function BMICalculatorWidget({
             const newValues = { ...prev, [key]: value }
             // Если изменилась единица измерения, сбрасываем зависимые поля
             if (key === 'height_unit') {
-                // Сбрасываем все height поля кроме height_unit
                 if (value !== 'ft_in') {
                     delete newValues.height_ft
                     delete newValues.height_in
                 }
-                if (value !== 'm_cm') {
-                    delete newValues.height_m
-                    delete newValues.height_cm
-                }
-                if (value === 'ft_in' || value === 'm_cm') {
+                if (value !== 'cm') {
                     delete newValues.height_value
                 } else {
                     delete newValues.height_ft
                     delete newValues.height_in
-                    delete newValues.height_m
-                    delete newValues.height_cm
                 }
             }
             return newValues
@@ -226,11 +224,10 @@ export default function BMICalculatorWidget({
         }
     }
 
-    // Определяем, какие поля показывать
+    // Height Unit: только cm и ft_in
     const heightUnit = values.height_unit as string || 'ft_in'
-    const showHeightValue = heightUnit !== 'ft_in' && heightUnit !== 'm_cm'
+    const showHeightValue = heightUnit === 'cm'
     const showHeightFtIn = heightUnit === 'ft_in'
-    const showHeightMCm = heightUnit === 'm_cm'
 
     // Получаем единицу веса для отображения
     const weightUnit = values.weight_unit as string || 'lb'
@@ -290,8 +287,8 @@ export default function BMICalculatorWidget({
                                 placeholder={fieldConfig?.placeholder || '25'}
                                 min={fieldConfig?.min || 2}
                                 max={fieldConfig?.max || 120}
-                                value={values.age !== undefined ? String(values.age) : ''}
-                                onChange={(e) => handleChange('age', parseFloat(e.target.value) || 0)}
+                                value={values.age !== undefined && values.age !== '' ? String(values.age) : ''}
+                                onChange={(e) => handleChange('age', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                             />
                             {fieldConfig?.description && (
                                 <p className="text-xs text-gray-500 mt-1">{fieldConfig.description}</p>
@@ -337,18 +334,16 @@ export default function BMICalculatorWidget({
                     )
                 })()}
 
-                {/* Height Unit - кнопки выбора */}
+                {/* Height Unit - только cm и ft / in */}
                 {(() => {
                     const fieldConfig = getFieldConfig('height_unit')
-                    // Fallback опции, если fieldConfig не найден
-                    const heightUnitOptions = fieldConfig?.options || [
+                    const allOptions = fieldConfig?.options || [
                         { value: 'cm', label: 'cm' },
-                        { value: 'm', label: 'm' },
-                        { value: 'in', label: 'in' },
-                        { value: 'ft', label: 'ft' },
-                        { value: 'ft_in', label: 'ft / in' },
-                        { value: 'm_cm', label: 'm / cm' }
+                        { value: 'ft_in', label: 'ft / in' }
                     ]
+                    const heightUnitOptions = allOptions.filter(
+                        (opt: any) => opt.value === 'cm' || opt.value === 'ft_in'
+                    )
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -389,8 +384,8 @@ export default function BMICalculatorWidget({
                                 type="number"
                                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder={fieldConfig?.placeholder || '70'}
-                                value={values.height_value !== undefined ? String(values.height_value) : ''}
-                                onChange={(e) => handleChange('height_value', parseFloat(e.target.value) || 0)}
+                                value={values.height_value !== undefined && values.height_value !== '' ? String(values.height_value) : ''}
+                                onChange={(e) => handleChange('height_value', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                             />
                         </div>
                     )
@@ -410,8 +405,8 @@ export default function BMICalculatorWidget({
                                         type="number"
                                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                                         placeholder={fieldConfig?.placeholder || '5'}
-                                        value={values.height_ft !== undefined ? String(values.height_ft) : ''}
-                                        onChange={(e) => handleChange('height_ft', parseFloat(e.target.value) || 0)}
+                                        value={values.height_ft !== undefined && values.height_ft !== '' ? String(values.height_ft) : ''}
+                                        onChange={(e) => handleChange('height_ft', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                                     />
                                 </div>
                             )
@@ -429,50 +424,8 @@ export default function BMICalculatorWidget({
                                         placeholder={fieldConfig?.placeholder || '10'}
                                         min={fieldConfig?.min || 0}
                                         max={fieldConfig?.max || 11}
-                                        value={values.height_in !== undefined ? String(values.height_in) : ''}
-                                        onChange={(e) => handleChange('height_in', parseFloat(e.target.value) || 0)}
-                                    />
-                                </div>
-                            )
-                        })()}
-                    </div>
-                )}
-
-                {/* Height M/Cm (для m_cm режима) */}
-                {showHeightMCm && (
-                    <div className="mb-4 grid grid-cols-2 gap-4">
-                        {(() => {
-                            const fieldConfig = getFieldConfig('height_m')
-                            return (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        {fieldConfig?.label || 'Meters'}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder={fieldConfig?.placeholder || '1'}
-                                        value={values.height_m !== undefined ? String(values.height_m) : ''}
-                                        onChange={(e) => handleChange('height_m', parseFloat(e.target.value) || 0)}
-                                    />
-                                </div>
-                            )
-                        })()}
-                        {(() => {
-                            const fieldConfig = getFieldConfig('height_cm')
-                            return (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        {fieldConfig?.label || 'Centimeters'}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder={fieldConfig?.placeholder || '78'}
-                                        min={fieldConfig?.min || 0}
-                                        max={fieldConfig?.max || 99}
-                                        value={values.height_cm !== undefined ? String(values.height_cm) : ''}
-                                        onChange={(e) => handleChange('height_cm', parseFloat(e.target.value) || 0)}
+                                        value={values.height_in !== undefined && values.height_in !== '' ? String(values.height_in) : ''}
+                                        onChange={(e) => handleChange('height_in', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                                     />
                                 </div>
                             )
@@ -529,8 +482,8 @@ export default function BMICalculatorWidget({
                                 type="number"
                                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder={fieldConfig?.placeholder || '160'}
-                                value={values.weight_value !== undefined ? String(values.weight_value) : ''}
-                                onChange={(e) => handleChange('weight_value', parseFloat(e.target.value) || 0)}
+                                value={values.weight_value !== undefined && values.weight_value !== '' ? String(values.weight_value) : ''}
+                                onChange={(e) => handleChange('weight_value', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                             />
                         </div>
                     )
@@ -556,32 +509,29 @@ export default function BMICalculatorWidget({
             {/* BOTTOM SECTION: Результат */}
             {Object.keys(result).length > 0 && (
                 <div className="border-t border-gray-200 pt-6" data-bmi-result>
-                    {/* Header Result с кнопкой Save - цвет зависит от статуса */}
+                    {/* Header Result — цвет как у сегментов чарта */}
                     {(() => {
                         const status = result.bmi_status as string
-                        let headerColor = 'bg-green-600 hover:bg-green-700'
-                        if (status === 'underweight') {
-                            headerColor = 'bg-red-600 hover:bg-red-700'
-                        } else if (status === 'overweight') {
-                            headerColor = 'bg-yellow-600 hover:bg-yellow-700'
-                        } else if (status === 'obesity') {
-                            headerColor = 'bg-red-800 hover:bg-red-900'
+                        const chartColors: Record<string, { bg: string; hover: string }> = {
+                            underweight: { bg: '#bc2020', hover: '#9a1a1a' },
+                            normal: { bg: '#008137', hover: '#006b2e' },
+                            overweight: { bg: '#ffe400', hover: '#e6ce00' },
+                            obesity: { bg: '#8a0101', hover: '#6b0101' }
                         }
-                        // Определяем hover цвет для кнопки
-                        let hoverColor = 'hover:bg-green-700'
-                        if (status === 'underweight') {
-                            hoverColor = 'hover:bg-red-700'
-                        } else if (status === 'overweight') {
-                            hoverColor = 'hover:bg-yellow-700'
-                        } else if (status === 'obesity') {
-                            hoverColor = 'hover:bg-red-900'
-                        }
+                        const colors = chartColors[status] || chartColors.normal
+                        const isLight = status === 'overweight'
                         return (
-                            <div className={`${headerColor} text-white px-5 py-3 rounded-t-lg -mx-5 -mt-6 mb-4 flex justify-between items-center`}>
-                                <h3 className="text-lg font-bold">{t.result.title}</h3>
+                            <div
+                                className="px-5 py-3 rounded-t-lg -mx-5 -mt-6 mb-4 flex justify-between items-center transition-colors"
+                                style={{ backgroundColor: colors.bg }}
+                            >
+                                <h3 className={`text-lg font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>
+                                    {t.result.title}
+                                </h3>
                                 <button
                                     onClick={handleSave}
-                                    className={`flex flex-col items-center gap-0.5 text-sm ${hoverColor} px-2 py-1 rounded transition-colors`}
+                                    className="flex flex-col items-center gap-0.5 text-sm px-2 py-1 rounded transition-opacity hover:opacity-90"
+                                    style={{ color: isLight ? '#1f2937' : '#fff' }}
                                     title={t.buttons.save_pdf || 'Save as PDF'}
                                 >
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
