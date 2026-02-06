@@ -390,7 +390,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                 <div 
                     key="intro" 
                     className="mb-4 prose lg:prose-xl text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: data.intro_text }}
+                    dangerouslySetInnerHTML={{ __html: processLatex(data.intro_text) }}
                 />
             )
         })

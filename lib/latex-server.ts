@@ -16,6 +16,13 @@ export function processLatex(html: string): string {
 
     let processed = html
 
+    // Декодируем HTML entities для символов, которые могут быть экранированы
+    // Это важно, если данные из БД содержат экранированные символы
+    processed = processed
+        .replace(/&#36;/g, '$')  // $ как HTML entity
+        .replace(/&amp;#36;/g, '$')  // Двойное экранирование
+        .replace(/&dollar;/g, '$')  // Именованная сущность (редко используется)
+
     // ВАЖНО: Сначала обрабатываем block формулы, чтобы они не мешали inline
     
     // Обрабатываем block формулы $$...$$
@@ -53,17 +60,49 @@ export function processLatex(html: string): string {
     })
 
     // Теперь обрабатываем inline формулы $...$ (уже без $$)
-    processed = processed.replace(/\$([^$\n]+?)\$/g, (match, formula) => {
+    // Используем простой regex и проверяем контекст вручную
+    const inlineMatches: Array<{ match: string; formula: string; offset: number }> = []
+    
+    // Собираем все совпадения
+    let match
+    const regex = /\$([^$\n\r]+?)\$/g
+    while ((match = regex.exec(processed)) !== null) {
+        inlineMatches.push({
+            match: match[0],
+            formula: match[1],
+            offset: match.index
+        })
+    }
+    
+    // Обрабатываем совпадения в обратном порядке (чтобы не сбить индексы)
+    for (let i = inlineMatches.length - 1; i >= 0; i--) {
+        const { match: fullMatch, formula, offset } = inlineMatches[i]
+        const trimmed = formula.trim()
+        
+        if (!trimmed) continue // Пропускаем пустые формулы
+        
+        // Проверяем, не находимся ли мы внутри HTML тега
+        const beforeMatch = processed.substring(0, offset)
+        const lastTagOpen = beforeMatch.lastIndexOf('<')
+        const lastTagClose = beforeMatch.lastIndexOf('>')
+        
+        // Если последний открывающий тег был после последнего закрывающего,
+        // значит мы внутри тега - пропускаем
+        if (lastTagOpen > lastTagClose) {
+            continue
+        }
+        
         try {
-            return katex.renderToString(formula.trim(), {
+            const rendered = katex.renderToString(trimmed, {
                 displayMode: false,
                 throwOnError: false,
             })
+            // Заменяем совпадение на рендеренную формулу
+            processed = processed.substring(0, offset) + rendered + processed.substring(offset + fullMatch.length)
         } catch (e) {
             console.error('KaTeX inline error:', e)
-            return match
         }
-    })
+    }
 
     // Обрабатываем inline формулы \(...\)
     processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
@@ -81,19 +120,6 @@ export function processLatex(html: string): string {
     // Восстанавливаем block формулы
     blockFormulas.forEach((rendered, index) => {
         processed = processed.replace(`${blockMarker}${index}${blockMarker}`, rendered)
-    })
-
-    // Обрабатываем inline формулы \(...\)
-    processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
-        try {
-            return katex.renderToString(formula.trim(), {
-                displayMode: false,
-                throwOnError: false,
-            })
-        } catch (e) {
-            console.error('KaTeX inline error:', e)
-            return match
-        }
     })
 
     return processed
