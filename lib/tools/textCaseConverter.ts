@@ -47,15 +47,20 @@ export function textCaseConverter(
             break
 
         case 'title':
-            // Каждое слово начинается с заглавной буквы
+            // Каждое слово начинается с заглавной буквы (сохраняем переносы строк)
             result = inputText
-                .toLowerCase()
-                .split(/\s+/)
-                .map(word => {
-                    if (!word) return word
-                    return word.charAt(0).toUpperCase() + word.slice(1)
+                .split(/\r?\n/)
+                .map(line => {
+                    return line
+                        .toLowerCase()
+                        .split(/\s+/)
+                        .map(word => {
+                            if (!word) return word
+                            return word.charAt(0).toUpperCase() + word.slice(1)
+                        })
+                        .join(' ')
                 })
-                .join(' ')
+                .join('\n')
             break
 
         case 'sentence':
