@@ -1,14 +1,17 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { getBMICalculatorTranslations, type BMICalculatorLang } from '@/lib/bmi-calculator-translations'
 
 type BMIGaugeChartProps = {
     bmi: number
     status: 'underweight' | 'normal' | 'overweight' | 'obesity'
+    lang: string
 }
 
-export default function BMIGaugeChart({ bmi, status }: BMIGaugeChartProps) {
+export default function BMIGaugeChart({ bmi, status, lang }: BMIGaugeChartProps) {
     const [animatedBMI, setAnimatedBMI] = useState(bmi)
+    const t = getBMICalculatorTranslations(lang as BMICalculatorLang)
 
     // Анимация изменения BMI
     useEffect(() => {
@@ -17,179 +20,161 @@ export default function BMIGaugeChart({ bmi, status }: BMIGaugeChartProps) {
         }, 100)
         return () => clearTimeout(timer)
     }, [bmi])
-    // Параметры для полукруга
-    const centerX = 200
-    const centerY = 180
+
+    // Параметры для полукруга (как в оригинальном SVG)
+    const centerX = 140
+    const centerY = 140
     const radius = 140
     const startAngle = 0 // Начало слева
     const endAngle = 180 // Конец справа (полукруг)
 
-    // Конвертируем углы в радианы
-    const startAngleRad = (startAngle * Math.PI) / 180
-    const endAngleRad = (endAngle * Math.PI) / 180
-
-    // Функция для конвертации BMI в угол (от 16 до 40)
-    const bmiToAngle = (bmiValue: number): number => {
+    // Функция для конвертации BMI в угол поворота стрелки
+    // В оригинальном SVG: BMI 16 = -90°, BMI 40 = +90°
+    // Но для transform rotate нужен угол от 0 до 180 (где 0 = влево, 90 = вверх, 180 = вправо)
+    const bmiToRotationAngle = (bmiValue: number): number => {
         const minBMI = 16
         const maxBMI = 40
         const clampedBMI = Math.max(minBMI, Math.min(maxBMI, bmiValue))
         const normalized = (clampedBMI - minBMI) / (maxBMI - minBMI)
-        return startAngle + normalized * (endAngle - startAngle)
+        // Угол поворота: от -90° (BMI=16, слева) до +90° (BMI=40, справа)
+        // Но для CSS transform нужен угол от 0 до 180
+        return -90 + normalized * 180
     }
 
-    // Угол для стрелки (используем анимированное значение)
-    const arrowAngle = bmiToAngle(animatedBMI)
-    const arrowAngleRad = (arrowAngle * Math.PI) / 180
-
-    // Координаты конца стрелки
-    const arrowLength = radius - 20
-    const arrowEndX = centerX + arrowLength * Math.cos(Math.PI - arrowAngleRad)
-    const arrowEndY = centerY - arrowLength * Math.sin(Math.PI - arrowAngleRad)
-
-    // Цвета для сегментов
-    const getSegmentColor = (segment: string) => {
-        switch (segment) {
-            case 'underweight': return '#dc2626' // красный
-            case 'normal': return '#16a34a' // зеленый
-            case 'overweight': return '#eab308' // желтый
-            case 'obesity': return '#991b1b' // темно-красный
-            default: return '#gray'
-        }
-    }
-
-    // Создаем пути для каждого сегмента
-    const createArcPath = (startBMI: number, endBMI: number, color: string) => {
-        const startAngleValue = bmiToAngle(startBMI)
-        const endAngleValue = bmiToAngle(endBMI)
-        const startRad = (startAngleValue * Math.PI) / 180
-        const endRad = (endAngleValue * Math.PI) / 180
-
-        const x1 = centerX + radius * Math.cos(Math.PI - startRad)
-        const y1 = centerY - radius * Math.sin(Math.PI - startRad)
-        const x2 = centerX + radius * Math.cos(Math.PI - endRad)
-        const y2 = centerY - radius * Math.sin(Math.PI - endRad)
-
-        const largeArcFlag = endAngleValue - startAngleValue > 90 ? 1 : 0
-
-        return (
-            <path
-                key={`${startBMI}-${endBMI}`}
-                d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${x2} ${y2}`}
-                stroke={color}
-                strokeWidth="28"
-                fill="none"
-                strokeLinecap="round"
-            />
-        )
-    }
+    // Угол поворота для стрелки (используем анимированное значение)
+    const rotationAngle = bmiToRotationAngle(animatedBMI)
 
     // Маркеры на шкале
-    const markers = [16, 18.5, 25, 30, 35, 40]
-    const markerLabels = ['Underweight', 'Normal', 'Overweight', 'Obesity']
+    const markers = [
+        { bmi: 16, angle: -72, x: 25, y: 111 },
+        { bmi: 17, angle: -66, x: 30, y: 96 },
+        { bmi: 18.5, angle: -57, x: 35, y: 83 },
+        { bmi: 25, angle: -18, x: 97, y: 29 },
+        { bmi: 30, angle: 12, x: 157, y: 20 },
+        { bmi: 35, angle: 42, x: 214, y: 45 },
+        { bmi: 40, angle: 72, x: 252, y: 95 },
+    ]
+
+    // Пути для текста вдоль дуги (адаптированные под локализацию)
+    const getTextPath = (startAngle: number, endAngle: number) => {
+        const startRad = (startAngle * Math.PI) / 180
+        const endRad = (endAngle * Math.PI) / 180
+        const startX = centerX + radius * Math.cos(Math.PI - startRad)
+        const startY = centerY - radius * Math.sin(Math.PI - startRad)
+        const endX = centerX + radius * Math.cos(Math.PI - endRad)
+        const endY = centerY - radius * Math.sin(Math.PI - endRad)
+        return `M ${startX} ${startY} A ${radius} ${radius}, 0, 0, 1, ${endX} ${endY}`
+    }
 
     return (
         <div className="w-full flex flex-col items-center py-4">
-            <svg width="400" height="220" viewBox="0 0 400 220" className="overflow-visible">
-                {/* Сегменты BMI */}
-                {createArcPath(16, 18.5, getSegmentColor('underweight'))}
-                {createArcPath(18.5, 25, getSegmentColor('normal'))}
-                {createArcPath(25, 30, getSegmentColor('overweight'))}
-                {createArcPath(30, 40, getSegmentColor('obesity'))}
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                xmlnsXlink="http://www.w3.org/1999/xlink" 
+                width="300px" 
+                height="163px" 
+                viewBox="0 0 300 163"
+                className="overflow-visible"
+            >
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+                    </marker>
+                    <path id="curvetxt1" d={getTextPath(-72, -57)} style={{ fill: 'none' }} />
+                    <path id="curvetxt2" d={getTextPath(-57, 12)} style={{ fill: 'none' }} />
+                    <path id="curvetxt3" d={getTextPath(12, 42)} style={{ fill: 'none' }} />
+                    <path id="curvetxt4" d={getTextPath(42, 72)} style={{ fill: 'none' }} />
+                </defs>
 
-                {/* Маркеры на шкале */}
-                {markers.map((markerBMI) => {
-                    const angle = bmiToAngle(markerBMI)
-                    const angleRad = (angle * Math.PI) / 180
-                    const x1 = centerX + (radius - 15) * Math.cos(Math.PI - angleRad)
-                    const y1 = centerY - (radius - 15) * Math.sin(Math.PI - angleRad)
-                    const x2 = centerX + (radius + 5) * Math.cos(Math.PI - angleRad)
-                    const y2 = centerY - (radius + 5) * Math.sin(Math.PI - angleRad)
+                <g transform="translate(18,18)" style={{ fontFamily: 'arial,helvetica,sans-serif', fontSize: '12px' }}>
+                    {/* Цветные сегменты BMI */}
+                    <path d="M0 140 A140 140, 0, 0, 1, 6.9 96.7 L140 140 Z" fill="#bc2020" />
+                    <path d="M6.9 96.7 A140 140, 0, 0, 1, 12.1 83.1 L140 140 Z" fill="#d38888" />
+                    <path d="M12.1 83.1 A140 140, 0, 0, 1, 22.6 63.8 L140 140 Z" fill="#ffe400" />
+                    <path d="M22.6 63.8 A140 140, 0, 0, 1, 96.7 6.9 L140 140 Z" fill="#008137" />
+                    <path d="M96.7 6.9 A140 140, 0, 0, 1, 169.1 3.1 L140 140 Z" fill="#ffe400" />
+                    <path d="M169.1 3.1 A140 140, 0, 0, 1, 233.7 36 L140 140 Z" fill="#d38888" />
+                    <path d="M233.7 36 A140 140, 0, 0, 1, 273.1 96.7 L140 140 Z" fill="#bc2020" />
+                    <path d="M273.1 96.7 A140 140, 0, 0, 1, 280 140 L140 140 Z" fill="#8a0101" />
 
-                    return (
-                        <g key={markerBMI}>
-                            <line
-                                x1={x1}
-                                y1={y1}
-                                x2={x2}
-                                y2={y2}
-                                stroke="#666"
-                                strokeWidth="2"
-                            />
-                            <text
-                                x={x2 + (markerBMI === 16 ? -10 : markerBMI === 40 ? 10 : 0)}
-                                y={y2 + (markerBMI <= 25 ? -5 : 15)}
-                                textAnchor={markerBMI === 16 ? 'end' : markerBMI === 40 ? 'start' : 'middle'}
-                                fontSize="12"
-                                fill="#666"
-                                fontWeight="500"
-                            >
-                                {markerBMI}
-                            </text>
-                        </g>
-                    )
-                })}
+                    {/* Белый внутренний круг */}
+                    <path d="M45 140 A90 90, 0, 0, 1, 230 140 Z" fill="#fff" />
 
-                {/* Подписи категорий */}
-                {[
-                    { bmi: 17.25, label: 'Underweight', color: getSegmentColor('underweight') },
-                    { bmi: 21.75, label: 'Normal', color: getSegmentColor('normal') },
-                    { bmi: 27.5, label: 'Overweight', color: getSegmentColor('overweight') },
-                    { bmi: 35, label: 'Obesity', color: getSegmentColor('obesity') },
-                ].map(({ bmi: labelBMI, label, color }) => {
-                    const angle = bmiToAngle(labelBMI)
-                    const angleRad = (angle * Math.PI) / 180
-                    const x = centerX + (radius - 45) * Math.cos(Math.PI - angleRad)
-                    const y = centerY - (radius - 45) * Math.sin(Math.PI - angleRad)
+                    {/* Центральная точка */}
+                    <circle cx="140" cy="140" r="5" fill="#666" />
 
-                    return (
+                    {/* Маркеры на шкале */}
+                    {markers.map((marker) => (
                         <text
-                            key={label}
-                            x={x}
-                            y={y}
-                            textAnchor="middle"
-                            fontSize="10"
-                            fill={color}
-                            fontWeight="600"
+                            key={marker.bmi}
+                            x={marker.x}
+                            y={marker.y}
+                            transform={`rotate(${marker.angle}, ${marker.x}, ${marker.y})`}
+                            style={{ 
+                                paintOrder: 'stroke',
+                                stroke: '#fff',
+                                strokeWidth: '2px',
+                                fill: '#000'
+                            }}
                         >
-                            {label}
+                            {marker.bmi}
                         </text>
-                    )
-                })}
+                    ))}
 
-                {/* Стрелка с анимацией */}
-                <g>
-                    {/* Основание стрелки (круг) */}
-                    <circle cx={centerX} cy={centerY} r="8" fill="#4b5563" />
-                    {/* Стрелка с transition */}
-                    <line
-                        x1={centerX}
-                        y1={centerY}
-                        x2={arrowEndX}
-                        y2={arrowEndY}
-                        stroke="#1f2937"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        style={{ transition: 'all 0.5s ease' }}
-                    />
-                    {/* Наконечник стрелки */}
-                    <polygon
-                        points={`${arrowEndX},${arrowEndY} ${arrowEndX - 8 * Math.cos(Math.PI - arrowAngleRad - 0.2)},${arrowEndY + 8 * Math.sin(Math.PI - arrowAngleRad - 0.2)} ${arrowEndX - 8 * Math.cos(Math.PI - arrowAngleRad + 0.2)},${arrowEndY + 8 * Math.sin(Math.PI - arrowAngleRad + 0.2)}`}
-                        fill="#1f2937"
-                        style={{ transition: 'all 0.5s ease' }}
-                    />
+                    {/* Подписи категорий вдоль дуги */}
+                    <g style={{ fontSize: '14px' }}>
+                        <text fill={t.status.underweight === 'Underweight' ? '#bc2020' : '#666'}>
+                            <textPath xlinkHref="#curvetxt1" startOffset="50%">
+                                {t.status.underweight}
+                            </textPath>
+                        </text>
+                        <text fill={t.status.normal === 'Normal' ? '#008137' : '#666'}>
+                            <textPath xlinkHref="#curvetxt2" startOffset="50%">
+                                {t.status.normal}
+                            </textPath>
+                        </text>
+                        <text fill={t.status.overweight === 'Overweight' ? '#ffe400' : '#666'}>
+                            <textPath xlinkHref="#curvetxt3" startOffset="50%">
+                                {t.status.overweight}
+                            </textPath>
+                        </text>
+                        <text fill={t.status.obesity === 'Obesity' ? '#bc2020' : '#666'}>
+                            <textPath xlinkHref="#curvetxt4" startOffset="50%">
+                                {t.status.obesity}
+                            </textPath>
+                        </text>
+                    </g>
+
+                    {/* Стрелка (динамическая) */}
+                    <g style={{ 
+                        transformOrigin: '140px 140px',
+                        transform: `rotate(${rotationAngle}deg)`,
+                        transition: 'transform 0.5s ease'
+                    }}>
+                        <line
+                            x1="140"
+                            y1="140"
+                            x2="65"
+                            y2="140"
+                            stroke="#666"
+                            strokeWidth="2"
+                            markerEnd="url(#arrowhead)"
+                        />
+                    </g>
+
+                    {/* Центральное значение BMI */}
+                    <text
+                        x="67"
+                        y="120"
+                        style={{
+                            fontSize: '30px',
+                            fontWeight: 'bold',
+                            color: '#000'
+                        }}
+                    >
+                        BMI = {animatedBMI.toFixed(1)}
+                    </text>
                 </g>
-
-                {/* Центральное значение BMI */}
-                <text
-                    x={centerX}
-                    y={centerY + 5}
-                    textAnchor="middle"
-                    fontSize="24"
-                    fontWeight="bold"
-                    fill="#1f2937"
-                >
-                    BMI = {animatedBMI.toFixed(1)}
-                </text>
             </svg>
         </div>
     )

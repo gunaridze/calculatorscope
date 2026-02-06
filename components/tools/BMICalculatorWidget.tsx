@@ -558,7 +558,8 @@ export default function BMICalculatorWidget({
                     <div className="mb-6">
                         <BMIGaugeChart 
                             bmi={result.bmi as number} 
-                            status={result.bmi_status as 'underweight' | 'normal' | 'overweight' | 'obesity'} 
+                            status={result.bmi_status as 'underweight' | 'normal' | 'overweight' | 'obesity'}
+                            lang={lang}
                         />
                     </div>
 
