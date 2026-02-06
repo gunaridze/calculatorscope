@@ -68,6 +68,11 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             m: 'm',
             in: 'in',
             ft: 'ft'
+        },
+        buttons: {
+            save: 'Save',
+            save_pdf: 'Save as PDF',
+            copy_result: 'Copy result'
         }
     },
     ru: {
