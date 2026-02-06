@@ -76,14 +76,24 @@ export default function BMICalculatorWidget({
     // Получаем конфигурацию поля из inputs_json
     const getFieldConfig = (fieldName: string) => {
         // Проверяем структуру: может быть массив для языка или объект
-        if (Array.isArray(ui?.[lang])) {
-            return ui[lang].find((field: any) => field.name === fieldName)
+        if (ui && typeof ui === 'object') {
+            // Проверяем текущий язык
+            if (Array.isArray(ui[lang])) {
+                return ui[lang].find((field: any) => field.name === fieldName)
+            }
+            // Fallback на английский
+            if (Array.isArray(ui['en'])) {
+                return ui['en'].find((field: any) => field.name === fieldName)
+            }
+            // Проверяем как объект (если структура другая)
+            if (ui[lang] && typeof ui[lang] === 'object' && !Array.isArray(ui[lang])) {
+                return ui[lang][fieldName]
+            }
+            if (ui['en'] && typeof ui['en'] === 'object' && !Array.isArray(ui['en'])) {
+                return ui['en'][fieldName]
+            }
         }
-        if (Array.isArray(ui?.['en'])) {
-            return ui['en'].find((field: any) => field.name === fieldName)
-        }
-        // Fallback: проверяем как объект
-        return ui?.[lang]?.[fieldName] || ui?.['en']?.[fieldName]
+        return null
     }
 
     // Обработка изменения значений
@@ -224,7 +234,8 @@ export default function BMICalculatorWidget({
 
     // Получаем единицу веса для отображения
     const weightUnit = values.weight_unit as string || 'lb'
-    const weightUnitLabel = t.units[weightUnit as keyof typeof t.units] || weightUnit
+    // Используем символы единиц (lb, kg, st) вместо локализованных названий для избежания склонений
+    const weightUnitLabel = weightUnit === 'kg' ? 'kg' : weightUnit === 'lb' ? 'lb' : weightUnit === 'st' ? 'st' : weightUnit
 
     // Формируем сообщение
     const getMessage = (): string => {
@@ -293,13 +304,18 @@ export default function BMICalculatorWidget({
                 {(() => {
                     const fieldConfig = getFieldConfig('gender')
                     const currentGender = values.gender as string || 'male'
+                    // Fallback опции, если fieldConfig не найден
+                    const genderOptions = fieldConfig?.options || [
+                        { value: 'male', label: 'Male' },
+                        { value: 'female', label: 'Female' }
+                    ]
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {fieldConfig?.label || 'Gender'}
                             </label>
                             <div className="flex gap-2">
-                                {fieldConfig?.options?.map((opt: any) => {
+                                {genderOptions.map((opt: any) => {
                                     const isActive = currentGender === opt.value
                                     return (
                                         <button
@@ -324,13 +340,22 @@ export default function BMICalculatorWidget({
                 {/* Height Unit - кнопки выбора */}
                 {(() => {
                     const fieldConfig = getFieldConfig('height_unit')
+                    // Fallback опции, если fieldConfig не найден
+                    const heightUnitOptions = fieldConfig?.options || [
+                        { value: 'cm', label: 'cm' },
+                        { value: 'm', label: 'm' },
+                        { value: 'in', label: 'in' },
+                        { value: 'ft', label: 'ft' },
+                        { value: 'ft_in', label: 'ft / in' },
+                        { value: 'm_cm', label: 'm / cm' }
+                    ]
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {fieldConfig?.label || 'Height Unit'}
                             </label>
                             <div className="flex flex-wrap gap-2">
-                                {fieldConfig?.options?.map((opt: any) => {
+                                {heightUnitOptions.map((opt: any) => {
                                     const isActive = heightUnit === opt.value
                                     return (
                                         <button
@@ -458,13 +483,19 @@ export default function BMICalculatorWidget({
                 {/* Weight Unit - кнопки выбора */}
                 {(() => {
                     const fieldConfig = getFieldConfig('weight_unit')
+                    // Fallback опции, если fieldConfig не найден
+                    const weightUnitOptions = fieldConfig?.options || [
+                        { value: 'kg', label: 'kg' },
+                        { value: 'lb', label: 'lb' },
+                        { value: 'st', label: 'st' }
+                    ]
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {fieldConfig?.label || 'Weight Unit'}
                             </label>
                             <div className="flex gap-2">
-                                {fieldConfig?.options?.map((opt: any) => {
+                                {weightUnitOptions.map((opt: any) => {
                                     const isActive = weightUnit === opt.value
                                     return (
                                         <button
@@ -519,38 +550,53 @@ export default function BMICalculatorWidget({
                     >
                         {translations.clear}
                     </button>
-                    <button
-                        onClick={handleSave}
-                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors"
-                        title="Save result"
-                    >
-                        Save
-                    </button>
                 </div>
             </div>
 
             {/* BOTTOM SECTION: Результат */}
             {Object.keys(result).length > 0 && (
                 <div className="border-t border-gray-200 pt-6" data-bmi-result>
-                    {/* Header Result с кнопкой Save */}
-                    <div className="bg-green-600 text-white px-5 py-3 rounded-t-lg -mx-5 -mt-6 mb-4 flex justify-between items-center">
-                        <h3 className="text-lg font-bold">{t.result.title}</h3>
-                        <button
-                            onClick={handleSave}
-                            className="flex flex-col items-center gap-0.5 text-sm hover:bg-green-700 px-2 py-1 rounded transition-colors"
-                            title="Save as PDF"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586L8.707 7.293zM3 9a2 2 0 012-2h1a1 1 0 010 2H5v7h10v-7h-1a1 1 0 110-2h1a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            </svg>
-                            <span className="text-xs">save</span>
-                        </button>
-                    </div>
+                    {/* Header Result с кнопкой Save - цвет зависит от статуса */}
+                    {(() => {
+                        const status = result.bmi_status as string
+                        let headerColor = 'bg-green-600 hover:bg-green-700'
+                        if (status === 'underweight') {
+                            headerColor = 'bg-red-600 hover:bg-red-700'
+                        } else if (status === 'overweight') {
+                            headerColor = 'bg-yellow-600 hover:bg-yellow-700'
+                        } else if (status === 'obesity') {
+                            headerColor = 'bg-red-800 hover:bg-red-900'
+                        }
+                        // Определяем hover цвет для кнопки
+                        let hoverColor = 'hover:bg-green-700'
+                        if (status === 'underweight') {
+                            hoverColor = 'hover:bg-red-700'
+                        } else if (status === 'overweight') {
+                            hoverColor = 'hover:bg-yellow-700'
+                        } else if (status === 'obesity') {
+                            hoverColor = 'hover:bg-red-900'
+                        }
+                        return (
+                            <div className={`${headerColor} text-white px-5 py-3 rounded-t-lg -mx-5 -mt-6 mb-4 flex justify-between items-center`}>
+                                <h3 className="text-lg font-bold">{t.result.title}</h3>
+                                <button
+                                    onClick={handleSave}
+                                    className={`flex flex-col items-center gap-0.5 text-sm ${hoverColor} px-2 py-1 rounded transition-colors`}
+                                    title={t.buttons.save_pdf || 'Save as PDF'}
+                                >
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586L8.707 7.293zM3 9a2 2 0 012-2h1a1 1 0 010 2H5v7h10v-7h-1a1 1 0 110-2h1a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    </svg>
+                                    <span className="text-xs">{t.buttons.save || 'Save'}</span>
+                                </button>
+                            </div>
+                        )
+                    })()}
 
                     {/* BMI и статус */}
                     <div className="mb-4 text-center">
                         <p className="text-lg font-semibold text-gray-900">
-                            BMI = {result.bmi} kg/m² ({getStatusLabel()})
+                            BMI = {typeof result.bmi === 'number' ? result.bmi.toFixed(1) : result.bmi} kg/m² ({getStatusLabel()})
                         </p>
                     </div>
 
@@ -587,19 +633,31 @@ export default function BMICalculatorWidget({
                         </p>
                     </div>
 
-                    {/* Сообщение */}
-                    {getMessage() && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-gray-800">{getMessage()}</p>
-                        </div>
-                    )}
+                    {/* Сообщение - цвет зависит от статуса */}
+                    {getMessage() && (() => {
+                        const status = result.bmi_status as string
+                        let bgColor = 'bg-green-50 border-green-200'
+                        if (status === 'underweight') {
+                            bgColor = 'bg-red-50 border-red-200'
+                        } else if (status === 'overweight') {
+                            bgColor = 'bg-yellow-50 border-yellow-200'
+                        } else if (status === 'obesity') {
+                            bgColor = 'bg-red-100 border-red-300'
+                        }
+                        return (
+                            <div className={`${bgColor} border rounded-lg p-4 mb-4`}>
+                                <p className="text-sm text-gray-800">{getMessage()}</p>
+                            </div>
+                        )
+                    })()}
 
                     {/* Кнопка копирования */}
                     <button
                         onClick={handleCopy}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                        title={t.buttons.copy_result || 'Copy result'}
                     >
-                        {copied ? '✓' : translations.copy}
+                        {copied ? '✓' : (t.buttons.copy_result || translations.copy)}
                     </button>
                 </div>
             )}
@@ -609,9 +667,6 @@ export default function BMICalculatorWidget({
                 <Link href={`/${lang}/contact`} className="text-blue-600 hover:text-blue-800 hover:underline text-sm block">
                     {translations.suggest}
                 </Link>
-                <button onClick={handleSave} className="text-blue-600 hover:text-blue-800 hover:underline text-sm block mt-2 cursor-pointer text-left" type="button" style={{ background: 'none', border: 'none', padding: 0 }}>
-                    {translations.downloadWidget}
-                </button>
                 {toolSlug && (
                     <Link href={`/${lang}/widget/${toolSlug}`} className="text-blue-600 hover:text-blue-800 hover:underline text-sm block text-center mt-[50px]">
                         {translations.getWidget}

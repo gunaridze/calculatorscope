@@ -33,6 +33,11 @@ export interface BMICalculatorTranslations {
         in: string
         ft: string
     }
+    buttons: {
+        save: string
+        save_pdf: string
+        copy_result: string
+    }
 }
 
 const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
@@ -86,12 +91,17 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         units: {
             kg: 'кг',
-            lb: 'фунт',
-            st: 'ст',
+            lb: 'lb',
+            st: 'st',
             cm: 'см',
             m: 'м',
-            in: 'дюйм',
-            ft: 'фут'
+            in: 'in',
+            ft: 'ft'
+        },
+        buttons: {
+            save: 'Сохранить',
+            save_pdf: 'Сохранить как PDF',
+            copy_result: 'Копировать результат'
         }
     },
     de: {
@@ -121,6 +131,11 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             m: 'm',
             in: 'in',
             ft: 'ft'
+        },
+        buttons: {
+            save: 'Speichern',
+            save_pdf: 'Als PDF speichern',
+            copy_result: 'Ergebnis kopieren'
         }
     },
     es: {
@@ -150,6 +165,11 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             m: 'm',
             in: 'in',
             ft: 'ft'
+        },
+        buttons: {
+            save: 'Guardar',
+            save_pdf: 'Guardar como PDF',
+            copy_result: 'Copiar resultado'
         }
     },
     fr: {
@@ -179,6 +199,11 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             m: 'm',
             in: 'in',
             ft: 'ft'
+        },
+        buttons: {
+            save: 'Enregistrer',
+            save_pdf: 'Enregistrer en PDF',
+            copy_result: 'Copier le résultat'
         }
     },
     it: {
@@ -208,6 +233,11 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             m: 'm',
             in: 'in',
             ft: 'ft'
+        },
+        buttons: {
+            save: 'Salva',
+            save_pdf: 'Salva come PDF',
+            copy_result: 'Copia risultato'
         }
     },
     pl: {
@@ -237,6 +267,11 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             m: 'm',
             in: 'in',
             ft: 'ft'
+        },
+        buttons: {
+            save: 'Zapisz',
+            save_pdf: 'Zapisz jako PDF',
+            copy_result: 'Kopiuj wynik'
         }
     },
     lv: {
@@ -266,6 +301,11 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             m: 'm',
             in: 'in',
             ft: 'ft'
+        },
+        buttons: {
+            save: 'Saglabāt',
+            save_pdf: 'Saglabāt kā PDF',
+            copy_result: 'Kopēt rezultātu'
         }
     }
 }
