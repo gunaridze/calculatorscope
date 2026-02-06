@@ -52,7 +52,6 @@ export default function BMICalculatorWidget({
     const defaultValues = getInitialValues()
     const [values, setValues] = useState<JsonEngineInput>(defaultValues)
     const [result, setResult] = useState<JsonEngineOutput>({})
-    const [copied, setCopied] = useState(false)
 
     // Применяем query params из URL
     useEffect(() => {
@@ -138,96 +137,130 @@ export default function BMICalculatorWidget({
         setResult({})
     }
 
-    // Сохранение результата в PDF
+    // Заменяем SVG на img в контейнере для html2canvas; возвращаем список (parent, img, svg) для восстановления
+    const replaceSvgsWithImages = (container: HTMLElement): Promise<{ parent: Node; img: HTMLImageElement; svg: SVGElement }[]> => {
+        const svgs = Array.from(container.querySelectorAll('svg'))
+        if (svgs.length === 0) return Promise.resolve([])
+        const restores: { parent: Node; img: HTMLImageElement; svg: SVGElement }[] = []
+        const promises = svgs.map((svg) => {
+            return new Promise<void>((resolve) => {
+                const rect = svg.getBoundingClientRect()
+                const w = Math.max(1, Math.round(rect.width))
+                const h = Math.max(1, Math.round(rect.height))
+                const canvas = document.createElement('canvas')
+                canvas.width = w * 2
+                canvas.height = h * 2
+                const ctx = canvas.getContext('2d')
+                if (!ctx) {
+                    resolve()
+                    return
+                }
+                const img = new Image()
+                const svgData = new XMLSerializer().serializeToString(svg)
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+                const url = URL.createObjectURL(svgBlob)
+                img.onload = () => {
+                    try {
+                        ctx.scale(2, 2)
+                        ctx.drawImage(img, 0, 0, w, h)
+                        const dataUrl = canvas.toDataURL('image/png')
+                        const newImg = document.createElement('img')
+                        newImg.src = dataUrl
+                        newImg.style.cssText = `width:${w}px;height:${h}px;display:block`
+                        const parent = svg.parentNode
+                        if (parent) {
+                            parent.replaceChild(newImg, svg)
+                            restores.push({ parent, img: newImg, svg })
+                        }
+                    } finally {
+                        URL.revokeObjectURL(url)
+                    }
+                    resolve()
+                }
+                img.onerror = () => {
+                    URL.revokeObjectURL(url)
+                    resolve()
+                }
+                img.src = url
+            })
+        })
+        return Promise.all(promises).then(() => restores)
+    }
+
+    const restoreSvgs = (restores: { parent: Node; img: HTMLImageElement; svg: SVGElement }[]) => {
+        restores.forEach(({ parent, img, svg }) => {
+            if (parent.contains(img)) {
+                parent.replaceChild(svg, img)
+            }
+        })
+    }
+
+    // Сохранение результата в PDF (блок результата + чарт)
     const handleSave = async () => {
+        const resultElement = document.querySelector('[data-bmi-result]') as HTMLElement | null
+        if (!resultElement) {
+            saveAsTxtFallback()
+            return
+        }
+        let restores: { parent: Node; img: HTMLImageElement; svg: SVGElement }[] = []
         try {
-            // Динамически импортируем библиотеки для PDF
+            restores = await replaceSvgsWithImages(resultElement)
             const { default: jsPDF } = await import('jspdf')
             const html2canvas = (await import('html2canvas')).default
-            
-            // Находим элемент результата для сохранения
-            const resultElement = document.querySelector('[data-bmi-result]')
-            if (!resultElement) {
-                // Fallback: сохраняем как текст
-                const resultText = `BMI: ${result.bmi || ''}\nStatus: ${result.bmi_status || ''}\nHealthy Weight Range: ${result.healthy_weight_min || ''} - ${result.healthy_weight_max || ''} ${values.weight_unit || ''}`
-                const blob = new Blob([resultText], { type: 'text/plain' })
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = 'bmi-result.txt'
-                document.body.appendChild(a)
-                a.click()
-                document.body.removeChild(a)
-                URL.revokeObjectURL(url)
-                return
-            }
-
-            // Создаем canvas из HTML элемента
-            const canvas = await html2canvas(resultElement as HTMLElement, {
+            const canvas = await html2canvas(resultElement, {
                 backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
-                logging: false
+                logging: false,
             })
-
+            restoreSvgs(restores)
+            restores = []
             const imgData = canvas.toDataURL('image/png', 1.0)
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            })
-            
-            const imgWidth = 210 // A4 width in mm
-            const pageHeight = 297 // A4 height in mm
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+            const imgWidth = 210
+            const pageHeight = 297
             const imgHeight = (canvas.height * imgWidth) / canvas.width
-            let heightLeft = imgHeight
-            let position = 0
-
-            // Добавляем первую страницу
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-            heightLeft -= pageHeight
-
-            // Добавляем дополнительные страницы, если изображение не помещается
-            while (heightLeft >= 0) {
-                position = heightLeft - imgHeight
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight))
+            if (imgHeight > pageHeight) {
                 pdf.addPage()
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-                heightLeft -= pageHeight
+                pdf.addImage(imgData, 'PNG', 0, pageHeight - imgHeight, imgWidth, imgHeight)
             }
-
             pdf.save(`bmi-result-${Date.now()}.pdf`)
         } catch (error) {
             console.error('Error saving PDF:', error)
-            // Fallback: сохраняем как текст
-            const resultText = `BMI: ${result.bmi || ''}\nStatus: ${result.bmi_status || ''}\nHealthy Weight Range: ${result.healthy_weight_min || ''} - ${result.healthy_weight_max || ''} ${values.weight_unit || ''}`
-            const blob = new Blob([resultText], { type: 'text/plain' })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = 'bmi-result.txt'
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(url)
+            if (restores.length) restoreSvgs(restores)
+            saveAsTxtFallback()
         }
     }
 
-    // Копирование результата
-    const handleCopy = async () => {
-        const resultText = `BMI: ${result.bmi || ''}\nStatus: ${result.bmi_status || ''}\nHealthy Weight Range: ${result.healthy_weight_min || ''} - ${result.healthy_weight_max || ''} ${values.weight_unit || ''}`
-        try {
-            await navigator.clipboard.writeText(resultText)
-            setCopied(true)
-            setTimeout(() => setCopied(false), 2000)
-        } catch (err) {
-            console.error('Failed to copy:', err)
-        }
+    const saveAsTxtFallback = () => {
+        const resultText = `BMI: ${result.bmi ?? ''}\nStatus: ${result.bmi_status ?? ''}\nHealthy Weight Range: ${result.healthy_weight_min ?? ''} - ${result.healthy_weight_max ?? ''} ${values.weight_unit ?? ''}`
+        const blob = new Blob([resultText], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'bmi-result.txt'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
     }
 
     // Height Unit: только cm и ft_in
     const heightUnit = values.height_unit as string || 'ft_in'
     const showHeightValue = heightUnit === 'cm'
     const showHeightFtIn = heightUnit === 'ft_in'
+
+    // Скачать виджет — открыть калькулятор в popup
+    const handleInstall = () => {
+        if (typeof window !== 'undefined') {
+            const isPopup = window.location.search.includes('do=pop')
+            if (!isPopup) {
+                const sep = window.location.search ? '&' : '?'
+                window.open(`${window.location.pathname}${window.location.search}${sep}do=pop`, '_blank', 'width=400,height=600')
+            }
+        }
+    }
 
     // Получаем единицу веса для отображения
     const weightUnit = values.weight_unit as string || 'lb'
@@ -601,39 +634,44 @@ export default function BMICalculatorWidget({
                         )
                     })()}
 
-                    {/* Кнопка копирования */}
-                    <button
-                        onClick={handleCopy}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-                        title={t.buttons.copy_result || 'Copy result'}
-                    >
-                        {copied ? '✓' : (t.buttons.copy_result || translations.copy)}
-                    </button>
                 </div>
             )}
 
-            {/* Footer links */}
+            {/* Footer — как в других калькуляторах */}
             <div className="mt-5">
-                <Link href={`/${lang}/contact`} className="text-blue-600 hover:text-blue-800 hover:underline text-sm block">
+                <Link
+                    href={`/${lang}/contact`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline text-sm block"
+                >
                     {translations.suggest}
                 </Link>
-                {toolSlug && (
-                    <Link href={`/${lang}/widget/${toolSlug}`} className="text-blue-600 hover:text-blue-800 hover:underline text-sm block text-center mt-[50px]">
-                        {translations.getWidget}
-                    </Link>
-                )}
+                <button
+                    onClick={handleInstall}
+                    className="text-blue-600 hover:text-blue-800 hover:underline text-sm block mt-2 cursor-pointer text-left"
+                    type="button"
+                    style={{ background: 'none', border: 'none', padding: 0 }}
+                >
+                    {translations.downloadWidget}
+                </button>
+                <Link
+                    href={toolSlug ? `/${lang}/widget/${toolSlug}` : `/${lang}/widget`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline text-sm block text-center mt-[50px]"
+                >
+                    {translations.getWidget}
+                </Link>
             </div>
 
-                {/* Logo */}
-                <div className="px-6 pb-4 flex justify-end">
-                    <Link href={`/${lang}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                        <Image src="/calculatorscope-logo.svg" alt="Calculator Scope" width={20} height={20} className="w-5 h-5 object-contain" />
-                        <div className="flex flex-col">
-                            <span className="font-medium">Calculator Scope</span>
-                            <span className="text-xs text-gray-500">Online Calculators for Everything</span>
-                        </div>
-                    </Link>
-                </div>
+            <div className="mt-5 text-right" style={{ marginTop: '20px' }}>
+                <Link href={`/${lang}`} className="logo-widget inline-block">
+                    <Image
+                        src="/calculatorscope-logo.svg"
+                        alt="Calculator Scope"
+                        width={90}
+                        height={90}
+                        className="object-contain inline-block"
+                    />
+                </Link>
+            </div>
             </div>
         </div>
     )
