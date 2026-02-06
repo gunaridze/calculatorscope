@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { calculate, type JsonEngineConfig, type JsonEngineInput, type JsonEngineOutput } from '@/core/engines/json'
 import { getBMICalculatorTranslations, formatMessage, type BMICalculatorLang } from '@/lib/bmi-calculator-translations'
+import BMIGaugeChart from './BMIGaugeChart'
 
 type Props = {
     config: JsonEngineConfig
@@ -129,18 +130,78 @@ export default function BMICalculatorWidget({
         setResult({})
     }
 
-    // Сохранение результата
-    const handleSave = () => {
-        const resultText = `BMI: ${result.bmi || ''}\nStatus: ${result.bmi_status || ''}\nHealthy Weight Range: ${result.healthy_weight_min || ''} - ${result.healthy_weight_max || ''} ${values.weight_unit || ''}`
-        const blob = new Blob([resultText], { type: 'text/plain' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'bmi-result.txt'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+    // Сохранение результата в PDF
+    const handleSave = async () => {
+        try {
+            // Динамически импортируем библиотеки для PDF
+            const { default: jsPDF } = await import('jspdf')
+            const html2canvas = (await import('html2canvas')).default
+            
+            // Находим элемент результата для сохранения
+            const resultElement = document.querySelector('[data-bmi-result]')
+            if (!resultElement) {
+                // Fallback: сохраняем как текст
+                const resultText = `BMI: ${result.bmi || ''}\nStatus: ${result.bmi_status || ''}\nHealthy Weight Range: ${result.healthy_weight_min || ''} - ${result.healthy_weight_max || ''} ${values.weight_unit || ''}`
+                const blob = new Blob([resultText], { type: 'text/plain' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'bmi-result.txt'
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
+                return
+            }
+
+            // Создаем canvas из HTML элемента
+            const canvas = await html2canvas(resultElement as HTMLElement, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                useCORS: true,
+                logging: false
+            })
+
+            const imgData = canvas.toDataURL('image/png', 1.0)
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            })
+            
+            const imgWidth = 210 // A4 width in mm
+            const pageHeight = 297 // A4 height in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width
+            let heightLeft = imgHeight
+            let position = 0
+
+            // Добавляем первую страницу
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+            heightLeft -= pageHeight
+
+            // Добавляем дополнительные страницы, если изображение не помещается
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight
+                pdf.addPage()
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+                heightLeft -= pageHeight
+            }
+
+            pdf.save(`bmi-result-${Date.now()}.pdf`)
+        } catch (error) {
+            console.error('Error saving PDF:', error)
+            // Fallback: сохраняем как текст
+            const resultText = `BMI: ${result.bmi || ''}\nStatus: ${result.bmi_status || ''}\nHealthy Weight Range: ${result.healthy_weight_min || ''} - ${result.healthy_weight_max || ''} ${values.weight_unit || ''}`
+            const blob = new Blob([resultText], { type: 'text/plain' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = 'bmi-result.txt'
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+        }
     }
 
     // Копирование результата
@@ -193,11 +254,14 @@ export default function BMICalculatorWidget({
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
-            {/* HEADER */}
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">{h1}</h2>
+        <div className="w-full lg:w-[420px] lg:float-left lg:mr-5 mb-5 relative mx-auto lg:mx-0" style={{ maxWidth: '420px' }}>
+            {/* Header Виджета */}
+            <div className="bg-blue-600 text-white px-5 py-3 rounded-t-lg mx-auto" style={{ width: '100%', maxWidth: '400px' }}>
+                <h1 className="text-lg font-bold">{h1}</h1>
             </div>
+
+            {/* Тело Калькулятора */}
+            <div className="bg-white border border-gray-200 border-t-0 p-5 mx-auto relative" style={{ width: '100%', maxWidth: '400px' }}>
 
             {/* TOP SECTION: Форма ввода */}
             <div className="mb-8">
@@ -225,48 +289,65 @@ export default function BMICalculatorWidget({
                     )
                 })()}
 
-                {/* Gender */}
+                {/* Gender - кнопки выбора */}
                 {(() => {
                     const fieldConfig = getFieldConfig('gender')
+                    const currentGender = values.gender as string || 'male'
                     return (
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {fieldConfig?.label || 'Gender'}
                             </label>
-                            <select
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={values.gender as string || 'male'}
-                                onChange={(e) => handleChange('gender', e.target.value)}
-                            >
-                                {fieldConfig?.options?.map((opt: any) => (
-                                    <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="flex gap-2">
+                                {fieldConfig?.options?.map((opt: any) => {
+                                    const isActive = currentGender === opt.value
+                                    return (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => handleChange('gender', opt.value)}
+                                            className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                                                isActive
+                                                    ? 'bg-blue-600 text-white border-blue-600'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    )
+                                })}
+                            </div>
                         </div>
                     )
                 })()}
 
-                {/* Height Unit */}
+                {/* Height Unit - кнопки выбора */}
                 {(() => {
                     const fieldConfig = getFieldConfig('height_unit')
                     return (
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {fieldConfig?.label || 'Height Unit'}
                             </label>
-                            <select
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={heightUnit}
-                                onChange={(e) => handleChange('height_unit', e.target.value)}
-                            >
-                                {fieldConfig?.options?.map((opt: any) => (
-                                    <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="flex flex-wrap gap-2">
+                                {fieldConfig?.options?.map((opt: any) => {
+                                    const isActive = heightUnit === opt.value
+                                    return (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => handleChange('height_unit', opt.value)}
+                                            className={`px-3 py-1.5 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                                                isActive
+                                                    ? 'bg-blue-600 text-white border-blue-600'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    )
+                                })}
+                            </div>
                         </div>
                     )
                 })()}
@@ -374,25 +455,33 @@ export default function BMICalculatorWidget({
                     </div>
                 )}
 
-                {/* Weight Unit */}
+                {/* Weight Unit - кнопки выбора */}
                 {(() => {
                     const fieldConfig = getFieldConfig('weight_unit')
                     return (
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {fieldConfig?.label || 'Weight Unit'}
                             </label>
-                            <select
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={weightUnit}
-                                onChange={(e) => handleChange('weight_unit', e.target.value)}
-                            >
-                                {fieldConfig?.options?.map((opt: any) => (
-                                    <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="flex gap-2">
+                                {fieldConfig?.options?.map((opt: any) => {
+                                    const isActive = weightUnit === opt.value
+                                    return (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => handleChange('weight_unit', opt.value)}
+                                            className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                                                isActive
+                                                    ? 'bg-blue-600 text-white border-blue-600'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    )
+                                })}
+                            </div>
                         </div>
                     )
                 })()}
@@ -433,43 +522,44 @@ export default function BMICalculatorWidget({
                     <button
                         onClick={handleSave}
                         className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors"
+                        title="Save result"
                     >
-                        {translations.downloadWidget}
+                        Save
                     </button>
                 </div>
             </div>
 
             {/* BOTTOM SECTION: Результат */}
             {Object.keys(result).length > 0 && (
-                <div className="border-t border-gray-200 pt-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">{t.result.title}</h3>
+                <div className="border-t border-gray-200 pt-6" data-bmi-result>
+                    {/* Header Result с кнопкой Save */}
+                    <div className="bg-green-600 text-white px-5 py-3 rounded-t-lg -mx-5 -mt-6 mb-4 flex justify-between items-center">
+                        <h3 className="text-lg font-bold">{t.result.title}</h3>
+                        <button
+                            onClick={handleSave}
+                            className="flex flex-col items-center gap-0.5 text-sm hover:bg-green-700 px-2 py-1 rounded transition-colors"
+                            title="Save as PDF"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586L8.707 7.293zM3 9a2 2 0 012-2h1a1 1 0 010 2H5v7h10v-7h-1a1 1 0 110-2h1a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            </svg>
+                            <span className="text-xs">save</span>
+                        </button>
+                    </div>
 
                     {/* BMI и статус */}
-                    <div className="mb-4">
+                    <div className="mb-4 text-center">
                         <p className="text-lg font-semibold text-gray-900">
-                            BMI = {result.bmi} ({getStatusLabel()})
+                            BMI = {result.bmi} kg/m² ({getStatusLabel()})
                         </p>
                     </div>
 
-                    {/* Шкала BMI (упрощенная версия) */}
+                    {/* BMI Gauge Chart */}
                     <div className="mb-6">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="flex-1 h-4 bg-red-200 rounded" style={{ opacity: (result.bmi_status === 'underweight') ? 1 : 0.3 }}>
-                                <span className="text-xs text-gray-600 ml-1">Underweight</span>
-                            </div>
-                            <div className="flex-1 h-4 bg-green-200 rounded" style={{ opacity: (result.bmi_status === 'normal') ? 1 : 0.3 }}>
-                                <span className="text-xs text-gray-600 ml-1">Normal</span>
-                            </div>
-                            <div className="flex-1 h-4 bg-yellow-200 rounded" style={{ opacity: (result.bmi_status === 'overweight') ? 1 : 0.3 }}>
-                                <span className="text-xs text-gray-600 ml-1">Overweight</span>
-                            </div>
-                            <div className="flex-1 h-4 bg-red-300 rounded" style={{ opacity: (result.bmi_status === 'obesity') ? 1 : 0.3 }}>
-                                <span className="text-xs text-gray-600 ml-1">Obesity</span>
-                            </div>
-                        </div>
-                        <div className="text-xs text-gray-500 text-center">
-                            &lt; 18.5 | 18.5-25 | 25-30 | &ge; 30
-                        </div>
+                        <BMIGaugeChart 
+                            bmi={result.bmi as number} 
+                            status={result.bmi_status as 'underweight' | 'normal' | 'overweight' | 'obesity'} 
+                        />
                     </div>
 
                     {/* Метрики */}
@@ -528,11 +618,16 @@ export default function BMICalculatorWidget({
                 )}
             </div>
 
-            {/* Logo */}
-            <div className="mt-5 text-right" style={{ marginTop: '20px' }}>
-                <Link href={`/${lang}`} className="logo-widget inline-block">
-                    <Image src="/calculatorscope-logo.svg" alt="Calculator Scope" width={90} height={90} className="object-contain inline-block" />
-                </Link>
+                {/* Logo */}
+                <div className="px-6 pb-4 flex justify-end">
+                    <Link href={`/${lang}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                        <Image src="/calculatorscope-logo.svg" alt="Calculator Scope" width={20} height={20} className="w-5 h-5 object-contain" />
+                        <div className="flex flex-col">
+                            <span className="font-medium">Calculator Scope</span>
+                            <span className="text-xs text-gray-500">Online Calculators for Everything</span>
+                        </div>
+                    </Link>
+                </div>
             </div>
         </div>
     )

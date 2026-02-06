@@ -18,6 +18,8 @@
     "@formatjs/intl-localematcher": "^0.7.2",
     "@prisma/client": "5.19.1",
     "csv-parse": "^6.1.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.1.0",
     "katex": "^0.16.28",
     "mathjs": "^15.1.0",
     "negotiator": "^1.0.0",
