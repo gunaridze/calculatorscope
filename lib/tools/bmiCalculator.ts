@@ -164,8 +164,9 @@ export function bmiCalculator(options: BMICalculatorOptions): BMICalculatorResul
     // BMI Prime
     const bmi_prime = bmi / 25
 
-    // Ponderal Index
-    const ponderal_index = weight_kg / (height_meters * height_meters * height_meters)
+    // Пондеральный индекс: PI = рост (см) / ∛вес (кг); безразмерный, норма для мужчин 38–41
+    const height_cm = height_meters * 100
+    const ponderal_index = height_cm / Math.cbrt(weight_kg)
 
     return {
         bmi: Math.round(bmi * 10) / 10, // 1 знак после запятой
