@@ -444,7 +444,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                     <h3 className="text-xl font-semibold mb-3 text-gray-900">{item.question}</h3>
                                     <div 
                                         className="text-gray-700"
-                                        dangerouslySetInnerHTML={{ __html: item.answer }}
+                                        dangerouslySetInnerHTML={{ __html: processLatex(item.answer) }}
                                     />
                                 </div>
                             ))}
@@ -503,7 +503,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                 className="mb-12 prose lg:prose-xl"
                                 id={block.id}
                             >
-                                <div dangerouslySetInnerHTML={{ __html: block.content }} />
+                                <div dangerouslySetInnerHTML={{ __html: processLatex(block.content) }} />
                             </section>
                         )
                     })
