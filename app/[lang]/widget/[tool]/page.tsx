@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 import React from 'react'
 import WidgetCodeBlock from '@/components/WidgetCodeBlock'
 import CopyableCodeBlock from '@/components/CopyableCodeBlock'
+import { processLatex } from '@/lib/latex-server'
 
 type Props = {
     params: Promise<{ lang: string; tool: string }>
@@ -385,7 +386,7 @@ ${toolName}
                                                     
                                                     return (
                                                         <>
-                                                            <div dangerouslySetInnerHTML={{ __html: processedHtml }} />
+                                                            <div dangerouslySetInnerHTML={{ __html: processLatex(processedHtml) }} />
                                                             {directUrlMatch && (
                                                                 <CopyableCodeBlock
                                                                     label="Direct URL"
@@ -409,7 +410,7 @@ ${toolName}
                                         <div
                                             className="prose"
                                             dangerouslySetInnerHTML={{
-                                                __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                                __html: processLatex(replacePlaceholders(section.html, toolName, toolSlug, lang))
                                             }}
                                         />
                                     )}
@@ -424,7 +425,7 @@ ${toolName}
                                             <div
                                                 className="prose"
                                                 dangerouslySetInnerHTML={{
-                                                    __html: (() => {
+                                                    __html: processLatex((() => {
                                                         let html = replacePlaceholders(section.html, toolName, toolSlug, lang)
                                                         
                                                         // Преобразуем ссылку widget-preview-link в кнопку
@@ -452,7 +453,7 @@ ${toolName}
                                                         )
                                                         
                                                         return html
-                                                    })()
+                                                    })())
                                                 }}
                                             />
                                         </div>
@@ -462,7 +463,7 @@ ${toolName}
                                         <div
                                             className="prose"
                                             dangerouslySetInnerHTML={{
-                                                __html: (() => {
+                                                __html: processLatex((() => {
                                                     let html = replacePlaceholders(section.html, toolName, toolSlug, lang)
                                                     
                                                     // Удаляем дублирующиеся блоки preview из HTML
@@ -481,7 +482,7 @@ ${toolName}
                                                     }
                                                     
                                                     return html
-                                                })()
+                                                })())
                                             }}
                                         />
                                     )}
@@ -604,7 +605,7 @@ ${toolName}
                                                 
                                                 return (
                                                     <>
-                                                        <div dangerouslySetInnerHTML={{ __html: processedHtml }} />
+                                                        <div dangerouslySetInnerHTML={{ __html: processLatex(processedHtml) }} />
                                                         {directUrlMatch && (
                                                             <CopyableCodeBlock
                                                                 label="Direct URL"
@@ -628,7 +629,7 @@ ${toolName}
                                     <div
                                         className="prose"
                                         dangerouslySetInnerHTML={{
-                                            __html: replacePlaceholders(section.html, toolName, toolSlug, lang)
+                                            __html: processLatex(replacePlaceholders(section.html, toolName, toolSlug, lang))
                                         }}
                                     />
                                 )}
@@ -643,7 +644,7 @@ ${toolName}
                                         <div
                                             className="prose"
                                             dangerouslySetInnerHTML={{
-                                                __html: (() => {
+                                                __html: processLatex((() => {
                                                     let html = replacePlaceholders(section.html, toolName, toolSlug, lang)
                                                     
                                                     // Преобразуем ссылку widget-preview-link в кнопку
@@ -671,7 +672,7 @@ ${toolName}
                                                     )
                                                     
                                                     return html
-                                                })()
+                                                })())
                                             }}
                                         />
                                     </div>
@@ -681,7 +682,7 @@ ${toolName}
                                     <div
                                         className="prose"
                                         dangerouslySetInnerHTML={{
-                                            __html: (() => {
+                                            __html: processLatex((() => {
                                                 let html = replacePlaceholders(section.html, toolName, toolSlug, lang)
                                                 
                                                 // Удаляем дублирующиеся блоки preview из HTML
@@ -700,7 +701,7 @@ ${toolName}
                                                 }
                                                 
                                                 return html
-                                            })()
+                                            })())
                                         }}
                                     />
                                 )}

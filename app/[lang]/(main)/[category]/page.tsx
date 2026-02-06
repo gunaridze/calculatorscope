@@ -11,6 +11,7 @@ import React from 'react'
 import CalculatorWidget from '@/components/CalculatorWidget'
 import PWASetup from '@/components/PWASetup'
 import FeedbackForm from '@/components/FeedbackForm'
+import { processLatex } from '@/lib/latex-server'
 
 type Props = {
     params: Promise<{ lang: string; category: string }>
@@ -295,7 +296,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                     bodyContent = (
                         <div 
                             className="prose lg:prose-xl max-w-none"
-                            dangerouslySetInnerHTML={{ __html: parsed }}
+                            dangerouslySetInnerHTML={{ __html: processLatex(parsed) }}
                         />
                     )
                 } else if (parsed && typeof parsed === 'object') {
@@ -312,7 +313,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                         bodyContent = (
                             <div 
                                 className="prose lg:prose-xl max-w-none"
-                                dangerouslySetInnerHTML={{ __html: htmlContent }}
+                                dangerouslySetInnerHTML={{ __html: processLatex(htmlContent) }}
                             />
                         )
                     }
@@ -386,7 +387,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                                                         {section.html && (
                                                             <div 
                                                                 className="prose"
-                                                                dangerouslySetInnerHTML={{ __html: section.html }}
+                                                                dangerouslySetInnerHTML={{ __html: processLatex(section.html) }}
                                                             />
                                                         )}
                                                     </section>

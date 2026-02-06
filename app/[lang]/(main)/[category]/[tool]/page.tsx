@@ -10,6 +10,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import AdBanner from '@/components/AdBanner'
 import Header from '@/components/Header'
 import React from 'react'
+import { processLatex } from '@/lib/latex-server'
 
 // Интерфейс для content_blocks_json
 interface ContentBlock {
@@ -375,7 +376,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                 <div 
                     key="short-answer" 
                     className="mb-4 prose lg:prose-xl"
-                    dangerouslySetInnerHTML={{ __html: shortAnswer }}
+                    dangerouslySetInnerHTML={{ __html: processLatex(shortAnswer) }}
                 />
             ),
             sectionType: 'short_answer'
@@ -412,7 +413,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                     <li 
                                         key={idx} 
                                         className="text-gray-700"
-                                        dangerouslySetInnerHTML={{ __html: point }}
+                                        dangerouslySetInnerHTML={{ __html: processLatex(point) }}
                                     />
                                 ))}
                             </ul>
@@ -489,7 +490,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                             <div 
                                 key={`content-block-html-${idx}`} 
                                 className="mb-4 prose lg:prose-xl"
-                                dangerouslySetInnerHTML={{ __html: block.content }}
+                                dangerouslySetInnerHTML={{ __html: processLatex(block.content) }}
                             />
                         )
                     })
@@ -560,7 +561,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                     <h2 key="formula-h2" className="text-3xl font-bold mb-6 mt-8">Formula</h2>
                     <section key="formula-section" id="formula" className="mb-12 prose lg:prose-xl">
                         <div className="bg-gray-50 p-6 rounded-lg">
-                            <div dangerouslySetInnerHTML={{ __html: formulaMd }} />
+                            <div dangerouslySetInnerHTML={{ __html: processLatex(formulaMd) }} />
                         </div>
                     </section>
                 </>
@@ -576,7 +577,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                     <h2 key="assumptions-h2" className="text-3xl font-bold mb-6 mt-8">Assumptions</h2>
                     <section key="assumptions-section" id="assumptions" className="mb-12 prose lg:prose-xl">
                         <div className="bg-gray-50 p-6 rounded-lg">
-                            <div dangerouslySetInnerHTML={{ __html: assumptionsMd }} />
+                            <div dangerouslySetInnerHTML={{ __html: processLatex(assumptionsMd) }} />
                         </div>
                     </section>
                 </>
@@ -604,7 +605,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                                                 <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
                                                 <div 
                                                     className="prose lg:prose-xl"
-                                                    dangerouslySetInnerHTML={{ __html: faq.answer }}
+                                                    dangerouslySetInnerHTML={{ __html: processLatex(faq.answer) }}
                                                 />
                                             </div>
                                         ))
