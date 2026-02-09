@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { calculate, type JsonEngineConfig, type JsonEngineInput, type JsonEngineOutput } from '@/core/engines/json'
@@ -32,6 +32,32 @@ export default function BMICalculatorWidget({
 }: Props) {
     // Получаем переводы для UI результата
     const t = getBMICalculatorTranslations(lang as BMICalculatorLang)
+    
+    // Нормализуем ui: если это объект с ключом "inputs", извлекаем массив
+    // (Prisma может возвращать JSON как {inputs: [...]} вместо просто [...])
+    const normalizedUi = useMemo(() => {
+        if (!ui) return null
+        // Если это объект с ключом "inputs", извлекаем массив
+        if (typeof ui === 'object' && !Array.isArray(ui) && 'inputs' in ui && Array.isArray(ui.inputs)) {
+            return ui.inputs
+        }
+        // Если это уже массив, возвращаем как есть
+        if (Array.isArray(ui)) {
+            return ui
+        }
+        // Если это объект с ключами языков
+        if (typeof ui === 'object' && !Array.isArray(ui)) {
+            // Проверяем, есть ли ключ текущего языка
+            if (ui[lang] && Array.isArray(ui[lang])) {
+                return ui[lang]
+            }
+            // Fallback на английский
+            if (ui['en'] && Array.isArray(ui['en'])) {
+                return ui['en']
+            }
+        }
+        return ui
+    }, [ui, lang])
 
     // Инициализация: только единицы и пол — из конфига; Age, Weight, Height, Feet, Inches — пустые (образец в placeholder)
     const getInitialValues = (): JsonEngineInput => {
@@ -78,37 +104,12 @@ export default function BMICalculatorWidget({
     }, [config])
 
     // Получаем конфигурацию поля из inputs_json
-    // inputs_json из БД для текущего языка - это массив полей, а не объект с ключами языков
+    // normalizedUi - это массив полей для текущего языка
     const getFieldConfig = (fieldName: string) => {
-        if (!ui) {
+        if (!normalizedUi || !Array.isArray(normalizedUi)) {
             return null
         }
-        // Структура 1: ui - это массив полей (прямо из inputs_json для текущего языка)
-        if (Array.isArray(ui)) {
-            return ui.find((field: any) => field.name === fieldName) || null
-        }
-        // Структура 2: ui.inputs - массив полей (как в TextCaseConverter)
-        if (ui.inputs && Array.isArray(ui.inputs)) {
-            return ui.inputs.find((field: any) => field.name === fieldName) || null
-        }
-        // Структура 3: ui[lang] = массив полей (если данные пришли как объект с ключами языков)
-        if (ui[lang] && Array.isArray(ui[lang])) {
-            return ui[lang].find((field: any) => field.name === fieldName) || null
-        }
-        // Fallback на английский
-        if (ui['en'] && Array.isArray(ui['en'])) {
-            return ui['en'].find((field: any) => field.name === fieldName) || null
-        }
-        // Структура 4: объект с ключами-именами полей
-        if (typeof ui === 'object' && !Array.isArray(ui)) {
-            if (ui[lang] && typeof ui[lang] === 'object' && !Array.isArray(ui[lang])) {
-                return ui[lang][fieldName] || null
-            }
-            if (ui['en'] && typeof ui['en'] === 'object' && !Array.isArray(ui['en'])) {
-                return ui['en'][fieldName] || null
-            }
-        }
-        return null
+        return normalizedUi.find((field: any) => field.name === fieldName) || null
     }
 
     // Обработка изменения значений
