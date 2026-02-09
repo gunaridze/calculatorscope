@@ -223,110 +223,145 @@ export default function BMICalculatorWidget({
             saveAsTxtFallback()
             return
         }
-        let restores: { parent: Node; img: HTMLImageElement; svg: SVGElement }[] = []
+        
         try {
-            restores = await replaceSvgsWithImages(resultElement)
             const html2canvas = (await import('html2canvas')).default
             
-            const canvas = await html2canvas(resultElement, {
+            // Создаём полностью новый простой HTML элемент без классов Tailwind
+            const simpleContainer = document.createElement('div')
+            simpleContainer.style.position = 'absolute'
+            simpleContainer.style.left = '-9999px'
+            simpleContainer.style.top = '0'
+            simpleContainer.style.width = `${resultElement.offsetWidth}px`
+            simpleContainer.style.backgroundColor = '#ffffff'
+            simpleContainer.style.padding = '20px'
+            simpleContainer.style.fontFamily = 'Arial, sans-serif'
+            simpleContainer.style.color = '#000000'
+            
+            // Получаем данные из результата
+            const status = result.bmi_status as string
+            const chartColors: Record<string, string> = {
+                underweight: '#bc2020',
+                normal: '#008137',
+                overweight: '#ffe400',
+                obesity: '#8a0101'
+            }
+            const headerBg = chartColors[status] || chartColors.normal
+            const headerTextColor = status === 'overweight' ? '#1f2937' : '#ffffff'
+            
+            // Создаём упрощённую структуру
+            const header = document.createElement('div')
+            header.style.backgroundColor = headerBg
+            header.style.color = headerTextColor
+            header.style.padding = '15px'
+            header.style.borderRadius = '8px 8px 0 0'
+            header.style.fontSize = '18px'
+            header.style.fontWeight = 'bold'
+            header.textContent = t.result.title
+            simpleContainer.appendChild(header)
+            
+            const content = document.createElement('div')
+            content.style.backgroundColor = '#ffffff'
+            content.style.padding = '20px'
+            content.style.border = '1px solid #e5e7eb'
+            content.style.borderTop = 'none'
+            content.style.borderRadius = '0 0 8px 8px'
+            
+            // BMI и статус
+            const bmiText = document.createElement('p')
+            bmiText.style.textAlign = 'center'
+            bmiText.style.fontSize = '18px'
+            bmiText.style.fontWeight = '600'
+            bmiText.style.marginBottom = '20px'
+            bmiText.style.color = '#000000'
+            bmiText.textContent = `BMI = ${typeof result.bmi === 'number' ? result.bmi.toFixed(1) : result.bmi} kg/m² (${getStatusLabel()})`
+            content.appendChild(bmiText)
+            
+            // Копируем SVG чарт
+            const chartElement = resultElement.querySelector('svg')
+            if (chartElement) {
+                const chartClone = chartElement.cloneNode(true) as SVGElement
+                chartClone.style.display = 'block'
+                chartClone.style.margin = '0 auto 20px'
+                content.appendChild(chartClone)
+            }
+            
+            // Метрики
+            const metrics = document.createElement('div')
+            metrics.style.marginBottom = '20px'
+            metrics.style.fontSize = '14px'
+            metrics.style.color = '#374151'
+            metrics.style.lineHeight = '1.6'
+            
+            const metric1 = document.createElement('p')
+            metric1.textContent = t.result.healthy_bmi_range
+            metric1.style.marginBottom = '8px'
+            metrics.appendChild(metric1)
+            
+            const metric2 = document.createElement('p')
+            metric2.textContent = formatMessage(t.result.healthy_weight_for_height, {
+                min: String(result.healthy_weight_min || ''),
+                max: String(result.healthy_weight_max || ''),
+                unit: weightUnitLabel
+            })
+            metric2.style.marginBottom = '8px'
+            metrics.appendChild(metric2)
+            
+            const metric3 = document.createElement('p')
+            metric3.textContent = formatMessage(t.result.bmi_prime, {
+                value: String(result.bmi_prime || '')
+            })
+            metric3.style.marginBottom = '8px'
+            metrics.appendChild(metric3)
+            
+            const metric4 = document.createElement('p')
+            metric4.textContent = formatMessage(t.result.ponderal_index, {
+                value: String(result.ponderal_index || '')
+            })
+            metrics.appendChild(metric4)
+            
+            content.appendChild(metrics)
+            
+            // Сообщение
+            const message = getMessage()
+            if (message) {
+                let messageBg = '#d1fae5'
+                if (status === 'underweight') messageBg = '#fee2e2'
+                else if (status === 'overweight') messageBg = '#fef3c7'
+                else if (status === 'obesity') messageBg = '#fecaca'
+                
+                const messageDiv = document.createElement('div')
+                messageDiv.style.backgroundColor = messageBg
+                messageDiv.style.border = '1px solid #d1d5db'
+                messageDiv.style.borderRadius = '8px'
+                messageDiv.style.padding = '16px'
+                messageDiv.style.fontSize = '14px'
+                messageDiv.style.color = '#1f2937'
+                messageDiv.textContent = message
+                content.appendChild(messageDiv)
+            }
+            
+            simpleContainer.appendChild(content)
+            document.body.appendChild(simpleContainer)
+            
+            // Захватываем упрощённый элемент
+            const canvas = await html2canvas(simpleContainer, {
                 backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                foreignObjectRendering: false,
-                onclone: (clonedDoc, element) => {
-                    // В клонированном документе заменяем все стили с lab() на RGB
-                    const clonedResult = clonedDoc.querySelector('[data-bmi-result]') as HTMLElement
-                    if (!clonedResult) return
-                    
-                    // Получаем все элементы из оригинала для получения computed styles
-                    const originalElements = Array.from(resultElement.querySelectorAll('*'))
-                    const clonedElements = Array.from(clonedResult.querySelectorAll('*'))
-                    
-                    // Создаём карту соответствия элементов
-                    const elementMap = new Map<Element, Element>()
-                    clonedElements.forEach((clonedEl, index) => {
-                        if (originalElements[index]) {
-                            elementMap.set(clonedEl, originalElements[index])
-                        }
-                    })
-                    
-                    // Обрабатываем все элементы
-                    clonedElements.forEach((clonedEl) => {
-                        // Пропускаем SVG элементы - они обрабатываются отдельно
-                        if (clonedEl instanceof SVGElement) {
-                            return
-                        }
-                        
-                        const htmlCloned = clonedEl as HTMLElement
-                        if (!(htmlCloned instanceof HTMLElement)) return
-                        
-                        const originalEl = elementMap.get(clonedEl) as HTMLElement | undefined
-                        
-                        try {
-                            // Удаляем все классы, которые могут содержать lab() цвета
-                            htmlCloned.className = ''
-                            
-                            // Получаем computed styles из оригинала
-                            if (originalEl) {
-                                const computed = window.getComputedStyle(originalEl)
-                                
-                                // Функция для безопасной конвертации цвета
-                                const safeColor = (colorValue: string, fallback: string): string => {
-                                    if (!colorValue || colorValue === 'rgba(0, 0, 0, 0)' || colorValue === 'transparent') {
-                                        return fallback
-                                    }
-                                    // Если содержит lab(), используем fallback
-                                    if (colorValue.includes('lab(') || colorValue.includes('oklab(') || colorValue.includes('lch(')) {
-                                        return fallback
-                                    }
-                                    return colorValue
-                                }
-                                
-                                // Заменяем все цветовые свойства на безопасные значения
-                                const bgColor = safeColor(computed.backgroundColor, '#ffffff')
-                                htmlCloned.style.setProperty('background-color', bgColor, 'important')
-                                
-                                const color = safeColor(computed.color, '#000000')
-                                htmlCloned.style.setProperty('color', color, 'important')
-                                
-                                const borderColor = safeColor(computed.borderColor, '#000000')
-                                htmlCloned.style.setProperty('border-color', borderColor, 'important')
-                                
-                                // Сохраняем важные не-цветовые стили
-                                const importantProps = ['width', 'height', 'display', 'position', 'margin', 'padding', 'font-size', 'font-weight', 'text-align']
-                                importantProps.forEach(prop => {
-                                    const value = computed.getPropertyValue(prop)
-                                    if (value) {
-                                        htmlCloned.style.setProperty(prop, value)
-                                    }
-                                })
-                            } else {
-                                // Если нет оригинала, используем fallback стили
-                                htmlCloned.style.setProperty('background-color', '#ffffff', 'important')
-                                htmlCloned.style.setProperty('color', '#000000', 'important')
-                            }
-                        } catch (e) {
-                            // В случае ошибки используем базовые стили
-                            htmlCloned.style.setProperty('background-color', '#ffffff', 'important')
-                            htmlCloned.style.setProperty('color', '#000000', 'important')
-                        }
-                    })
-                }
             })
             
-            restoreSvgs(restores)
-            restores = []
+            document.body.removeChild(simpleContainer)
             
             // Сохраняем canvas как JPG изображение
-            const imgData = canvas.toDataURL('image/jpeg', 0.95) // 0.95 качество для хорошего баланса размера/качества
+            const imgData = canvas.toDataURL('image/jpeg', 0.95)
             const link = document.createElement('a')
             link.download = `bmi-result-${Date.now()}.jpg`
             link.href = imgData
             link.click()
         } catch (error: any) {
             console.error('Error saving image:', error)
-            if (restores.length) restoreSvgs(restores)
             saveAsTxtFallback()
         }
     }
