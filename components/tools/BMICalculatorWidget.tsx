@@ -78,23 +78,34 @@ export default function BMICalculatorWidget({
     }, [config])
 
     // Получаем конфигурацию поля из inputs_json
+    // inputs_json из БД для текущего языка - это массив полей, а не объект с ключами языков
     const getFieldConfig = (fieldName: string) => {
-        // Проверяем структуру: может быть массив для языка или объект
-        if (ui && typeof ui === 'object') {
-            // Проверяем текущий язык
-            if (Array.isArray(ui[lang])) {
-                return ui[lang].find((field: any) => field.name === fieldName)
-            }
-            // Fallback на английский
-            if (Array.isArray(ui['en'])) {
-                return ui['en'].find((field: any) => field.name === fieldName)
-            }
-            // Проверяем как объект (если структура другая)
+        if (!ui) {
+            return null
+        }
+        // Структура 1: ui - это массив полей (прямо из inputs_json для текущего языка)
+        if (Array.isArray(ui)) {
+            return ui.find((field: any) => field.name === fieldName) || null
+        }
+        // Структура 2: ui.inputs - массив полей (как в TextCaseConverter)
+        if (ui.inputs && Array.isArray(ui.inputs)) {
+            return ui.inputs.find((field: any) => field.name === fieldName) || null
+        }
+        // Структура 3: ui[lang] = массив полей (если данные пришли как объект с ключами языков)
+        if (ui[lang] && Array.isArray(ui[lang])) {
+            return ui[lang].find((field: any) => field.name === fieldName) || null
+        }
+        // Fallback на английский
+        if (ui['en'] && Array.isArray(ui['en'])) {
+            return ui['en'].find((field: any) => field.name === fieldName) || null
+        }
+        // Структура 4: объект с ключами-именами полей
+        if (typeof ui === 'object' && !Array.isArray(ui)) {
             if (ui[lang] && typeof ui[lang] === 'object' && !Array.isArray(ui[lang])) {
-                return ui[lang][fieldName]
+                return ui[lang][fieldName] || null
             }
             if (ui['en'] && typeof ui['en'] === 'object' && !Array.isArray(ui['en'])) {
-                return ui['en'][fieldName]
+                return ui['en'][fieldName] || null
             }
         }
         return null
