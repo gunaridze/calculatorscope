@@ -261,6 +261,7 @@ export default function BMICalculatorWidget({
             simpleContainer.appendChild(header)
             
             const content = document.createElement('div')
+            content.style.position = 'relative' // Для позиционирования логотипа
             content.style.backgroundColor = '#ffffff'
             content.style.padding = '20px'
             content.style.border = '1px solid #e5e7eb'
@@ -277,13 +278,21 @@ export default function BMICalculatorWidget({
             bmiText.textContent = `BMI = ${typeof result.bmi === 'number' ? result.bmi.toFixed(1) : result.bmi} kg/m² (${getStatusLabel()})`
             content.appendChild(bmiText)
             
-            // Копируем SVG чарт
+            // Копируем SVG чарт - используем innerHTML для полного копирования
             const chartElement = resultElement.querySelector('svg')
             if (chartElement) {
-                const chartClone = chartElement.cloneNode(true) as SVGElement
-                chartClone.style.display = 'block'
-                chartClone.style.margin = '0 auto 20px'
-                content.appendChild(chartClone)
+                const chartWrapper = document.createElement('div')
+                chartWrapper.style.textAlign = 'center'
+                chartWrapper.style.marginBottom = '20px'
+                chartWrapper.innerHTML = chartElement.outerHTML
+                const chartClone = chartWrapper.querySelector('svg') as SVGElement
+                if (chartClone) {
+                    chartClone.style.display = 'block'
+                    chartClone.style.margin = '0 auto'
+                    chartClone.style.width = '300px'
+                    chartClone.style.height = '163px'
+                }
+                content.appendChild(chartWrapper)
             }
             
             // Метрики
@@ -341,7 +350,38 @@ export default function BMICalculatorWidget({
                 content.appendChild(messageDiv)
             }
             
+            // Добавляем логотип в левый нижний угол content
+            const logoWrapper = document.createElement('div')
+            logoWrapper.style.position = 'absolute'
+            logoWrapper.style.bottom = '10px'
+            logoWrapper.style.left = '10px'
+            logoWrapper.style.width = '90px'
+            logoWrapper.style.height = '90px'
+            logoWrapper.style.zIndex = '10'
+            
+            const logoImg = document.createElement('img')
+            logoImg.src = '/calculatorscope-logo.svg'
+            logoImg.alt = 'Calculator Scope'
+            logoImg.style.width = '90px'
+            logoImg.style.height = '90px'
+            logoImg.style.objectFit = 'contain'
+            logoImg.style.display = 'block'
+            
+            logoWrapper.appendChild(logoImg)
+            content.appendChild(logoWrapper)
+            
             simpleContainer.appendChild(content)
+            
+            // Ждём загрузки изображения перед захватом
+            await new Promise((resolve) => {
+                if (logoImg.complete) {
+                    resolve(null)
+                } else {
+                    logoImg.onload = () => resolve(null)
+                    logoImg.onerror = () => resolve(null) // Продолжаем даже если логотип не загрузился
+                }
+            })
+            
             document.body.appendChild(simpleContainer)
             
             // Захватываем упрощённый элемент
@@ -659,13 +699,13 @@ export default function BMICalculatorWidget({
                 <div className="flex gap-2 mt-4">
                     <button
                         onClick={handleCalculate}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors cursor-pointer"
                     >
                         {translations.calculate}
                     </button>
                     <button
                         onClick={handleClear}
-                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors"
+                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors cursor-pointer"
                     >
                         {translations.clear}
                     </button>
@@ -696,7 +736,7 @@ export default function BMICalculatorWidget({
                                 </h3>
                                 <button
                                     onClick={handleSave}
-                                    className="flex flex-col items-center gap-0.5 text-sm px-2 py-1 rounded transition-opacity hover:opacity-90"
+                                    className="flex flex-col items-center gap-0.5 text-sm px-2 py-1 rounded transition-opacity hover:opacity-90 cursor-pointer"
                                     style={{ color: isLight ? '#1f2937' : '#fff' }}
                                     title={t.buttons.save_image || 'Save as Image'}
                                 >
