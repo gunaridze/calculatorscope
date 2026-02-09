@@ -264,6 +264,7 @@ export default function BMICalculatorWidget({
             content.style.position = 'relative' // Для позиционирования логотипа
             content.style.backgroundColor = '#ffffff'
             content.style.padding = '20px'
+            content.style.paddingBottom = '110px' // Добавляем место для логотипа внизу
             content.style.border = '1px solid #e5e7eb'
             content.style.borderTop = 'none'
             content.style.borderRadius = '0 0 8px 8px'
@@ -278,19 +279,41 @@ export default function BMICalculatorWidget({
             bmiText.textContent = `BMI = ${typeof result.bmi === 'number' ? result.bmi.toFixed(1) : result.bmi} kg/m² (${getStatusLabel()})`
             content.appendChild(bmiText)
             
-            // Копируем SVG чарт - используем innerHTML для полного копирования
-            const chartElement = resultElement.querySelector('svg')
+            // Копируем SVG чарт - ищем SVG внутри div с классом mb-6 (контейнер чарта)
+            // или SVG с width="300px" / viewBox="0 0 300 163"
+            const chartContainer = resultElement.querySelector('.mb-6') || resultElement
+            const allSvgs = chartContainer.querySelectorAll('svg')
+            let chartElement: SVGElement | null = null
+            
+            // Ищем SVG чарта по размеру (300px width или viewBox)
+            for (const svg of Array.from(allSvgs)) {
+                const width = svg.getAttribute('width')
+                const viewBox = svg.getAttribute('viewBox')
+                // Чарт имеет width="300px" или viewBox="0 0 300 163"
+                // Иконка кнопки имеет viewBox="0 0 20 20"
+                if ((width && width.includes('300')) || viewBox === '0 0 300 163') {
+                    chartElement = svg as SVGElement
+                    break
+                }
+            }
+            
             if (chartElement) {
                 const chartWrapper = document.createElement('div')
                 chartWrapper.style.textAlign = 'center'
                 chartWrapper.style.marginBottom = '20px'
+                chartWrapper.style.width = '100%'
+                // Копируем весь SVG с помощью outerHTML
                 chartWrapper.innerHTML = chartElement.outerHTML
                 const chartClone = chartWrapper.querySelector('svg') as SVGElement
                 if (chartClone) {
                     chartClone.style.display = 'block'
                     chartClone.style.margin = '0 auto'
+                    chartClone.setAttribute('width', '300px')
+                    chartClone.setAttribute('height', '163px')
                     chartClone.style.width = '300px'
                     chartClone.style.height = '163px'
+                    chartClone.style.maxWidth = '300px'
+                    chartClone.style.maxHeight = '163px'
                 }
                 content.appendChild(chartWrapper)
             }
@@ -350,7 +373,7 @@ export default function BMICalculatorWidget({
                 content.appendChild(messageDiv)
             }
             
-            // Добавляем логотип в левый нижний угол content
+            // Добавляем логотип в левый нижний угол content (после всех элементов)
             const logoWrapper = document.createElement('div')
             logoWrapper.style.position = 'absolute'
             logoWrapper.style.bottom = '10px'
@@ -366,8 +389,11 @@ export default function BMICalculatorWidget({
             logoImg.style.height = '90px'
             logoImg.style.objectFit = 'contain'
             logoImg.style.display = 'block'
+            logoImg.style.maxWidth = '90px'
+            logoImg.style.maxHeight = '90px'
             
             logoWrapper.appendChild(logoImg)
+            // Добавляем логотип в конец content, чтобы он был поверх всего
             content.appendChild(logoWrapper)
             
             simpleContainer.appendChild(content)
