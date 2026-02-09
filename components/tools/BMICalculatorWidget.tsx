@@ -36,7 +36,12 @@ export default function BMICalculatorWidget({
     // Нормализуем ui: если это объект с ключом "inputs", извлекаем массив
     // (Prisma может возвращать JSON как {inputs: [...]} вместо просто [...])
     const normalizedUi = useMemo(() => {
-        if (!ui) return null
+        if (!ui) {
+            if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+                console.warn('[BMICalculatorWidget] ui is null/undefined for lang:', lang, 'toolId:', toolId)
+            }
+            return null
+        }
         // Если это объект с ключом "inputs", извлекаем массив
         if (typeof ui === 'object' && !Array.isArray(ui) && 'inputs' in ui && Array.isArray(ui.inputs)) {
             return ui.inputs
@@ -56,8 +61,12 @@ export default function BMICalculatorWidget({
                 return ui['en']
             }
         }
-        return ui
-    }, [ui, lang])
+        // Отладка: что именно пришло
+        if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+            console.warn('[BMICalculatorWidget] Unexpected ui structure:', typeof ui, Array.isArray(ui), Object.keys(ui || {}), 'lang:', lang)
+        }
+        return null
+    }, [ui, lang, toolId])
 
     // Инициализация: только единицы и пол — из конфига; Age, Weight, Height, Feet, Inches — пустые (образец в placeholder)
     const getInitialValues = (): JsonEngineInput => {
@@ -324,7 +333,7 @@ export default function BMICalculatorWidget({
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {fieldConfig?.label || 'Age'}
+                                {fieldConfig?.label || t.labels.age}
                             </label>
                             <input
                                 type="number"
@@ -348,13 +357,13 @@ export default function BMICalculatorWidget({
                     const currentGender = values.gender as string || 'male'
                     // Fallback опции, если fieldConfig не найден
                     const genderOptions = fieldConfig?.options || [
-                        { value: 'male', label: 'Male' },
-                        { value: 'female', label: 'Female' }
+                        { value: 'male', label: t.genderOptions.male },
+                        { value: 'female', label: t.genderOptions.female }
                     ]
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {fieldConfig?.label || 'Gender'}
+                                {fieldConfig?.label || t.labels.gender}
                             </label>
                             <div className="flex gap-2">
                                 {genderOptions.map((opt: any) => {
@@ -392,7 +401,7 @@ export default function BMICalculatorWidget({
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {fieldConfig?.label || 'Height Unit'}
+                                {fieldConfig?.label || t.labels.height_unit}
                             </label>
                             <div className="flex flex-wrap gap-2">
                                 {heightUnitOptions.map((opt: any) => {
@@ -423,7 +432,7 @@ export default function BMICalculatorWidget({
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {fieldConfig?.label || 'Height'}
+                                {fieldConfig?.label || t.labels.height}
                             </label>
                             <input
                                 type="number"
@@ -444,7 +453,7 @@ export default function BMICalculatorWidget({
                             return (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        {fieldConfig?.label || 'Feet'}
+                                        {fieldConfig?.label || t.labels.height_ft}
                                     </label>
                                     <input
                                         type="number"
@@ -461,7 +470,7 @@ export default function BMICalculatorWidget({
                             return (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        {fieldConfig?.label || 'Inches'}
+                                        {fieldConfig?.label || t.labels.height_in}
                                     </label>
                                     <input
                                         type="number"
@@ -490,7 +499,7 @@ export default function BMICalculatorWidget({
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {fieldConfig?.label || 'Weight Unit'}
+                                {fieldConfig?.label || t.labels.weight_unit}
                             </label>
                             <div className="flex gap-2">
                                 {weightUnitOptions.map((opt: any) => {
@@ -521,7 +530,7 @@ export default function BMICalculatorWidget({
                     return (
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {fieldConfig?.label || 'Weight'}
+                                {fieldConfig?.label || t.labels.weight}
                             </label>
                             <input
                                 type="number"

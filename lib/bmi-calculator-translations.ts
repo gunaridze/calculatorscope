@@ -38,6 +38,20 @@ export interface BMICalculatorTranslations {
         save_pdf: string
         copy_result: string
     }
+    labels: {
+        age: string
+        gender: string
+        height_unit: string
+        height: string
+        height_ft: string
+        height_in: string
+        weight_unit: string
+        weight: string
+    }
+    genderOptions: {
+        male: string
+        female: string
+    }
 }
 
 const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
@@ -73,6 +87,20 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             save: 'Save',
             save_pdf: 'Save as PDF',
             copy_result: 'Copy result'
+        },
+        labels: {
+            age: 'Age',
+            gender: 'Gender',
+            height_unit: 'Height Unit',
+            height: 'Height',
+            height_ft: 'Feet',
+            height_in: 'Inches',
+            weight_unit: 'Weight Unit',
+            weight: 'Weight'
+        },
+        genderOptions: {
+            male: 'Male',
+            female: 'Female'
         }
     },
     ru: {
@@ -107,6 +135,20 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             save: 'Сохранить',
             save_pdf: 'Сохранить как PDF',
             copy_result: 'Копировать результат'
+        },
+        labels: {
+            age: 'Возраст',
+            gender: 'Пол',
+            height_unit: 'Единица измерения роста',
+            height: 'Рост',
+            height_ft: 'Футы',
+            height_in: 'Дюймы',
+            weight_unit: 'Единица измерения веса',
+            weight: 'Вес'
+        },
+        genderOptions: {
+            male: 'Мужской',
+            female: 'Женский'
         }
     },
     de: {
@@ -141,6 +183,20 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             save: 'Speichern',
             save_pdf: 'Als PDF speichern',
             copy_result: 'Ergebnis kopieren'
+        },
+        labels: {
+            age: 'Alter',
+            gender: 'Geschlecht',
+            height_unit: 'Größeneinheit',
+            height: 'Größe',
+            height_ft: 'Fuß',
+            height_in: 'Zoll',
+            weight_unit: 'Gewichtseinheit',
+            weight: 'Gewicht'
+        },
+        genderOptions: {
+            male: 'Männlich',
+            female: 'Weiblich'
         }
     },
     es: {
@@ -175,6 +231,20 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             save: 'Guardar',
             save_pdf: 'Guardar como PDF',
             copy_result: 'Copiar resultado'
+        },
+        labels: {
+            age: 'Edad',
+            gender: 'Género',
+            height_unit: 'Unidad de altura',
+            height: 'Altura',
+            height_ft: 'Pies',
+            height_in: 'Pulgadas',
+            weight_unit: 'Unidad de peso',
+            weight: 'Peso'
+        },
+        genderOptions: {
+            male: 'Masculino',
+            female: 'Femenino'
         }
     },
     fr: {
@@ -209,6 +279,20 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             save: 'Enregistrer',
             save_pdf: 'Enregistrer en PDF',
             copy_result: 'Copier le résultat'
+        },
+        labels: {
+            age: 'Âge',
+            gender: 'Genre',
+            height_unit: 'Unité de taille',
+            height: 'Taille',
+            height_ft: 'Pieds',
+            height_in: 'Pouces',
+            weight_unit: 'Unité de poids',
+            weight: 'Poids'
+        },
+        genderOptions: {
+            male: 'Masculin',
+            female: 'Féminin'
         }
     },
     it: {
@@ -243,6 +327,20 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             save: 'Salva',
             save_pdf: 'Salva come PDF',
             copy_result: 'Copia risultato'
+        },
+        labels: {
+            age: 'Età',
+            gender: 'Genere',
+            height_unit: 'Unità di altezza',
+            height: 'Altezza',
+            height_ft: 'Piedi',
+            height_in: 'Pollici',
+            weight_unit: 'Unità di peso',
+            weight: 'Peso'
+        },
+        genderOptions: {
+            male: 'Maschio',
+            female: 'Femmina'
         }
     },
     pl: {
@@ -277,6 +375,20 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             save: 'Zapisz',
             save_pdf: 'Zapisz jako PDF',
             copy_result: 'Kopiuj wynik'
+        },
+        labels: {
+            age: 'Wiek',
+            gender: 'Płeć',
+            height_unit: 'Jednostka wzrostu',
+            height: 'Wzrost',
+            height_ft: 'Stopy',
+            height_in: 'Cale',
+            weight_unit: 'Jednostka wagi',
+            weight: 'Waga'
+        },
+        genderOptions: {
+            male: 'Mężczyzna',
+            female: 'Kobieta'
         }
     },
     lv: {
@@ -311,6 +423,20 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             save: 'Saglabāt',
             save_pdf: 'Saglabāt kā PDF',
             copy_result: 'Kopēt rezultātu'
+        },
+        labels: {
+            age: 'Vecums',
+            gender: 'Dzimums',
+            height_unit: 'Auguma mērvienība',
+            height: 'Augums',
+            height_ft: 'Pēdas',
+            height_in: 'Collas',
+            weight_unit: 'Svara mērvienība',
+            weight: 'Svars'
+        },
+        genderOptions: {
+            male: 'Vīrietis',
+            female: 'Sieviete'
         }
     }
 }
