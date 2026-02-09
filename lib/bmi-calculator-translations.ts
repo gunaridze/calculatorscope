@@ -35,7 +35,7 @@ export interface BMICalculatorTranslations {
     }
     buttons: {
         save: string
-        save_pdf: string
+        save_image: string
         copy_result: string
     }
     labels: {
@@ -85,7 +85,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         buttons: {
             save: 'Save',
-            save_pdf: 'Save as PDF',
+            save_image: 'Save as Image',
             copy_result: 'Copy result'
         },
         labels: {
@@ -133,7 +133,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         buttons: {
             save: 'Сохранить',
-            save_pdf: 'Сохранить как PDF',
+            save_image: 'Сохранить как изображение',
             copy_result: 'Копировать результат'
         },
         labels: {
@@ -181,7 +181,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         buttons: {
             save: 'Speichern',
-            save_pdf: 'Als PDF speichern',
+            save_image: 'Als Bild speichern',
             copy_result: 'Ergebnis kopieren'
         },
         labels: {
@@ -229,7 +229,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         buttons: {
             save: 'Guardar',
-            save_pdf: 'Guardar como PDF',
+            save_image: 'Guardar como imagen',
             copy_result: 'Copiar resultado'
         },
         labels: {
@@ -277,7 +277,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         buttons: {
             save: 'Enregistrer',
-            save_pdf: 'Enregistrer en PDF',
+            save_image: 'Enregistrer comme image',
             copy_result: 'Copier le résultat'
         },
         labels: {
@@ -325,7 +325,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         buttons: {
             save: 'Salva',
-            save_pdf: 'Salva come PDF',
+            save_image: 'Salva come immagine',
             copy_result: 'Copia risultato'
         },
         labels: {
@@ -373,7 +373,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         buttons: {
             save: 'Zapisz',
-            save_pdf: 'Zapisz jako PDF',
+            save_image: 'Zapisz jako obraz',
             copy_result: 'Kopiuj wynik'
         },
         labels: {
@@ -421,7 +421,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
         },
         buttons: {
             save: 'Saglabāt',
-            save_pdf: 'Saglabāt kā PDF',
+            save_image: 'Saglabāt kā attēlu',
             copy_result: 'Kopēt rezultātu'
         },
         labels: {

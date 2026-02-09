@@ -216,7 +216,7 @@ export default function BMICalculatorWidget({
         })
     }
 
-    // Сохранение результата в PDF (блок результата + чарт)
+    // Сохранение результата как изображение JPG (блок результата + чарт)
     const handleSave = async () => {
         const resultElement = document.querySelector('[data-bmi-result]') as HTMLElement | null
         if (!resultElement) {
@@ -226,7 +226,6 @@ export default function BMICalculatorWidget({
         let restores: { parent: Node; img: HTMLImageElement; svg: SVGElement }[] = []
         try {
             restores = await replaceSvgsWithImages(resultElement)
-            const { default: jsPDF } = await import('jspdf')
             const html2canvas = (await import('html2canvas')).default
             
             const canvas = await html2canvas(resultElement, {
@@ -234,9 +233,9 @@ export default function BMICalculatorWidget({
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                foreignObjectRendering: false, // Отключаем для избежания проблем с lab() цветами
+                foreignObjectRendering: false,
                 onclone: (clonedDoc, element) => {
-                    // В клонированном документе агрессивно заменяем все стили с lab() на RGB
+                    // В клонированном документе заменяем все стили с lab() на RGB
                     const clonedResult = clonedDoc.querySelector('[data-bmi-result]') as HTMLElement
                     if (!clonedResult) return
                     
@@ -319,77 +318,15 @@ export default function BMICalculatorWidget({
             restoreSvgs(restores)
             restores = []
             
-            const imgData = canvas.toDataURL('image/png', 1.0)
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-            const imgWidth = 210
-            const pageHeight = 297
-            const imgHeight = (canvas.height * imgWidth) / canvas.width
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight))
-            if (imgHeight > pageHeight) {
-                pdf.addPage()
-                pdf.addImage(imgData, 'PNG', 0, pageHeight - imgHeight, imgWidth, imgHeight)
-            }
-            pdf.save(`bmi-result-${Date.now()}.pdf`)
+            // Сохраняем canvas как JPG изображение
+            const imgData = canvas.toDataURL('image/jpeg', 0.95) // 0.95 качество для хорошего баланса размера/качества
+            const link = document.createElement('a')
+            link.download = `bmi-result-${Date.now()}.jpg`
+            link.href = imgData
+            link.click()
         } catch (error: any) {
-            console.error('Error saving PDF:', error)
+            console.error('Error saving image:', error)
             if (restores.length) restoreSvgs(restores)
-            
-            // Если ошибка связана с цветами lab(), пробуем более простой подход
-            if (error?.message?.includes('lab') || error?.message?.includes('color') || error?.message?.includes('parse')) {
-                try {
-                    console.log('Trying fallback PDF generation without lab() colors...')
-                    const { default: jsPDF } = await import('jspdf')
-                    const html2canvas = (await import('html2canvas')).default
-                    
-                    // Создаём простой клон без сложных стилей
-                    const simpleClone = resultElement.cloneNode(true) as HTMLElement
-                    simpleClone.style.position = 'absolute'
-                    simpleClone.style.left = '-9999px'
-                    simpleClone.style.width = `${resultElement.offsetWidth}px`
-                    simpleClone.style.background = '#ffffff'
-                    document.body.appendChild(simpleClone)
-                    
-                    // Удаляем все классы, которые могут содержать lab() цвета
-                    const allEls = simpleClone.querySelectorAll('*')
-                    allEls.forEach((el) => {
-                        // Проверяем, что это HTML элемент, а не SVG
-                        if (el instanceof HTMLElement) {
-                            // Удаляем классы Tailwind, которые могут содержать lab()
-                            el.className = ''
-                            // Оставляем только базовые стили
-                            el.style.fontFamily = 'Arial, sans-serif'
-                        }
-                        // Для SVG элементов просто очищаем стили, если они есть
-                        else if (el instanceof SVGElement && el.hasAttribute('class')) {
-                            el.removeAttribute('class')
-                        }
-                    })
-                    
-                    const canvas = await html2canvas(simpleClone, {
-                        backgroundColor: '#ffffff',
-                        scale: 1.5,
-                        useCORS: true,
-                        logging: false,
-                        foreignObjectRendering: false,
-                    })
-                    document.body.removeChild(simpleClone)
-                    
-                    const imgData = canvas.toDataURL('image/png', 1.0)
-                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-                    const imgWidth = 210
-                    const pageHeight = 297
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width
-                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight))
-                    if (imgHeight > pageHeight) {
-                        pdf.addPage()
-                        pdf.addImage(imgData, 'PNG', 0, pageHeight - imgHeight, imgWidth, imgHeight)
-                    }
-                    pdf.save(`bmi-result-${Date.now()}.pdf`)
-                    return
-                } catch (fallbackError) {
-                    console.error('Fallback PDF save also failed:', fallbackError)
-                }
-            }
             saveAsTxtFallback()
         }
     }
@@ -726,7 +663,7 @@ export default function BMICalculatorWidget({
                                     onClick={handleSave}
                                     className="flex flex-col items-center gap-0.5 text-sm px-2 py-1 rounded transition-opacity hover:opacity-90"
                                     style={{ color: isLight ? '#1f2937' : '#fff' }}
-                                    title={t.buttons.save_pdf || 'Save as PDF'}
+                                    title={t.buttons.save_image || 'Save as Image'}
                                 >
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586L8.707 7.293zM3 9a2 2 0 012-2h1a1 1 0 010 2H5v7h10v-7h-1a1 1 0 110-2h1a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
