@@ -236,73 +236,83 @@ export default function BMICalculatorWidget({
                 logging: false,
                 foreignObjectRendering: false, // Отключаем для избежания проблем с lab() цветами
                 onclone: (clonedDoc, element) => {
-                    // В клонированном документе заменяем все computed styles с lab() на RGB
+                    // В клонированном документе агрессивно заменяем все стили с lab() на RGB
                     const clonedResult = clonedDoc.querySelector('[data-bmi-result]') as HTMLElement
                     if (!clonedResult) return
                     
-                    // Создаём временный элемент для конвертации lab() в RGB
-                    const tempDiv = clonedDoc.createElement('div')
-                    tempDiv.style.position = 'absolute'
-                    tempDiv.style.visibility = 'hidden'
-                    tempDiv.style.top = '-9999px'
-                    clonedDoc.body.appendChild(tempDiv)
-                    
-                    // Получаем все элементы из оригинала для сравнения
+                    // Получаем все элементы из оригинала для получения computed styles
                     const originalElements = Array.from(resultElement.querySelectorAll('*'))
                     const clonedElements = Array.from(clonedResult.querySelectorAll('*'))
                     
+                    // Создаём карту соответствия элементов
+                    const elementMap = new Map<Element, Element>()
                     clonedElements.forEach((clonedEl, index) => {
-                        const htmlCloned = clonedEl as HTMLElement
-                        const originalEl = originalElements[index] as HTMLElement | undefined
-                        
-                        if (originalEl) {
-                            try {
-                                // Получаем computed styles из оригинала
-                                const computed = window.getComputedStyle(originalEl)
-                                
-                                // Функция для безопасной конвертации цвета в RGB
-                                const convertToRgb = (colorValue: string, fallback: string): string => {
-                                    if (!colorValue || colorValue === 'rgba(0, 0, 0, 0)' || colorValue === 'transparent') {
-                                        return fallback
-                                    }
-                                    // Если цвет уже в формате lab()/oklab()/lch(), конвертируем через временный элемент
-                                    if (colorValue.includes('lab(') || colorValue.includes('oklab(') || colorValue.includes('lch(')) {
-                                        try {
-                                            tempDiv.style.color = colorValue
-                                            const rgb = window.getComputedStyle(tempDiv).color
-                                            tempDiv.style.color = ''
-                                            // Если получили валидный RGB, используем его
-                                            if (rgb && rgb !== 'rgba(0, 0, 0, 0)' && !rgb.includes('lab(')) {
-                                                return rgb
-                                            }
-                                        } catch (e) {
-                                            // Игнорируем ошибки конвертации
-                                        }
-                                        return fallback
-                                    }
-                                    // Если цвет уже в RGB формате, используем его
-                                    return colorValue
-                                }
-                                
-                                // Заменяем background-color
-                                const bgColor = computed.backgroundColor
-                                htmlCloned.style.backgroundColor = convertToRgb(bgColor, '#ffffff')
-                                
-                                // Заменяем color
-                                const color = computed.color
-                                htmlCloned.style.color = convertToRgb(color, '#000000')
-                                
-                                // Заменяем border-color
-                                const borderColor = computed.borderColor
-                                htmlCloned.style.borderColor = convertToRgb(borderColor, '#000000')
-                            } catch (e) {
-                                // Игнорируем ошибки при обработке отдельных элементов
-                            }
+                        if (originalElements[index]) {
+                            elementMap.set(clonedEl, originalElements[index])
                         }
                     })
                     
-                    // Удаляем временный элемент
-                    clonedDoc.body.removeChild(tempDiv)
+                    // Обрабатываем все элементы
+                    clonedElements.forEach((clonedEl) => {
+                        // Пропускаем SVG элементы - они обрабатываются отдельно
+                        if (clonedEl instanceof SVGElement) {
+                            return
+                        }
+                        
+                        const htmlCloned = clonedEl as HTMLElement
+                        if (!(htmlCloned instanceof HTMLElement)) return
+                        
+                        const originalEl = elementMap.get(clonedEl) as HTMLElement | undefined
+                        
+                        try {
+                            // Удаляем все классы, которые могут содержать lab() цвета
+                            htmlCloned.className = ''
+                            
+                            // Получаем computed styles из оригинала
+                            if (originalEl) {
+                                const computed = window.getComputedStyle(originalEl)
+                                
+                                // Функция для безопасной конвертации цвета
+                                const safeColor = (colorValue: string, fallback: string): string => {
+                                    if (!colorValue || colorValue === 'rgba(0, 0, 0, 0)' || colorValue === 'transparent') {
+                                        return fallback
+                                    }
+                                    // Если содержит lab(), используем fallback
+                                    if (colorValue.includes('lab(') || colorValue.includes('oklab(') || colorValue.includes('lch(')) {
+                                        return fallback
+                                    }
+                                    return colorValue
+                                }
+                                
+                                // Заменяем все цветовые свойства на безопасные значения
+                                const bgColor = safeColor(computed.backgroundColor, '#ffffff')
+                                htmlCloned.style.setProperty('background-color', bgColor, 'important')
+                                
+                                const color = safeColor(computed.color, '#000000')
+                                htmlCloned.style.setProperty('color', color, 'important')
+                                
+                                const borderColor = safeColor(computed.borderColor, '#000000')
+                                htmlCloned.style.setProperty('border-color', borderColor, 'important')
+                                
+                                // Сохраняем важные не-цветовые стили
+                                const importantProps = ['width', 'height', 'display', 'position', 'margin', 'padding', 'font-size', 'font-weight', 'text-align']
+                                importantProps.forEach(prop => {
+                                    const value = computed.getPropertyValue(prop)
+                                    if (value) {
+                                        htmlCloned.style.setProperty(prop, value)
+                                    }
+                                })
+                            } else {
+                                // Если нет оригинала, используем fallback стили
+                                htmlCloned.style.setProperty('background-color', '#ffffff', 'important')
+                                htmlCloned.style.setProperty('color', '#000000', 'important')
+                            }
+                        } catch (e) {
+                            // В случае ошибки используем базовые стили
+                            htmlCloned.style.setProperty('background-color', '#ffffff', 'important')
+                            htmlCloned.style.setProperty('color', '#000000', 'important')
+                        }
+                    })
                 }
             })
             
@@ -342,11 +352,17 @@ export default function BMICalculatorWidget({
                     // Удаляем все классы, которые могут содержать lab() цвета
                     const allEls = simpleClone.querySelectorAll('*')
                     allEls.forEach((el) => {
-                        const htmlEl = el as HTMLElement
-                        // Удаляем классы Tailwind, которые могут содержать lab()
-                        htmlEl.className = ''
-                        // Оставляем только базовые стили
-                        htmlEl.style.fontFamily = 'Arial, sans-serif'
+                        // Проверяем, что это HTML элемент, а не SVG
+                        if (el instanceof HTMLElement) {
+                            // Удаляем классы Tailwind, которые могут содержать lab()
+                            el.className = ''
+                            // Оставляем только базовые стили
+                            el.style.fontFamily = 'Arial, sans-serif'
+                        }
+                        // Для SVG элементов просто очищаем стили, если они есть
+                        else if (el instanceof SVGElement && el.hasAttribute('class')) {
+                            el.removeAttribute('class')
+                        }
                     })
                     
                     const canvas = await html2canvas(simpleClone, {
