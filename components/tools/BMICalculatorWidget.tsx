@@ -228,14 +228,87 @@ export default function BMICalculatorWidget({
             restores = await replaceSvgsWithImages(resultElement)
             const { default: jsPDF } = await import('jspdf')
             const html2canvas = (await import('html2canvas')).default
+            
             const canvas = await html2canvas(resultElement, {
                 backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
                 logging: false,
+                foreignObjectRendering: false, // Отключаем для избежания проблем с lab() цветами
+                onclone: (clonedDoc, element) => {
+                    // В клонированном документе заменяем все computed styles с lab() на RGB
+                    const clonedResult = clonedDoc.querySelector('[data-bmi-result]') as HTMLElement
+                    if (!clonedResult) return
+                    
+                    // Создаём временный элемент для конвертации lab() в RGB
+                    const tempDiv = clonedDoc.createElement('div')
+                    tempDiv.style.position = 'absolute'
+                    tempDiv.style.visibility = 'hidden'
+                    tempDiv.style.top = '-9999px'
+                    clonedDoc.body.appendChild(tempDiv)
+                    
+                    // Получаем все элементы из оригинала для сравнения
+                    const originalElements = Array.from(resultElement.querySelectorAll('*'))
+                    const clonedElements = Array.from(clonedResult.querySelectorAll('*'))
+                    
+                    clonedElements.forEach((clonedEl, index) => {
+                        const htmlCloned = clonedEl as HTMLElement
+                        const originalEl = originalElements[index] as HTMLElement | undefined
+                        
+                        if (originalEl) {
+                            try {
+                                // Получаем computed styles из оригинала
+                                const computed = window.getComputedStyle(originalEl)
+                                
+                                // Функция для безопасной конвертации цвета в RGB
+                                const convertToRgb = (colorValue: string, fallback: string): string => {
+                                    if (!colorValue || colorValue === 'rgba(0, 0, 0, 0)' || colorValue === 'transparent') {
+                                        return fallback
+                                    }
+                                    // Если цвет уже в формате lab()/oklab()/lch(), конвертируем через временный элемент
+                                    if (colorValue.includes('lab(') || colorValue.includes('oklab(') || colorValue.includes('lch(')) {
+                                        try {
+                                            tempDiv.style.color = colorValue
+                                            const rgb = window.getComputedStyle(tempDiv).color
+                                            tempDiv.style.color = ''
+                                            // Если получили валидный RGB, используем его
+                                            if (rgb && rgb !== 'rgba(0, 0, 0, 0)' && !rgb.includes('lab(')) {
+                                                return rgb
+                                            }
+                                        } catch (e) {
+                                            // Игнорируем ошибки конвертации
+                                        }
+                                        return fallback
+                                    }
+                                    // Если цвет уже в RGB формате, используем его
+                                    return colorValue
+                                }
+                                
+                                // Заменяем background-color
+                                const bgColor = computed.backgroundColor
+                                htmlCloned.style.backgroundColor = convertToRgb(bgColor, '#ffffff')
+                                
+                                // Заменяем color
+                                const color = computed.color
+                                htmlCloned.style.color = convertToRgb(color, '#000000')
+                                
+                                // Заменяем border-color
+                                const borderColor = computed.borderColor
+                                htmlCloned.style.borderColor = convertToRgb(borderColor, '#000000')
+                            } catch (e) {
+                                // Игнорируем ошибки при обработке отдельных элементов
+                            }
+                        }
+                    })
+                    
+                    // Удаляем временный элемент
+                    clonedDoc.body.removeChild(tempDiv)
+                }
             })
+            
             restoreSvgs(restores)
             restores = []
+            
             const imgData = canvas.toDataURL('image/png', 1.0)
             const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
             const imgWidth = 210
@@ -247,9 +320,60 @@ export default function BMICalculatorWidget({
                 pdf.addImage(imgData, 'PNG', 0, pageHeight - imgHeight, imgWidth, imgHeight)
             }
             pdf.save(`bmi-result-${Date.now()}.pdf`)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving PDF:', error)
             if (restores.length) restoreSvgs(restores)
+            
+            // Если ошибка связана с цветами lab(), пробуем более простой подход
+            if (error?.message?.includes('lab') || error?.message?.includes('color') || error?.message?.includes('parse')) {
+                try {
+                    console.log('Trying fallback PDF generation without lab() colors...')
+                    const { default: jsPDF } = await import('jspdf')
+                    const html2canvas = (await import('html2canvas')).default
+                    
+                    // Создаём простой клон без сложных стилей
+                    const simpleClone = resultElement.cloneNode(true) as HTMLElement
+                    simpleClone.style.position = 'absolute'
+                    simpleClone.style.left = '-9999px'
+                    simpleClone.style.width = `${resultElement.offsetWidth}px`
+                    simpleClone.style.background = '#ffffff'
+                    document.body.appendChild(simpleClone)
+                    
+                    // Удаляем все классы, которые могут содержать lab() цвета
+                    const allEls = simpleClone.querySelectorAll('*')
+                    allEls.forEach((el) => {
+                        const htmlEl = el as HTMLElement
+                        // Удаляем классы Tailwind, которые могут содержать lab()
+                        htmlEl.className = ''
+                        // Оставляем только базовые стили
+                        htmlEl.style.fontFamily = 'Arial, sans-serif'
+                    })
+                    
+                    const canvas = await html2canvas(simpleClone, {
+                        backgroundColor: '#ffffff',
+                        scale: 1.5,
+                        useCORS: true,
+                        logging: false,
+                        foreignObjectRendering: false,
+                    })
+                    document.body.removeChild(simpleClone)
+                    
+                    const imgData = canvas.toDataURL('image/png', 1.0)
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+                    const imgWidth = 210
+                    const pageHeight = 297
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width
+                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight))
+                    if (imgHeight > pageHeight) {
+                        pdf.addPage()
+                        pdf.addImage(imgData, 'PNG', 0, pageHeight - imgHeight, imgWidth, imgHeight)
+                    }
+                    pdf.save(`bmi-result-${Date.now()}.pdf`)
+                    return
+                } catch (fallbackError) {
+                    console.error('Fallback PDF save also failed:', fallbackError)
+                }
+            }
             saveAsTxtFallback()
         }
     }
