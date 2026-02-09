@@ -47,7 +47,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             healthy_bmi_range: 'Healthy BMI range: 18.5 kg/m² - 25 kg/m²',
             healthy_weight_for_height: 'Healthy weight for the height: {min} {unit} - {max} {unit}',
             bmi_prime: 'BMI Prime: {value}',
-            ponderal_index: 'Ponderal Index: {value}'
+            ponderal_index: 'Ponderal Index: {value} kg/m³'
         },
         status: {
             underweight: 'Underweight',
@@ -81,7 +81,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             healthy_bmi_range: 'Здоровый диапазон ИМТ: 18.5 кг/м² - 25 кг/м²',
             healthy_weight_for_height: 'Здоровый вес для роста: {min} {unit} - {max} {unit}',
             bmi_prime: 'BMI Prime: {value}',
-            ponderal_index: 'Пондеральный индекс: {value}'
+            ponderal_index: 'Пондеральный индекс: {value} кг/м³'
         },
         status: {
             underweight: 'Недостаточный вес',
@@ -115,7 +115,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             healthy_bmi_range: 'Gesunder BMI-Bereich: 18.5 kg/m² - 25 kg/m²',
             healthy_weight_for_height: 'Gesundes Gewicht für die Größe: {min} {unit} - {max} {unit}',
             bmi_prime: 'BMI Prime: {value}',
-            ponderal_index: 'Ponderaler Index: {value}'
+            ponderal_index: 'Ponderaler Index: {value} kg/m³'
         },
         status: {
             underweight: 'Untergewicht',
@@ -149,7 +149,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             healthy_bmi_range: 'Rango saludable de IMC: 18.5 kg/m² - 25 kg/m²',
             healthy_weight_for_height: 'Peso saludable para la altura: {min} {unit} - {max} {unit}',
             bmi_prime: 'BMI Prime: {value}',
-            ponderal_index: 'Índice Ponderal: {value}'
+            ponderal_index: 'Índice Ponderal: {value} kg/m³'
         },
         status: {
             underweight: 'Bajo peso',
@@ -183,7 +183,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             healthy_bmi_range: 'Plage d\'IMC saine: 18.5 kg/m² - 25 kg/m²',
             healthy_weight_for_height: 'Poids sain pour la taille: {min} {unit} - {max} {unit}',
             bmi_prime: 'BMI Prime: {value}',
-            ponderal_index: 'Indice Pondéral: {value}'
+            ponderal_index: 'Indice Pondéral: {value} kg/m³'
         },
         status: {
             underweight: 'Insuffisance pondérale',
@@ -217,7 +217,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             healthy_bmi_range: 'Intervallo BMI sano: 18.5 kg/m² - 25 kg/m²',
             healthy_weight_for_height: 'Peso sano per l\'altezza: {min} {unit} - {max} {unit}',
             bmi_prime: 'BMI Prime: {value}',
-            ponderal_index: 'Indice Ponderal: {value}'
+            ponderal_index: 'Indice Ponderal: {value} kg/m³'
         },
         status: {
             underweight: 'Sottopeso',
@@ -251,7 +251,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             healthy_bmi_range: 'Zdrowy zakres BMI: 18.5 kg/m² - 25 kg/m²',
             healthy_weight_for_height: 'Zdrowa waga dla wzrostu: {min} {unit} - {max} {unit}',
             bmi_prime: 'BMI Prime: {value}',
-            ponderal_index: 'Wskaźnik Ponderalny: {value}'
+            ponderal_index: 'Wskaźnik Ponderalny: {value} kg/m³'
         },
         status: {
             underweight: 'Niedowaga',
@@ -285,7 +285,7 @@ const translations: Record<BMICalculatorLang, BMICalculatorTranslations> = {
             healthy_bmi_range: 'Veselīgs BMI diapazons: 18.5 kg/m² - 25 kg/m²',
             healthy_weight_for_height: 'Veselīgs svars augumam: {min} {unit} - {max} {unit}',
             bmi_prime: 'BMI Prime: {value}',
-            ponderal_index: 'Ponderalais indekss: {value}'
+            ponderal_index: 'Ponderalais indekss: {value} kg/m³'
         },
         status: {
             underweight: 'Zems svars',
