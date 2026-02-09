@@ -264,7 +264,7 @@ export default function BMICalculatorWidget({
             content.style.position = 'relative' // Для позиционирования логотипа
             content.style.backgroundColor = '#ffffff'
             content.style.padding = '20px'
-            content.style.paddingBottom = '110px' // Добавляем место для логотипа внизу
+            content.style.paddingBottom = '70px' // Добавляем место для логотипа внизу (50px + 20px отступ)
             content.style.border = '1px solid #e5e7eb'
             content.style.borderTop = 'none'
             content.style.borderRadius = '0 0 8px 8px'
@@ -302,12 +302,15 @@ export default function BMICalculatorWidget({
                 chartWrapper.style.textAlign = 'center'
                 chartWrapper.style.marginBottom = '20px'
                 chartWrapper.style.width = '100%'
+                chartWrapper.style.display = 'flex'
+                chartWrapper.style.justifyContent = 'center'
+                chartWrapper.style.alignItems = 'center'
                 // Копируем весь SVG с помощью outerHTML
                 chartWrapper.innerHTML = chartElement.outerHTML
                 const chartClone = chartWrapper.querySelector('svg') as SVGElement
                 if (chartClone) {
                     chartClone.style.display = 'block'
-                    chartClone.style.margin = '0 auto'
+                    chartClone.style.margin = '0'
                     chartClone.setAttribute('width', '300px')
                     chartClone.setAttribute('height', '163px')
                     chartClone.style.width = '300px'
@@ -373,24 +376,28 @@ export default function BMICalculatorWidget({
                 content.appendChild(messageDiv)
             }
             
-            // Добавляем логотип в левый нижний угол content (после всех элементов)
+            // Добавляем логотип по центру внизу content
             const logoWrapper = document.createElement('div')
             logoWrapper.style.position = 'absolute'
             logoWrapper.style.bottom = '10px'
-            logoWrapper.style.left = '10px'
-            logoWrapper.style.width = '90px'
-            logoWrapper.style.height = '90px'
+            logoWrapper.style.left = '50%'
+            logoWrapper.style.transform = 'translateX(-50%)'
+            logoWrapper.style.width = '222px'
+            logoWrapper.style.height = '50px'
             logoWrapper.style.zIndex = '10'
+            logoWrapper.style.display = 'flex'
+            logoWrapper.style.justifyContent = 'center'
+            logoWrapper.style.alignItems = 'center'
             
             const logoImg = document.createElement('img')
             logoImg.src = '/calculatorscope-logo.svg'
             logoImg.alt = 'Calculator Scope'
-            logoImg.style.width = '90px'
-            logoImg.style.height = '90px'
+            logoImg.style.width = '222px'
+            logoImg.style.height = '50px'
             logoImg.style.objectFit = 'contain'
             logoImg.style.display = 'block'
-            logoImg.style.maxWidth = '90px'
-            logoImg.style.maxHeight = '90px'
+            logoImg.style.maxWidth = '222px'
+            logoImg.style.maxHeight = '50px'
             
             logoWrapper.appendChild(logoImg)
             // Добавляем логотип в конец content, чтобы он был поверх всего
