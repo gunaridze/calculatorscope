@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { cookies } from "next/headers";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -44,38 +45,54 @@ export default async function RootLayout({
   // Получаем язык из cookies, установленных middleware
   const cookieStore = await cookies()
   const lang = cookieStore.get('x-lang')?.value || defaultLocale
-  
+  const consentGranted = cookieStore.get('consent_status')?.value === 'granted'
+  const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID
+
   return (
     <html lang={lang}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        {/* Google Tag Manager */}
-        <Script
-          id="google-tag-manager"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        {consentGranted && (
+          <>
+            {/* Google Tag Manager */}
+            <Script
+              id="google-tag-manager"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-NHQV5G8C');`,
-          }}
-        />
-        {/* End Google Tag Manager */}
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-NHQV5G8C"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
-        {/* End Google Tag Manager (noscript) */}
+              }}
+            />
+            {/* End Google Tag Manager */}
+            {/* Google Tag Manager (noscript) */}
+            <noscript>
+              <iframe
+                src="https://www.googletagmanager.com/ns.html?id=GTM-NHQV5G8C"
+                height="0"
+                width="0"
+                style={{ display: "none", visibility: "hidden" }}
+              />
+            </noscript>
+            {/* End Google Tag Manager (noscript) */}
+            {adsenseClientId && (
+              <Script
+                id="adsbygoogle-loader"
+                async
+                strategy="afterInteractive"
+                src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
+                crossOrigin="anonymous"
+              />
+            )}
+          </>
+        )}
         <div className="flex-1">
           {children}
         </div>
+        <CookieConsentBanner lang={lang} />
       </body>
     </html>
   );

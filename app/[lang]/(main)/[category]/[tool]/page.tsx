@@ -140,6 +140,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
         const dataAny = data as any
         const inputsJson = dataAny.inputs_json
         const interfaceData = inputsJson || {}
+        const outputsJson = dataAny.outputs_json
 
         // @ts-ignore
         const config: any = data.tool.config?.config_json
@@ -186,6 +187,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                     <CalculatorWidget
                         config={config}
                         interface={interfaceData}
+                        outputs={outputsJson}
                         h1={data.h1 || data.title}
                         lang={lang}
                         toolId={toolId || undefined}
@@ -280,6 +282,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }
     // @ts-ignore
     const interfaceData = inputsJson || {} // Используем inputs_json вместо interface_json
+    // @ts-ignore
+    const outputsJson = dataAny.outputs_json
 
     // Получаем tool_id и h1 для lang='en' для аналитики
     const toolId = (data as any).tool?.id || null
@@ -630,6 +634,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                     <CalculatorWidget
                         config={config}
                         interface={interfaceData}
+                        outputs={outputsJson}
                         initialValues={initialValues}
                         h1={data.h1 || data.title}
                         lang={lang}
@@ -699,6 +704,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                             <CalculatorWidget
                                 config={config}
                                 interface={interfaceData}
+                                outputs={outputsJson}
                                 initialValues={initialValues}
                                 h1={data.h1 || data.title}
                                 lang={lang}
@@ -760,6 +766,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                             <CalculatorWidget
                                 config={config}
                                 interface={interfaceData}
+                                outputs={outputsJson}
                                 initialValues={initialValues}
                                 h1={data.h1 || data.title}
                                 lang={lang}

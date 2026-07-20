@@ -10,6 +10,7 @@ import BMICalculatorWidget from './tools/BMICalculatorWidget'
 type Props = {
     config: JsonEngineConfig
     interface: any  // Переводы (Labels) из БД
+    outputs?: any  // outputs_json из БД: [{name, label, unit, precision}] — для калькуляторов с несколькими результатами
     initialValues?: JsonEngineInput  // Для share links
     h1: string  // Заголовок для header виджета
     lang: string
@@ -43,9 +44,10 @@ type Props = {
     toolSlug?: string  // Slug инструмента для генерации ссылки на виджет
 }
 
-export default function CalculatorWidget({ 
-    config, 
-    interface: ui, 
+export default function CalculatorWidget({
+    config,
+    interface: ui,
+    outputs,
     initialValues,
     h1,
     lang,
@@ -241,13 +243,31 @@ export default function CalculatorWidget({
         setResult({})
     }
 
+    // Форматирует одно значение output с учетом precision и unit
+    const formatOutputValue = (out: any): string | null => {
+        const raw = result[out.name]
+        if (raw === undefined || raw === null) return null
+        const formatted = typeof raw === 'number'
+            ? raw.toFixed(out.precision !== undefined ? out.precision : 2)
+            : String(raw)
+        return `${formatted}${out.unit ? ` ${out.unit}` : ''}`
+    }
+
     // Копирование результата - только видимый текст
     const handleCopy = () => {
         if (Object.keys(result).length === 0) return
-        
-        // Копируем result или textResult (видимый текст)
-        const resultText = result.result ? String(result.result) : (result.textResult ? String(result.textResult) : '')
-        
+
+        // Для калькуляторов с несколькими результатами копируем все строки
+        const resultText = hasMultipleOutputs
+            ? outputsConfig
+                .map((out) => {
+                    const value = formatOutputValue(out)
+                    return value ? `${out.label || out.name}: ${value}` : null
+                })
+                .filter(Boolean)
+                .join('\n')
+            : (result.result ? String(result.result) : (result.textResult ? String(result.textResult) : ''))
+
         if (resultText) {
             navigator.clipboard.writeText(resultText).then(() => {
                 setCopied(true)
@@ -343,12 +363,20 @@ export default function CalculatorWidget({
     const conversionMode = String(values.conversionMode || 'words')
     
     // Получаем конфигурацию полей из inputs_json
+    // ui - это массив [{name, label, type, unit, min, max, options, placeholder}, ...] из tool_i18n.inputs_json
     const getFieldConfig = (key: string) => {
+        if (Array.isArray(ui)) {
+            return ui.find((f: any) => f.name === key)
+        }
         if (Array.isArray(ui?.inputs)) {
             return ui.inputs.find((f: any) => f.name === key)
         }
         return ui?.inputs?.[key]
     }
+
+    // outputs_json из tool_i18n: [{name, label, unit, precision}] - для калькуляторов с несколькими результатами
+    const outputsConfig: any[] = Array.isArray(outputs) ? outputs : []
+    const hasMultipleOutputs = outputsConfig.length > 0
 
     const inputNumberConfig = getFieldConfig('inputNumber')
     const textConfig = getFieldConfig('text') // Для text case converter
@@ -445,7 +473,52 @@ export default function CalculatorWidget({
                             />
                         </div>
                     </>
-                ) : null}
+                ) : (
+                    /* Универсальный рендер полей ввода по config.inputs + inputs_json (для всех остальных калькуляторов) */
+                    <>
+                        {config.inputs.map((inp) => {
+                            const fieldConfig = getFieldConfig(inp.key)
+                            const label = fieldConfig?.label || inp.key
+                            const unit = fieldConfig?.unit
+                            const isSelect = fieldConfig?.type === 'select' && Array.isArray(fieldConfig?.options)
+                            const currentValue = values[inp.key] !== undefined ? values[inp.key] : (inp.default ?? '')
+
+                            return (
+                                <div className="mb-4" key={inp.key}>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        {label}{unit ? ` (${unit})` : ''}
+                                    </label>
+                                    {isSelect ? (
+                                        <select
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                            onChange={(e) => handleChange(inp.key, e.target.value)}
+                                            value={String(currentValue)}
+                                        >
+                                            {fieldConfig.options.map((option: any) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type="number"
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder={fieldConfig?.placeholder || ''}
+                                            min={fieldConfig?.min ?? undefined}
+                                            max={fieldConfig?.max ?? undefined}
+                                            onChange={(e) => handleChange(inp.key, e.target.value)}
+                                            value={String(currentValue)}
+                                        />
+                                    )}
+                                    {fieldConfig?.description && (
+                                        <p className="text-xs text-gray-500 mt-1">{fieldConfig.description}</p>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </>
+                )}
 
                 {/* Кнопки-переключатели для выбора формата (только для number-to-words) */}
                 {isNumberToWords && (
@@ -600,7 +673,7 @@ export default function CalculatorWidget({
                 </div>
 
                 {/* Result Box */}
-                <div 
+                <div
                     className="border border-gray-300 rounded-md relative mx-auto"
                     style={{ width: '370px', maxWidth: '100%', minHeight: '150px' }}
                 >
@@ -610,15 +683,32 @@ export default function CalculatorWidget({
                         <button
                             onClick={handleCopy}
                             className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors"
-                            disabled={!resultText}
+                            disabled={hasMultipleOutputs ? Object.keys(result).length === 0 : !resultText}
                         >
                             {copied ? '✓' : translations.copy}
                         </button>
                     </div>
-                    
+
                     {/* Result Content */}
                     <div className="p-4" style={{ paddingBottom: '20px' }}>
-                        {resultText ? (
+                        {hasMultipleOutputs ? (
+                            Object.keys(result).length > 0 ? (
+                                <div className="space-y-2">
+                                    {outputsConfig.map((out) => {
+                                        const value = formatOutputValue(out)
+                                        if (value === null) return null
+                                        return (
+                                            <div key={out.name} className="flex justify-between gap-3 text-gray-800">
+                                                <span className="text-sm text-gray-600">{out.label || out.name}</span>
+                                                <span className="font-semibold text-right">{value}</span>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="text-gray-400 text-sm">—</div>
+                            )
+                        ) : resultText ? (
                             <div className="text-gray-800 whitespace-pre-wrap">
                                 {resultText}
                             </div>
