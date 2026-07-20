@@ -29,8 +29,8 @@ export default function CookieConsentBanner({ lang }: CookieConsentBannerProps) 
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-300 shadow-lg">
-            <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center gap-4">
-                <p className="text-sm text-gray-700 flex-1">
+            <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <p className="text-sm text-gray-700 flex-1 w-full sm:w-auto">
                     {translations.message}{' '}
                     <Link href={`/${lang}/cookies`} className="text-blue-600 hover:text-blue-800 underline">
                         {translations.policyLinkText}

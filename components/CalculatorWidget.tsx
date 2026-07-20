@@ -94,8 +94,13 @@ export default function CalculatorWidget({
     // Инициализируем с default значениями из config
     const getInitialValues = (): JsonEngineInput => {
         const defaults: JsonEngineInput = {}
+        const uiInputs = Array.isArray(ui) ? ui : undefined
         config.inputs.forEach((inp) => {
-            if (inp.default !== undefined) {
+            // Локальный дефолт (например, своя ставка НДС для языка) переопределяет общий config.inputs[].default
+            const localeOverride = uiInputs?.find((f: any) => f.name === inp.key)?.default
+            if (localeOverride !== undefined) {
+                defaults[inp.key] = localeOverride
+            } else if (inp.default !== undefined) {
                 defaults[inp.key] = inp.default
             }
         })
@@ -230,8 +235,12 @@ export default function CalculatorWidget({
     const handleClear = () => {
         // При очистке сохраняем default значения, включая conversionMode
         const defaults: JsonEngineInput = {}
+        const uiInputsForClear = Array.isArray(ui) ? ui : undefined
         config.inputs.forEach((inp) => {
-            if (inp.default !== undefined) {
+            const localeOverride = uiInputsForClear?.find((f: any) => f.name === inp.key)?.default
+            if (localeOverride !== undefined) {
+                defaults[inp.key] = localeOverride
+            } else if (inp.default !== undefined) {
                 defaults[inp.key] = inp.default
             }
         })
@@ -244,13 +253,16 @@ export default function CalculatorWidget({
     }
 
     // Форматирует одно значение output с учетом precision и unit
+    // out.unitFrom позволяет брать единицу измерения динамически из значения другого поля
+    // (например, из выбора валюты USD/EUR), а не из статичной строки out.unit
     const formatOutputValue = (out: any): string | null => {
         const raw = result[out.name]
         if (raw === undefined || raw === null) return null
         const formatted = typeof raw === 'number'
             ? raw.toFixed(out.precision !== undefined ? out.precision : 2)
             : String(raw)
-        return `${formatted}${out.unit ? ` ${out.unit}` : ''}`
+        const unit = out.unitFrom ? values[out.unitFrom] : out.unit
+        return `${formatted}${unit ? ` ${unit}` : ''}`
     }
 
     // Копирование результата - только видимый текст

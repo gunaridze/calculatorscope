@@ -66,6 +66,17 @@ Goal: reach the 250k–650k visits/month needed for €3,000/month.
 - [ ] Alerting for traffic drops (algorithm updates hit calculator/finance niches hard)
 - [ ] Document runbooks so hired help can operate content pipeline without you in the loop
 
+## Phase 5 — Modern Redesign (Deferred to final stage, after content scaling)
+Goal: move from "functional MVP" visual design to a polished, modern look — deliberately deferred until content/tool count is largely built out, so design work isn't repeated as the widget/page templates keep evolving.
+
+- [ ] Replace plain category tool-lists with proper cards (icon/thumbnail + title + description) instead of bare text links
+- [ ] Add live-as-you-type calculation (no explicit "Calculate" click required) as the default interaction pattern
+- [ ] Custom-styled form controls (selects, inputs) instead of bare browser defaults — shadows/rounding/focus states
+- [ ] Address the large empty-whitespace problem on category/tool pages once real ad content replaces placeholders (may resolve itself, re-check first)
+- [ ] Consider a proper accent/brand color system beyond the single blue, without violating the "always light, no dark mode" decision already made
+
+**Correction (2026-07-20):** an earlier pass of this review flagged a mobile horizontal-overflow bug in `components/CookieConsentBanner.tsx`. Re-verified with a properly-waited headless measurement (Puppeteer, `scrollWidth` vs `innerWidth`) and the page shows **zero overflow**, with or without the fix — the original finding was an artifact of a single-shot screenshot tool capturing the page before hydration/layout settled, not a real defect. A small harmless tweak (`items-stretch` instead of `items-center` on the mobile flex-col layout, so the message text properly fills the row) was kept since it's marginally more correct, but there was no actual bug to fix.
+
 ---
 
 ## Key Risks
