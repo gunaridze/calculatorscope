@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
+import HeaderSearch from './HeaderSearch'
 
 type Category = {
     id: string
@@ -217,25 +218,11 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
 
                             {/* Поиск - 20px от бургера */}
                             <div className="flex-1 max-w-md ml-[20px]">
-                                <div className="relative">
-                                    <input
-                                        id="search-input-desktop"
-                                        name="search-input-desktop"
-                                        type="text"
-                                        placeholder={translations.header_search_placeholder}
-                                        className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
-                                        style={{ color: '#9A9898' }}
-                                    />
-                                    <svg
-                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        style={{ color: '#9A9898' }}
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
+                                <HeaderSearch
+                                    lang={lang}
+                                    placeholder={translations.header_search_placeholder}
+                                    inputId="search-input-desktop"
+                                />
                             </div>
 
                             {/* Выбор языка */}
@@ -275,25 +262,11 @@ export default function Header({ lang, h1, metaDescription, translations }: Head
                 {/* Второй ряд - поиск на мобильных */}
                 <div className="bg-[#FFFFFF] border-b border-[#000000] md:hidden">
                     <div className="container mx-auto px-4 py-3">
-                        <div className="relative">
-                            <input
-                                id="search-input-mobile"
-                                name="search-input-mobile"
-                                type="text"
-                                placeholder={translations.header_search_placeholder}
-                                className="w-full px-4 py-2 pl-10 border border-[#000000] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1814E6]"
-                                style={{ color: '#9A9898' }}
-                            />
-                            <svg
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                style={{ color: '#9A9898' }}
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
+                        <HeaderSearch
+                            lang={lang}
+                            placeholder={translations.header_search_placeholder}
+                            inputId="search-input-mobile"
+                        />
                     </div>
                 </div>
 
