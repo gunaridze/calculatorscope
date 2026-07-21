@@ -32,7 +32,7 @@ type InputField = {
     max?: number | null
     description?: string
     placeholder?: string
-    options?: Array<{ value: string; label: string }>
+    options?: Array<{ value: string; label: string; abbr?: string }>
     default?: number | string
 }
 
@@ -305,20 +305,54 @@ const MASS_UNIT_LABELS: Record<string, Record<string, string>> = {
     },
 }
 
-function volumeUnitOptions(lang: string): Array<{ value: string; label: string }> {
-    const labels = VOLUME_UNIT_LABELS[lang] || VOLUME_UNIT_LABELS.en
-    return VOLUME_UNIT_ORDER.map((code) => ({ value: code, label: labels[code] }))
+// Короткие отображаемые сокращения единиц (используются в результате вместо
+// сырых внутренних кодов вида "gallon_us_fluid") - единые для всех локалей,
+// как и коды VOLUME_UNIT_ORDER/MASS_UNIT_ORDER, поскольку это общепринятые
+// сокращения (kg, gal, tbsp и т.д.), а не переводимые слова
+const VOLUME_UNIT_ABBR: Record<string, string> = {
+    liter: 'L', milliliter: 'mL', deciliter: 'dL', microliter: 'µL',
+    cubic_meter: 'm³', cubic_cm: 'cm³', cubic_inch: 'in³', cubic_foot: 'ft³', cubic_yard: 'yd³', cubic_mile: 'mi³', acre_foot: 'ac-ft', cord: 'cord',
+    gallon_us_fluid: 'gal (US)', gallon_us_dry: 'gal (US dry)', gallon_imperial: 'gal (Imp)',
+    quart_us_fluid: 'qt (US)', quart_us_dry: 'qt (US dry)', quart_imperial: 'qt (Imp)',
+    pint_us_fluid: 'pt (US)', pint_us_dry: 'pt (US dry)', pint_imperial: 'pt (Imp)',
+    cup_us: 'cup (US)', cup_canadian: 'cup (CA)', cup_breakfast: 'cup (UK)',
+    fl_oz_us: 'fl oz (US)', fl_oz_imperial: 'fl oz (Imp)',
+    gill_us: 'gill (US)', gill_imperial: 'gill (Imp)',
+    tablespoon_us: 'tbsp (US)', tablespoon_canadian: 'tbsp (CA)', tablespoon_imperial: 'tbsp (Imp)',
+    teaspoon_us: 'tsp (US)', teaspoon_canadian: 'tsp (CA)', teaspoon_imperial: 'tsp (Imp)',
+    barrel_us_fluid: 'bbl (US)', barrel_us_dry: 'bbl (US dry)', barrel_imperial: 'bbl (Imp)', barrel_petroleum: 'bbl (oil)',
+    hogshead_us: 'hhd (US)', hogshead_imperial: 'hhd (Imp)',
+    bushel_us_dry: 'bu (US)', bushel_imperial: 'bu (Imp)',
+    peck_us_dry: 'pk (US)', peck_imperial: 'pk (Imp)',
 }
 
-function massUnitOptions(lang: string): Array<{ value: string; label: string }> {
+const MASS_UNIT_ABBR: Record<string, string> = {
+    milligram: 'mg', centigram: 'cg', gram: 'g', kilogram: 'kg', megagram: 'Mg',
+    microgram: 'µg', carat_metric: 'ct', point_metric: 'pt', grain_metric: 'gr (metric)',
+    grain_troy: 'gr', pennyweight: 'dwt', dram_avdp: 'dr', dram_troy: 'dr t',
+    ounce_avdp: 'oz', ounce_troy: 'oz t', pound_avdp: 'lb', pound_troy: 'lb t', pound_metric: 'lb (metric)',
+    stone: 'st', hundredweight_short: 'cwt (US)', hundredweight_long: 'cwt (UK)',
+    ton_short: 'ton (US)', ton_long: 'ton (UK)', ton_metric: 't', tonne_us: 't (US)',
+    ton_assay_short: 'AT (US)', ton_assay_long: 'AT (UK)', slug: 'slug',
+}
+
+function volumeUnitOptions(lang: string): Array<{ value: string; label: string; abbr: string }> {
+    const labels = VOLUME_UNIT_LABELS[lang] || VOLUME_UNIT_LABELS.en
+    return VOLUME_UNIT_ORDER.map((code) => ({ value: code, label: labels[code], abbr: VOLUME_UNIT_ABBR[code] }))
+}
+
+function massUnitOptions(lang: string): Array<{ value: string; label: string; abbr: string }> {
     const labels = MASS_UNIT_LABELS[lang] || MASS_UNIT_LABELS.en
-    return MASS_UNIT_ORDER.map((code) => ({ value: code, label: labels[code] }))
+    return MASS_UNIT_ORDER.map((code) => ({ value: code, label: labels[code], abbr: MASS_UNIT_ABBR[code] }))
 }
 
 const FROM_LABEL: Record<string, string> = { en: 'From', ru: 'Из', de: 'Von', es: 'De', fr: 'De', it: 'Da', pl: 'Z', lv: 'No' }
 const TO_LABEL: Record<string, string> = { en: 'To', ru: 'В', de: 'Zu', es: 'A', fr: 'Vers', it: 'A', pl: 'Do', lv: 'Uz' }
 const VALUE_LABEL: Record<string, string> = { en: 'Value', ru: 'Значение', de: 'Wert', es: 'Valor', fr: 'Valeur', it: 'Valore', pl: 'Wartość', lv: 'Vērtība' }
-const RESULT_LABEL: Record<string, string> = { en: 'Result', ru: 'Результат', de: 'Ergebnis', es: 'Resultado', fr: 'Résultat', it: 'Risultato', pl: 'Wynik', lv: 'Rezultāts' }
+// Не используем слово "Result"/"Результат" и т.п. здесь - оно уже вынесено в заголовок
+// самого блока результата в виджете (translations.result), и дублирование выглядело
+// как "Result" (заголовок) + "Result: 0.26 gal" (строка) — см. правку пользователя.
+const RESULT_LABEL: Record<string, string> = { en: 'Converted Value', ru: 'Результат конвертации', de: 'Umgerechneter Wert', es: 'Valor Convertido', fr: 'Valeur Convertie', it: 'Valore Convertito', pl: 'Przeliczona Wartość', lv: 'Pārrēķinātā Vērtība' }
 
 function volumeInputs(lang: string, placeholder: string): InputField[] {
     return [

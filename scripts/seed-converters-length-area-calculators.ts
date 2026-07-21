@@ -30,7 +30,7 @@ type InputField = {
     max?: number | null
     description?: string
     placeholder?: string
-    options?: Array<{ value: string; label: string }>
+    options?: Array<{ value: string; label: string; abbr?: string }>
     default?: number | string
 }
 
@@ -96,20 +96,29 @@ const AREA_UNIT_LABELS: Record<string, Record<string, string>> = {
 const LENGTH_UNIT_ORDER = ['mm', 'cm', 'm', 'km', 'in', 'ft', 'yd', 'mi']
 const AREA_UNIT_ORDER = ['mm2', 'cm2', 'm2', 'km2', 'in2', 'ft2', 'yd2', 'acre', 'hectare', 'mi2']
 
-function lengthUnitOptions(lang: string): Array<{ value: string; label: string }> {
-    const labels = LENGTH_UNIT_LABELS[lang] || LENGTH_UNIT_LABELS.en
-    return LENGTH_UNIT_ORDER.map((code) => ({ value: code, label: labels[code] }))
+// Отображаемые сокращения для результата: у длины сами коды уже читаемые (m, ft, cm...),
+// а у площади заменяем "2" на надстрочное "²" (m2 -> m²) вместо сырого кода
+const AREA_UNIT_ABBR: Record<string, string> = {
+    mm2: 'mm²', cm2: 'cm²', m2: 'm²', km2: 'km²', in2: 'in²', ft2: 'ft²', yd2: 'yd²', acre: 'ac', hectare: 'ha', mi2: 'mi²',
 }
 
-function areaUnitOptions(lang: string): Array<{ value: string; label: string }> {
+function lengthUnitOptions(lang: string): Array<{ value: string; label: string; abbr: string }> {
+    const labels = LENGTH_UNIT_LABELS[lang] || LENGTH_UNIT_LABELS.en
+    return LENGTH_UNIT_ORDER.map((code) => ({ value: code, label: labels[code], abbr: code }))
+}
+
+function areaUnitOptions(lang: string): Array<{ value: string; label: string; abbr: string }> {
     const labels = AREA_UNIT_LABELS[lang] || AREA_UNIT_LABELS.en
-    return AREA_UNIT_ORDER.map((code) => ({ value: code, label: labels[code] }))
+    return AREA_UNIT_ORDER.map((code) => ({ value: code, label: labels[code], abbr: AREA_UNIT_ABBR[code] }))
 }
 
 const FROM_LABEL: Record<string, string> = { en: 'From', ru: 'Из', de: 'Von', es: 'De', fr: 'De', it: 'Da', pl: 'Z', lv: 'No' }
 const TO_LABEL: Record<string, string> = { en: 'To', ru: 'В', de: 'Zu', es: 'A', fr: 'Vers', it: 'A', pl: 'Do', lv: 'Uz' }
 const VALUE_LABEL: Record<string, string> = { en: 'Value', ru: 'Значение', de: 'Wert', es: 'Valor', fr: 'Valeur', it: 'Valore', pl: 'Wartość', lv: 'Vērtība' }
-const RESULT_LABEL: Record<string, string> = { en: 'Result', ru: 'Результат', de: 'Ergebnis', es: 'Resultado', fr: 'Résultat', it: 'Risultato', pl: 'Wynik', lv: 'Rezultāts' }
+// Не используем слово "Result"/"Результат" и т.п. здесь - оно уже вынесено в заголовок
+// самого блока результата в виджете (translations.result), и дублирование выглядело
+// как "Result" (заголовок) + "Result: 3.28 ft" (строка).
+const RESULT_LABEL: Record<string, string> = { en: 'Converted Value', ru: 'Результат конвертации', de: 'Umgerechneter Wert', es: 'Valor Convertido', fr: 'Valeur Convertie', it: 'Valore Convertito', pl: 'Przeliczona Wartość', lv: 'Pārrēķinātā Vērtība' }
 
 function lengthInputs(lang: string, placeholder: string): InputField[] {
     return [

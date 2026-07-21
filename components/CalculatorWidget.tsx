@@ -258,10 +258,38 @@ export default function CalculatorWidget({
     const formatOutputValue = (out: any): string | null => {
         const raw = result[out.name]
         if (raw === undefined || raw === null) return null
-        const formatted = typeof raw === 'number'
-            ? raw.toFixed(out.precision !== undefined ? out.precision : 2)
-            : String(raw)
-        const unit = out.unitFrom ? values[out.unitFrom] : out.unit
+
+        let formatted: string
+        if (typeof raw === 'number') {
+            const precision = out.precision !== undefined ? out.precision : 2
+            const fixed = raw.toFixed(precision)
+            // Если дробная часть после округления состоит из одних нулей дальше 2 знаков
+            // (например "1000.000000"), обрезаем до 2 знаков ("1000.00") вместо того, чтобы
+            // всегда показывать полную заданную точность
+            if (precision > 2 && fixed.includes('.')) {
+                const [intPart, decPart] = fixed.split('.')
+                const trimmed = decPart.replace(/0+$/, '')
+                formatted = trimmed.length >= 2 ? `${intPart}.${trimmed}` : `${intPart}.${decPart.slice(0, 2)}`
+            } else {
+                formatted = fixed
+            }
+        } else {
+            formatted = String(raw)
+        }
+
+        let unit = out.unitFrom ? values[out.unitFrom] : out.unit
+        // Для полей вроде "to_unit" в конвертерах единиц измерения показываем короткое
+        // отображаемое сокращение (option.abbr), а не сырое внутреннее значение опции
+        // (например "gallon_us_fluid") - если сокращение не задано (как у валютных
+        // селектов '$'/'€'), используем значение как раньше
+        if (out.unitFrom) {
+            const uiInputs = Array.isArray(ui) ? ui : undefined
+            const sourceField = uiInputs?.find((f: any) => f.name === out.unitFrom)
+            const matchedOption = sourceField?.options?.find((o: any) => o.value === values[out.unitFrom])
+            if (matchedOption?.abbr) {
+                unit = matchedOption.abbr
+            }
+        }
         return `${formatted}${unit ? ` ${unit}` : ''}`
     }
 
