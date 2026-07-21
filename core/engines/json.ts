@@ -2,6 +2,7 @@ import * as math from 'mathjs'
 import { numberToWords, type NumberToWordsOptions } from '@/lib/tools/numberToWords'
 import { textCaseConverter, type TextCaseConverterOptions } from '@/lib/tools/textCaseConverter'
 import { bmiCalculator, type BMICalculatorOptions } from '@/lib/tools/bmiCalculator'
+import { lengthConverter, areaConverter } from '@/lib/tools/unitConverter'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -79,6 +80,12 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
         }
 
         return bmiCalculator(options)
+    },
+    lengthConverter: (params: Record<string, any>) => {
+        return lengthConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    areaConverter: (params: Record<string, any>) => {
+        return areaConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
     }
 }
 
