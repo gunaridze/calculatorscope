@@ -3,6 +3,7 @@ import { numberToWords, type NumberToWordsOptions } from '@/lib/tools/numberToWo
 import { textCaseConverter, type TextCaseConverterOptions } from '@/lib/tools/textCaseConverter'
 import { bmiCalculator, type BMICalculatorOptions } from '@/lib/tools/bmiCalculator'
 import { lengthConverter, areaConverter } from '@/lib/tools/unitConverter'
+import { volumeConverter, massConverter } from '@/lib/tools/volumeMassConverter'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -86,6 +87,12 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     areaConverter: (params: Record<string, any>) => {
         return areaConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    volumeConverter: (params: Record<string, any>) => {
+        return volumeConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    massConverter: (params: Record<string, any>) => {
+        return massConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
     }
 }
 
