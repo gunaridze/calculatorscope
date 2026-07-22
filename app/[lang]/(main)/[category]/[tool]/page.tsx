@@ -20,6 +20,18 @@ interface ContentBlock {
     id?: string  // Опциональный id для секции
 }
 
+// Заголовок секции FAQ (раньше был захардкожен только на английском)
+const FAQ_HEADING: Record<string, string> = {
+    en: 'Frequently Asked Questions',
+    ru: 'Часто задаваемые вопросы',
+    de: 'Häufig gestellte Fragen',
+    es: 'Preguntas Frecuentes',
+    fr: 'Questions Fréquentes',
+    it: 'Domande Frequenti',
+    pl: 'Często Zadawane Pytania',
+    lv: 'Biežāk Uzdotie Jautājumi',
+}
+
 // Типы для параметров URL (в Next.js 15+ это Promise)
 type Props = {
     params: Promise<{
@@ -607,7 +619,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
         contentSections.push({
             node: (
                 <>
-                    <h2 key="faq-h2" className="text-3xl font-bold mb-6 mt-8">Frequently Asked Questions</h2>
+                    <h2 key="faq-h2" className="text-3xl font-bold mb-6 mt-8">{FAQ_HEADING[lang] || FAQ_HEADING.en}</h2>
                     <section key="faq-section" id="faq" className="mb-12 prose lg:prose-xl">
                         <div className="space-y-4">
                             {(() => {
