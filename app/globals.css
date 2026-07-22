@@ -105,3 +105,32 @@ body {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
+
+/* Стили для таблиц внутри контента (например, справочные таблицы конвертации) */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  font-size: 0.95em;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5em 0.9em;
+  text-align: center;
+}
+
+.prose th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+.prose tr:nth-child(even) td {
+  background-color: #fafafa;
+}
+
+.prose .table-scroll {
+  overflow-x: auto;
+}

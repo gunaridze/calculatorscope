@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getToolData, getPageByCode, prisma } from '@/lib/db'
+import { getToolData, getPageByCode, getRelatedTools, prisma } from '@/lib/db'
 import CalculatorWidget from '@/components/CalculatorWidget'
 import PWASetup from '@/components/PWASetup'
 import { calculate, type JsonEngineConfig, type JsonEngineOutput } from '@/core/engines/json'
@@ -8,6 +8,7 @@ import Footer from '@/components/Footer'
 import { getTranslations } from '@/lib/translations'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import AdBanner from '@/components/AdBanner'
+import RelatedCalculators from '@/components/RelatedCalculators'
 import Header from '@/components/Header'
 import React from 'react'
 import { processLatex } from '@/lib/latex-server'
@@ -245,9 +246,11 @@ export default async function ToolPage({ params, searchParams }: Props) {
     ]
 
     // Добавляем категории (сначала родительскую, потом дочернюю)
+    let categoryId: string | undefined
     if (data.tool.categories && data.tool.categories.length > 0) {
         const categoryData = data.tool.categories[0].category
-        
+        categoryId = categoryData.id
+
         // Добавляем родительскую категорию, если она есть
         if (categoryData.parent && categoryData.parent.i18n && categoryData.parent.i18n.length > 0) {
             const parentI18n = categoryData.parent.i18n[0]
@@ -305,6 +308,16 @@ export default async function ToolPage({ params, searchParams }: Props) {
             h1En = toolI18nEn?.h1 || toolI18nEn?.title || undefined
         } catch (e) {
             console.error('Error fetching h1_en for analytics:', e)
+        }
+    }
+
+    // Получаем похожие калькуляторы той же категории для блока "Related Calculators"
+    let relatedTools: Array<{ slug: string; title: string }> = []
+    if (categoryId && toolId) {
+        try {
+            relatedTools = await getRelatedTools(categoryId, lang, toolId, 5)
+        } catch (e) {
+            console.error('Error fetching related tools:', e)
         }
     }
 
@@ -742,6 +755,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
                         <div className="float-right w-[300px] space-y-5 ml-5">
                             <AdBanner lang={lang} adNumber={1} />
                             <AdBanner lang={lang} adNumber={2} />
+                            <RelatedCalculators tools={relatedTools} lang={lang} categorySlug={category} />
                             <AdBanner lang={lang} adNumber={3} />
                             <AdBanner lang={lang} adNumber={4} />
                         </div>
@@ -809,6 +823,11 @@ export default async function ToolPage({ params, searchParams }: Props) {
                     {/* Контент с инъекцией баннеров */}
                     <div className="prose lg:prose-xl max-w-none">
                         <ContentWithAds content={contentSections} lang={lang} />
+                    </div>
+
+                    {/* Похожие калькуляторы */}
+                    <div className="mt-5">
+                        <RelatedCalculators tools={relatedTools} lang={lang} categorySlug={category} />
                     </div>
                 </div>
             </main>
