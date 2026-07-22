@@ -6,6 +6,8 @@ import Image from 'next/image'
 import { calculate, type JsonEngineConfig, type JsonEngineInput, type JsonEngineOutput } from '@/core/engines/json'
 import TextCaseConverterWidget from './tools/TextCaseConverterWidget'
 import BMICalculatorWidget from './tools/BMICalculatorWidget'
+import CountdownTimerWidget from './tools/CountdownTimerWidget'
+import StopwatchWidget from './tools/StopwatchWidget'
 
 type Props = {
     config: JsonEngineConfig
@@ -90,18 +92,58 @@ export default function CalculatorWidget({
             />
         )
     }
+    // Для tool_id=1120 используем специальный компонент CountdownTimerWidget (живой тикающий таймер)
+    if (toolId === '1120' || String(toolId) === '1120') {
+        return (
+            <CountdownTimerWidget
+                config={config}
+                interface={ui}
+                initialValues={initialValues}
+                h1={h1}
+                lang={lang}
+                toolId={toolId}
+                h1En={h1En}
+                translations={translations}
+                toolSlug={toolSlug}
+            />
+        )
+    }
+
+    // Для tool_id=1126 используем специальный компонент StopwatchWidget (живой секундомер)
+    if (toolId === '1126' || String(toolId) === '1126') {
+        return (
+            <StopwatchWidget
+                config={config}
+                interface={ui}
+                initialValues={initialValues}
+                h1={h1}
+                lang={lang}
+                toolId={toolId}
+                h1En={h1En}
+                translations={translations}
+                toolSlug={toolSlug}
+            />
+        )
+    }
+
     // Храним значения всех инпутов
     // Инициализируем с default значениями из config
     const getInitialValues = (): JsonEngineInput => {
         const defaults: JsonEngineInput = {}
         const uiInputs = Array.isArray(ui) ? ui : undefined
+        const todayStr = new Date().toISOString().slice(0, 10)
         config.inputs.forEach((inp) => {
             // Локальный дефолт (например, своя ставка НДС для языка) переопределяет общий config.inputs[].default
-            const localeOverride = uiInputs?.find((f: any) => f.name === inp.key)?.default
-            if (localeOverride !== undefined) {
-                defaults[inp.key] = localeOverride
-            } else if (inp.default !== undefined) {
-                defaults[inp.key] = inp.default
+            const fieldConfig = uiInputs?.find((f: any) => f.name === inp.key)
+            const localeOverride = fieldConfig?.default
+            let value = localeOverride !== undefined ? localeOverride : inp.default
+            // Специальное значение "today" для полей type: 'date' - подставляем реальную
+            // текущую дату вместо статичного значения, зафиксированного при сидировании
+            if (fieldConfig?.type === 'date' && value === 'today') {
+                value = todayStr
+            }
+            if (value !== undefined) {
+                defaults[inp.key] = value
             }
         })
         
@@ -236,12 +278,16 @@ export default function CalculatorWidget({
         // При очистке сохраняем default значения, включая conversionMode
         const defaults: JsonEngineInput = {}
         const uiInputsForClear = Array.isArray(ui) ? ui : undefined
+        const todayStrForClear = new Date().toISOString().slice(0, 10)
         config.inputs.forEach((inp) => {
-            const localeOverride = uiInputsForClear?.find((f: any) => f.name === inp.key)?.default
-            if (localeOverride !== undefined) {
-                defaults[inp.key] = localeOverride
-            } else if (inp.default !== undefined) {
-                defaults[inp.key] = inp.default
+            const fieldConfig = uiInputsForClear?.find((f: any) => f.name === inp.key)
+            const localeOverride = fieldConfig?.default
+            let value = localeOverride !== undefined ? localeOverride : inp.default
+            if (fieldConfig?.type === 'date' && value === 'today') {
+                value = todayStrForClear
+            }
+            if (value !== undefined) {
+                defaults[inp.key] = value
             }
         })
         // Гарантируем, что conversionMode всегда есть
@@ -521,6 +567,7 @@ export default function CalculatorWidget({
                             const label = fieldConfig?.label || inp.key
                             const unit = fieldConfig?.unit
                             const isSelect = fieldConfig?.type === 'select' && Array.isArray(fieldConfig?.options)
+                            const isDate = fieldConfig?.type === 'date'
                             const currentValue = values[inp.key] !== undefined ? values[inp.key] : (inp.default ?? '')
 
                             return (
@@ -540,6 +587,15 @@ export default function CalculatorWidget({
                                                 </option>
                                             ))}
                                         </select>
+                                    ) : isDate ? (
+                                        <input
+                                            type="date"
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                            min={fieldConfig?.min ?? undefined}
+                                            max={fieldConfig?.max ?? undefined}
+                                            onChange={(e) => handleChange(inp.key, e.target.value)}
+                                            value={String(currentValue)}
+                                        />
                                     ) : (
                                         <input
                                             type="number"

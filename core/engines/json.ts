@@ -4,6 +4,30 @@ import { textCaseConverter, type TextCaseConverterOptions } from '@/lib/tools/te
 import { bmiCalculator, type BMICalculatorOptions } from '@/lib/tools/bmiCalculator'
 import { lengthConverter, areaConverter } from '@/lib/tools/unitConverter'
 import { volumeConverter, massConverter } from '@/lib/tools/volumeMassConverter'
+import { speedConverter, timeUnitConverter } from '@/lib/tools/speedTimeConverter'
+import { speedDistanceTime } from '@/lib/tools/speedDistanceTime'
+import {
+    hmsAddSubtract,
+    timeArithmetic,
+    hoursMinutesAddSubtract,
+    decimalToTime,
+    timeToDecimal,
+    to24HourTime,
+    to12HourTime,
+    hoursBetweenClockTimes,
+} from '@/lib/tools/timeDurationCalc'
+import {
+    dateAddSubtract,
+    dateDifference,
+    daysAndBusinessDays,
+    datetimeDifference,
+    ageCalculator,
+    ageChecker,
+    romanNumeralDate,
+} from '@/lib/tools/dateCalc'
+import { workHours, clockInOutTotal, shiftCoverage } from '@/lib/tools/workShiftCalc'
+import { focusSessionPlanner, contextSwitchingCost, meetingTimezoneOverlap } from '@/lib/tools/productivityCalc'
+import { sunriseSunset } from '@/lib/tools/sunriseSunset'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -93,6 +117,81 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     massConverter: (params: Record<string, any>) => {
         return massConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    speedConverter: (params: Record<string, any>) => {
+        return speedConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    timeUnitConverter: (params: Record<string, any>) => {
+        return timeUnitConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    speedDistanceTime: (params: Record<string, any>) => {
+        return speedDistanceTime({ solve_for: params.solve_for, distance: params.distance, speed: params.speed, time: params.time })
+    },
+    hmsAddSubtract: (params: Record<string, any>) => {
+        return hmsAddSubtract(params as any)
+    },
+    timeArithmetic: (params: Record<string, any>) => {
+        return timeArithmetic(params as any)
+    },
+    hoursMinutesAddSubtract: (params: Record<string, any>) => {
+        return hoursMinutesAddSubtract(params as any)
+    },
+    decimalToTime: (params: Record<string, any>) => {
+        return decimalToTime({ decimal_hours: params.decimal_hours })
+    },
+    timeToDecimal: (params: Record<string, any>) => {
+        return timeToDecimal({ hours: params.hours, minutes: params.minutes, seconds: params.seconds })
+    },
+    to24HourTime: (params: Record<string, any>) => {
+        return to24HourTime({ hour: params.hour, minute: params.minute, ampm: params.ampm })
+    },
+    to12HourTime: (params: Record<string, any>) => {
+        return to12HourTime({ hour_24: params.hour_24, minute: params.minute })
+    },
+    hoursBetweenClockTimes: (params: Record<string, any>) => {
+        return hoursBetweenClockTimes(params as any)
+    },
+    dateAddSubtract: (params: Record<string, any>) => {
+        return dateAddSubtract({ base_date: params.base_date, amount: params.amount, unit: params.unit, operation: params.operation })
+    },
+    dateDifference: (params: Record<string, any>) => {
+        return dateDifference({ date1: params.date1, date2: params.date2 })
+    },
+    daysAndBusinessDays: (params: Record<string, any>) => {
+        return daysAndBusinessDays({ date1: params.date1, date2: params.date2 })
+    },
+    datetimeDifference: (params: Record<string, any>) => {
+        return datetimeDifference(params as any)
+    },
+    ageCalculator: (params: Record<string, any>) => {
+        return ageCalculator({ birth_date: params.birth_date, as_of_date: params.as_of_date })
+    },
+    ageChecker: (params: Record<string, any>) => {
+        return ageChecker({ birth_date: params.birth_date, required_age: params.required_age, as_of_date: params.as_of_date })
+    },
+    romanNumeralDate: (params: Record<string, any>) => {
+        return romanNumeralDate({ date: params.date })
+    },
+    workHours: (params: Record<string, any>) => {
+        return workHours(params as any)
+    },
+    clockInOutTotal: (params: Record<string, any>) => {
+        return clockInOutTotal(params as any)
+    },
+    shiftCoverage: (params: Record<string, any>) => {
+        return shiftCoverage(params as any)
+    },
+    focusSessionPlanner: (params: Record<string, any>) => {
+        return focusSessionPlanner({ total_minutes: params.total_minutes, focus_minutes: params.focus_minutes, break_minutes: params.break_minutes })
+    },
+    contextSwitchingCost: (params: Record<string, any>) => {
+        return contextSwitchingCost({ switches_per_day: params.switches_per_day, cost_per_switch_minutes: params.cost_per_switch_minutes, work_days_per_week: params.work_days_per_week })
+    },
+    meetingTimezoneOverlap: (params: Record<string, any>) => {
+        return meetingTimezoneOverlap(params as any)
+    },
+    sunriseSunset: (params: Record<string, any>) => {
+        return sunriseSunset({ latitude: params.latitude, longitude: params.longitude, date: params.date, utc_offset: params.utc_offset })
     }
 }
 
