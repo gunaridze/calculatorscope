@@ -69,6 +69,20 @@ import {
     organicTrafficValueCalculator,
     emailMarketingRoiCalculator,
 } from '@/lib/tools/marketingCalculators'
+import {
+    concreteCalculator,
+    concreteBagsCalculator,
+    cubicYardsCalculator,
+    squareFootageCalculator,
+    gravelCalculator,
+    mulchCalculator,
+    tankCapacityCalculator,
+    roadwayFillCalculator,
+    sandCalculator,
+    topsoilCalculator,
+    paverCalculator,
+    retainingWallBlockCalculator,
+} from '@/lib/tools/constructionCalculators'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -338,6 +352,42 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     emailMarketingRoiCalculator: (params: Record<string, any>) => {
         return emailMarketingRoiCalculator({ campaign_revenue: params.campaign_revenue, campaign_cost: params.campaign_cost })
+    },
+    concreteCalculator: (params: Record<string, any>) => {
+        return concreteCalculator({ length: params.length, width: params.width, thickness: params.thickness })
+    },
+    concreteBagsCalculator: (params: Record<string, any>) => {
+        return concreteBagsCalculator({ volume_cuft: params.volume_cuft })
+    },
+    cubicYardsCalculator: (params: Record<string, any>) => {
+        return cubicYardsCalculator({ length: params.length, width: params.width, depth: params.depth })
+    },
+    squareFootageCalculator: (params: Record<string, any>) => {
+        return squareFootageCalculator({ length: params.length, width: params.width })
+    },
+    gravelCalculator: (params: Record<string, any>) => {
+        return gravelCalculator({ length: params.length, width: params.width, depth: params.depth })
+    },
+    mulchCalculator: (params: Record<string, any>) => {
+        return mulchCalculator({ length: params.length, width: params.width, depth: params.depth })
+    },
+    tankCapacityCalculator: (params: Record<string, any>) => {
+        return tankCapacityCalculator({ shape: params.shape, diameter: params.diameter, length: params.length, width: params.width, height: params.height })
+    },
+    roadwayFillCalculator: (params: Record<string, any>) => {
+        return roadwayFillCalculator({ length: params.length, width: params.width, depth: params.depth })
+    },
+    sandCalculator: (params: Record<string, any>) => {
+        return sandCalculator({ length: params.length, width: params.width, depth: params.depth })
+    },
+    topsoilCalculator: (params: Record<string, any>) => {
+        return topsoilCalculator({ length: params.length, width: params.width, depth: params.depth })
+    },
+    paverCalculator: (params: Record<string, any>) => {
+        return paverCalculator({ area: params.area, paver_length: params.paver_length, paver_width: params.paver_width })
+    },
+    retainingWallBlockCalculator: (params: Record<string, any>) => {
+        return retainingWallBlockCalculator({ wall_length: params.wall_length, wall_height: params.wall_height, block_length: params.block_length, block_height: params.block_height })
     },
 }
 
