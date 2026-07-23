@@ -8,6 +8,7 @@ import TextCaseConverterWidget from './tools/TextCaseConverterWidget'
 import BMICalculatorWidget from './tools/BMICalculatorWidget'
 import CountdownTimerWidget from './tools/CountdownTimerWidget'
 import StopwatchWidget from './tools/StopwatchWidget'
+import CurrencyConverterWidget from './tools/CurrencyConverterWidget'
 
 type Props = {
     config: JsonEngineConfig
@@ -113,6 +114,23 @@ export default function CalculatorWidget({
     if (toolId === '1126' || String(toolId) === '1126') {
         return (
             <StopwatchWidget
+                config={config}
+                interface={ui}
+                initialValues={initialValues}
+                h1={h1}
+                lang={lang}
+                toolId={toolId}
+                h1En={h1En}
+                translations={translations}
+                toolSlug={toolSlug}
+            />
+        )
+    }
+
+    // Для tool_id=1156 используем специальный компонент CurrencyConverterWidget (живые курсы валют)
+    if (toolId === '1156' || String(toolId) === '1156') {
+        return (
+            <CurrencyConverterWidget
                 config={config}
                 interface={ui}
                 initialValues={initialValues}
