@@ -97,6 +97,19 @@ import {
     robotsTxtGenerator,
     loremIpsumGenerator,
 } from '@/lib/tools/utilitiesCalculators'
+import {
+    wordCharacterCounter,
+    readingTimeCalculator,
+    randomNamePicker,
+    keywordDensityAnalyzer,
+    commonMisspellingsChecker,
+    anagramChecker,
+    palindromeChecker,
+    pigLatinTranslator,
+    acronymGenerator,
+    randomWordGenerator,
+    textReverser,
+} from '@/lib/tools/wordTextTools'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -438,6 +451,39 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     loremIpsumGenerator: (params: Record<string, any>) => {
         return loremIpsumGenerator({ paragraphs: params.paragraphs })
+    },
+    wordCharacterCounter: (params: Record<string, any>) => {
+        return wordCharacterCounter({ text: params.text })
+    },
+    readingTimeCalculator: (params: Record<string, any>) => {
+        return readingTimeCalculator({ text: params.text, wpm: params.wpm })
+    },
+    randomNamePicker: (params: Record<string, any>) => {
+        return randomNamePicker({ names: params.names, count: params.count })
+    },
+    keywordDensityAnalyzer: (params: Record<string, any>) => {
+        return keywordDensityAnalyzer({ text: params.text })
+    },
+    commonMisspellingsChecker: (params: Record<string, any>) => {
+        return commonMisspellingsChecker({ text: params.text })
+    },
+    anagramChecker: (params: Record<string, any>) => {
+        return anagramChecker({ text_a: params.text_a, text_b: params.text_b })
+    },
+    palindromeChecker: (params: Record<string, any>) => {
+        return palindromeChecker({ text: params.text })
+    },
+    pigLatinTranslator: (params: Record<string, any>) => {
+        return pigLatinTranslator({ text: params.text })
+    },
+    acronymGenerator: (params: Record<string, any>) => {
+        return acronymGenerator({ text: params.text })
+    },
+    randomWordGenerator: (params: Record<string, any>) => {
+        return randomWordGenerator({ count: params.count })
+    },
+    textReverser: (params: Record<string, any>) => {
+        return textReverser({ text: params.text, mode: params.mode })
     },
 }
 
