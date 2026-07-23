@@ -83,6 +83,20 @@ import {
     paverCalculator,
     retainingWallBlockCalculator,
 } from '@/lib/tools/constructionCalculators'
+import {
+    serpSnippetChecker,
+    removeTrackingParams,
+    utmUrlBuilder,
+    readabilityScoreCalculator,
+    tournamentBracketGenerator,
+    platformLimitValidator,
+    slugGenerator,
+    duplicateLineRemover,
+    textDiffChecker,
+    metaTagGenerator,
+    robotsTxtGenerator,
+    loremIpsumGenerator,
+} from '@/lib/tools/utilitiesCalculators'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -388,6 +402,42 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     retainingWallBlockCalculator: (params: Record<string, any>) => {
         return retainingWallBlockCalculator({ wall_length: params.wall_length, wall_height: params.wall_height, block_length: params.block_length, block_height: params.block_height })
+    },
+    serpSnippetChecker: (params: Record<string, any>) => {
+        return serpSnippetChecker({ title: params.title, meta_description: params.meta_description })
+    },
+    removeTrackingParams: (params: Record<string, any>) => {
+        return removeTrackingParams({ url: params.url })
+    },
+    utmUrlBuilder: (params: Record<string, any>) => {
+        return utmUrlBuilder({ base_url: params.base_url, source: params.source, medium: params.medium, campaign: params.campaign, term: params.term, content: params.content })
+    },
+    readabilityScoreCalculator: (params: Record<string, any>) => {
+        return readabilityScoreCalculator({ text: params.text })
+    },
+    tournamentBracketGenerator: (params: Record<string, any>) => {
+        return tournamentBracketGenerator({ team_names: params.team_names })
+    },
+    platformLimitValidator: (params: Record<string, any>) => {
+        return platformLimitValidator({ text: params.text, platform: params.platform })
+    },
+    slugGenerator: (params: Record<string, any>) => {
+        return slugGenerator({ text: params.text })
+    },
+    duplicateLineRemover: (params: Record<string, any>) => {
+        return duplicateLineRemover({ text: params.text })
+    },
+    textDiffChecker: (params: Record<string, any>) => {
+        return textDiffChecker({ text_a: params.text_a, text_b: params.text_b })
+    },
+    metaTagGenerator: (params: Record<string, any>) => {
+        return metaTagGenerator({ title: params.title, description: params.description, url: params.url, image_url: params.image_url, site_name: params.site_name })
+    },
+    robotsTxtGenerator: (params: Record<string, any>) => {
+        return robotsTxtGenerator({ allow_all: params.allow_all, disallow_paths: params.disallow_paths, sitemap_url: params.sitemap_url, user_agent: params.user_agent })
+    },
+    loremIpsumGenerator: (params: Record<string, any>) => {
+        return loremIpsumGenerator({ paragraphs: params.paragraphs })
     },
 }
 

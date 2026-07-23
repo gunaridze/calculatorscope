@@ -510,7 +510,8 @@ export default function CalculatorWidget({
     const modeOptions = modeConfig?.options || []
 
     // Определяем, это text case converter или number-to-words
-    const isTextCaseConverter = config.inputs.some((inp: any) => inp.key === 'text')
+    const isTextCaseConverter =
+        config.inputs.some((inp: any) => inp.key === 'text') && config.inputs.some((inp: any) => inp.key === 'mode')
     const isNumberToWords = config.inputs.some((inp: any) => inp.key === 'inputNumber')
 
     // Получаем текст результата для отображения
@@ -587,6 +588,7 @@ export default function CalculatorWidget({
                             const isSelect = fieldConfig?.type === 'select' && Array.isArray(fieldConfig?.options)
                             const isDate = fieldConfig?.type === 'date'
                             const isText = fieldConfig?.type === 'text'
+                            const isTextarea = fieldConfig?.type === 'textarea'
                             const currentValue = values[inp.key] !== undefined ? values[inp.key] : (inp.default ?? '')
 
                             return (
@@ -618,6 +620,14 @@ export default function CalculatorWidget({
                                     ) : isText ? (
                                         <input
                                             type="text"
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder={fieldConfig?.placeholder || ''}
+                                            onChange={(e) => handleChange(inp.key, e.target.value)}
+                                            value={String(currentValue)}
+                                        />
+                                    ) : isTextarea ? (
+                                        <textarea
+                                            rows={5}
                                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                                             placeholder={fieldConfig?.placeholder || ''}
                                             onChange={(e) => handleChange(inp.key, e.target.value)}
