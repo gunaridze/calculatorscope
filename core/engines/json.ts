@@ -368,40 +368,40 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
         return emailMarketingRoiCalculator({ campaign_revenue: params.campaign_revenue, campaign_cost: params.campaign_cost })
     },
     concreteCalculator: (params: Record<string, any>) => {
-        return concreteCalculator({ length: params.length, width: params.width, thickness: params.thickness })
+        return concreteCalculator({ length: params.length, width: params.width, thickness: params.thickness, unit_system: params.unit_system })
     },
     concreteBagsCalculator: (params: Record<string, any>) => {
-        return concreteBagsCalculator({ volume_cuft: params.volume_cuft })
+        return concreteBagsCalculator({ volume: params.volume, unit_system: params.unit_system })
     },
     cubicYardsCalculator: (params: Record<string, any>) => {
-        return cubicYardsCalculator({ length: params.length, width: params.width, depth: params.depth })
+        return cubicYardsCalculator({ length: params.length, width: params.width, depth: params.depth, unit_system: params.unit_system })
     },
     squareFootageCalculator: (params: Record<string, any>) => {
-        return squareFootageCalculator({ length: params.length, width: params.width })
+        return squareFootageCalculator({ length: params.length, width: params.width, unit_system: params.unit_system })
     },
     gravelCalculator: (params: Record<string, any>) => {
-        return gravelCalculator({ length: params.length, width: params.width, depth: params.depth })
+        return gravelCalculator({ length: params.length, width: params.width, depth: params.depth, unit_system: params.unit_system })
     },
     mulchCalculator: (params: Record<string, any>) => {
-        return mulchCalculator({ length: params.length, width: params.width, depth: params.depth })
+        return mulchCalculator({ length: params.length, width: params.width, depth: params.depth, unit_system: params.unit_system })
     },
     tankCapacityCalculator: (params: Record<string, any>) => {
-        return tankCapacityCalculator({ shape: params.shape, diameter: params.diameter, length: params.length, width: params.width, height: params.height })
+        return tankCapacityCalculator({ shape: params.shape, diameter: params.diameter, length: params.length, width: params.width, height: params.height, unit_system: params.unit_system })
     },
     roadwayFillCalculator: (params: Record<string, any>) => {
-        return roadwayFillCalculator({ length: params.length, width: params.width, depth: params.depth })
+        return roadwayFillCalculator({ length: params.length, width: params.width, depth: params.depth, unit_system: params.unit_system })
     },
     sandCalculator: (params: Record<string, any>) => {
-        return sandCalculator({ length: params.length, width: params.width, depth: params.depth })
+        return sandCalculator({ length: params.length, width: params.width, depth: params.depth, unit_system: params.unit_system })
     },
     topsoilCalculator: (params: Record<string, any>) => {
-        return topsoilCalculator({ length: params.length, width: params.width, depth: params.depth })
+        return topsoilCalculator({ length: params.length, width: params.width, depth: params.depth, unit_system: params.unit_system })
     },
     paverCalculator: (params: Record<string, any>) => {
-        return paverCalculator({ area: params.area, paver_length: params.paver_length, paver_width: params.paver_width })
+        return paverCalculator({ area: params.area, paver_length: params.paver_length, paver_width: params.paver_width, unit_system: params.unit_system })
     },
     retainingWallBlockCalculator: (params: Record<string, any>) => {
-        return retainingWallBlockCalculator({ wall_length: params.wall_length, wall_height: params.wall_height, block_length: params.block_length, block_height: params.block_height })
+        return retainingWallBlockCalculator({ wall_length: params.wall_length, wall_height: params.wall_height, block_length: params.block_length, block_height: params.block_height, unit_system: params.unit_system })
     },
     serpSnippetChecker: (params: Record<string, any>) => {
         return serpSnippetChecker({ title: params.title, meta_description: params.meta_description })

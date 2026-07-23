@@ -150,11 +150,23 @@ export default function CalculatorWidget({
         const defaults: JsonEngineInput = {}
         const uiInputs = Array.isArray(ui) ? ui : undefined
         const todayStr = new Date().toISOString().slice(0, 10)
+        // Поля с defaultBySystem (например, длина в футах/метрах) зависят от текущего
+        // значения unit_system - сначала определяем его, прежде чем резолвить остальные default'ы
+        const unitSystemFieldConfig = uiInputs?.find((f: any) => f.name === 'unit_system')
+        const unitSystemValue =
+            unitSystemFieldConfig?.default !== undefined
+                ? unitSystemFieldConfig.default
+                : config.inputs.find((i) => i.key === 'unit_system')?.default
         config.inputs.forEach((inp) => {
             // Локальный дефолт (например, своя ставка НДС для языка) переопределяет общий config.inputs[].default
             const fieldConfig = uiInputs?.find((f: any) => f.name === inp.key)
             const localeOverride = fieldConfig?.default
-            let value = localeOverride !== undefined ? localeOverride : inp.default
+            let value: any
+            if (fieldConfig?.defaultBySystem && unitSystemValue !== undefined) {
+                value = fieldConfig.defaultBySystem[String(unitSystemValue)]
+            } else {
+                value = localeOverride !== undefined ? localeOverride : inp.default
+            }
             // Специальное значение "today" для полей type: 'date' - подставляем реальную
             // текущую дату вместо статичного значения, зафиксированного при сидировании
             if (fieldConfig?.type === 'date' && value === 'today') {
@@ -164,12 +176,12 @@ export default function CalculatorWidget({
                 defaults[inp.key] = value
             }
         })
-        
+
         // Обязательно устанавливаем conversionMode, если его нет
         if (defaults.conversionMode === undefined) {
             defaults.conversionMode = 'words'
         }
-        
+
         return { ...defaults, ...(initialValues || {}) }
     }
     
@@ -267,7 +279,17 @@ export default function CalculatorWidget({
     const handleChange = (key: string, val: string | number) => {
         // Используем функциональное обновление для немедленного применения изменений
         setValues((prev) => {
-            return { ...prev, [key]: val }
+            const next = { ...prev, [key]: val }
+            // Поля с defaultBySystem (например, длина в футах/метрах) при смене
+            // системы единиц (imperial/metric) сбрасываются на разумный default для
+            // новой системы, а не остаются в старых единицах под новым лейблом
+            const uiInputs = Array.isArray(ui) ? ui : undefined
+            uiInputs?.forEach((f: any) => {
+                if (f.unitFrom === key && f.defaultBySystem && f.defaultBySystem[String(val)] !== undefined) {
+                    next[f.name] = f.defaultBySystem[String(val)]
+                }
+            })
+            return next
         })
     }
     
@@ -297,10 +319,22 @@ export default function CalculatorWidget({
         const defaults: JsonEngineInput = {}
         const uiInputsForClear = Array.isArray(ui) ? ui : undefined
         const todayStrForClear = new Date().toISOString().slice(0, 10)
+        // Как и в getInitialValues, сначала резолвим unit_system, чтобы поля с
+        // defaultBySystem сбрасывались на default для правильной системы единиц
+        const unitSystemFieldConfigForClear = uiInputsForClear?.find((f: any) => f.name === 'unit_system')
+        const unitSystemValueForClear =
+            unitSystemFieldConfigForClear?.default !== undefined
+                ? unitSystemFieldConfigForClear.default
+                : config.inputs.find((i) => i.key === 'unit_system')?.default
         config.inputs.forEach((inp) => {
             const fieldConfig = uiInputsForClear?.find((f: any) => f.name === inp.key)
             const localeOverride = fieldConfig?.default
-            let value = localeOverride !== undefined ? localeOverride : inp.default
+            let value: any
+            if (fieldConfig?.defaultBySystem && unitSystemValueForClear !== undefined) {
+                value = fieldConfig.defaultBySystem[String(unitSystemValueForClear)]
+            } else {
+                value = localeOverride !== undefined ? localeOverride : inp.default
+            }
             if (fieldConfig?.type === 'date' && value === 'today') {
                 value = todayStrForClear
             }
@@ -583,8 +617,20 @@ export default function CalculatorWidget({
                     <>
                         {config.inputs.map((inp) => {
                             const fieldConfig = getFieldConfig(inp.key)
+                            // hidden: true - поле участвует в расчёте (со своим default'ом), но не
+                            // показывается в UI - например, unit_system, зафиксированный на 'metric'
+                            // для локалей без переключателя единиц измерения
+                            if (fieldConfig?.hidden) return null
                             const label = fieldConfig?.label || inp.key
-                            const unit = fieldConfig?.unit
+                            // unitFrom + unitMap - динамическая единица измерения поля ввода,
+                            // зависящая от значения другого поля (например, лейбл "Length (ft)"
+                            // меняется на "Length (m)" при переключении unit_system) - в отличие
+                            // от unitFrom у outputs (который берёт option.abbr), здесь у каждого
+                            // поля свой unitMap, т.к. разные величины (длина, глубина) используют
+                            // разные единицы для одного и того же значения unit_system
+                            const unit = fieldConfig?.unitFrom
+                                ? fieldConfig?.unitMap?.[String(values[fieldConfig.unitFrom])]
+                                : fieldConfig?.unit
                             const isSelect = fieldConfig?.type === 'select' && Array.isArray(fieldConfig?.options)
                             const isDate = fieldConfig?.type === 'date'
                             const isText = fieldConfig?.type === 'text'
