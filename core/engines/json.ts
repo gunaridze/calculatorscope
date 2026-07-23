@@ -28,6 +28,22 @@ import {
 import { workHours, clockInOutTotal, shiftCoverage } from '@/lib/tools/workShiftCalc'
 import { focusSessionPlanner, contextSwitchingCost, meetingTimezoneOverlap } from '@/lib/tools/productivityCalc'
 import { sunriseSunset } from '@/lib/tools/sunriseSunset'
+import {
+    temperatureConverter,
+    celsiusToFahrenheit,
+    fahrenheitToCelsius,
+    celsiusToKelvin,
+    fahrenheitToKelvin,
+    temperatureDifference,
+} from '@/lib/tools/temperatureConverter'
+import {
+    angleConverter,
+    degreesToRadians,
+    radiansToDegrees,
+    dmsToDecimalDegrees,
+    angleAddSubtract,
+    referenceCoterminalAngle,
+} from '@/lib/tools/angleConverter'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -192,7 +208,43 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     sunriseSunset: (params: Record<string, any>) => {
         return sunriseSunset({ latitude: params.latitude, longitude: params.longitude, date: params.date, utc_offset: params.utc_offset })
-    }
+    },
+    temperatureConverter: (params: Record<string, any>) => {
+        return temperatureConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    celsiusToFahrenheit: (params: Record<string, any>) => {
+        return celsiusToFahrenheit({ value: params.value })
+    },
+    fahrenheitToCelsius: (params: Record<string, any>) => {
+        return fahrenheitToCelsius({ value: params.value })
+    },
+    celsiusToKelvin: (params: Record<string, any>) => {
+        return celsiusToKelvin({ value: params.value })
+    },
+    fahrenheitToKelvin: (params: Record<string, any>) => {
+        return fahrenheitToKelvin({ value: params.value })
+    },
+    temperatureDifference: (params: Record<string, any>) => {
+        return temperatureDifference({ temp1: params.temp1, temp2: params.temp2, unit: params.unit })
+    },
+    angleConverter: (params: Record<string, any>) => {
+        return angleConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    degreesToRadians: (params: Record<string, any>) => {
+        return degreesToRadians({ value: params.value })
+    },
+    radiansToDegrees: (params: Record<string, any>) => {
+        return radiansToDegrees({ value: params.value })
+    },
+    dmsToDecimalDegrees: (params: Record<string, any>) => {
+        return dmsToDecimalDegrees({ degrees: params.degrees, minutes: params.minutes, seconds: params.seconds })
+    },
+    angleAddSubtract: (params: Record<string, any>) => {
+        return angleAddSubtract(params as any)
+    },
+    referenceCoterminalAngle: (params: Record<string, any>) => {
+        return referenceCoterminalAngle({ angle: params.angle })
+    },
 }
 
 /**
