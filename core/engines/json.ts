@@ -55,6 +55,20 @@ import {
     binaryToText,
 } from '@/lib/tools/numberBaseConverter'
 import { numberToRoman, romanToNumber } from '@/lib/tools/romanNumeralConverter'
+import {
+    roasCalculator,
+    cpaCalculator,
+    cpmCalculator,
+    ctrCalculator,
+    conversionRateCalculator,
+    funnelConversionCalculator,
+    multiTouchAttributionCalculator,
+    ltvCacRatioCalculator,
+    churnRateCalculator,
+    loyaltyProgramRoiCalculator,
+    organicTrafficValueCalculator,
+    emailMarketingRoiCalculator,
+} from '@/lib/tools/marketingCalculators'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -288,6 +302,42 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     romanToNumber: (params: Record<string, any>) => {
         return romanToNumber({ value: params.value })
+    },
+    roasCalculator: (params: Record<string, any>) => {
+        return roasCalculator({ revenue: params.revenue, ad_spend: params.ad_spend })
+    },
+    cpaCalculator: (params: Record<string, any>) => {
+        return cpaCalculator({ total_spend: params.total_spend, conversions: params.conversions })
+    },
+    cpmCalculator: (params: Record<string, any>) => {
+        return cpmCalculator({ total_spend: params.total_spend, impressions: params.impressions })
+    },
+    ctrCalculator: (params: Record<string, any>) => {
+        return ctrCalculator({ clicks: params.clicks, impressions: params.impressions })
+    },
+    conversionRateCalculator: (params: Record<string, any>) => {
+        return conversionRateCalculator({ conversions: params.conversions, visitors: params.visitors })
+    },
+    funnelConversionCalculator: (params: Record<string, any>) => {
+        return funnelConversionCalculator({ stage1: params.stage1, stage2: params.stage2, stage3: params.stage3, stage4: params.stage4 })
+    },
+    multiTouchAttributionCalculator: (params: Record<string, any>) => {
+        return multiTouchAttributionCalculator({ conversion_value: params.conversion_value, model: params.model })
+    },
+    ltvCacRatioCalculator: (params: Record<string, any>) => {
+        return ltvCacRatioCalculator({ ltv: params.ltv, cac: params.cac })
+    },
+    churnRateCalculator: (params: Record<string, any>) => {
+        return churnRateCalculator({ customers_start: params.customers_start, customers_lost: params.customers_lost })
+    },
+    loyaltyProgramRoiCalculator: (params: Record<string, any>) => {
+        return loyaltyProgramRoiCalculator({ program_cost: params.program_cost, incremental_revenue: params.incremental_revenue })
+    },
+    organicTrafficValueCalculator: (params: Record<string, any>) => {
+        return organicTrafficValueCalculator({ organic_visitors: params.organic_visitors, equivalent_cpc: params.equivalent_cpc })
+    },
+    emailMarketingRoiCalculator: (params: Record<string, any>) => {
+        return emailMarketingRoiCalculator({ campaign_revenue: params.campaign_revenue, campaign_cost: params.campaign_cost })
     },
 }
 
