@@ -568,6 +568,7 @@ export default function CalculatorWidget({
                             const unit = fieldConfig?.unit
                             const isSelect = fieldConfig?.type === 'select' && Array.isArray(fieldConfig?.options)
                             const isDate = fieldConfig?.type === 'date'
+                            const isText = fieldConfig?.type === 'text'
                             const currentValue = values[inp.key] !== undefined ? values[inp.key] : (inp.default ?? '')
 
                             return (
@@ -593,6 +594,14 @@ export default function CalculatorWidget({
                                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                                             min={fieldConfig?.min ?? undefined}
                                             max={fieldConfig?.max ?? undefined}
+                                            onChange={(e) => handleChange(inp.key, e.target.value)}
+                                            value={String(currentValue)}
+                                        />
+                                    ) : isText ? (
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder={fieldConfig?.placeholder || ''}
                                             onChange={(e) => handleChange(inp.key, e.target.value)}
                                             value={String(currentValue)}
                                         />

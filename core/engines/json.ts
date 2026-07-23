@@ -44,6 +44,17 @@ import {
     angleAddSubtract,
     referenceCoterminalAngle,
 } from '@/lib/tools/angleConverter'
+import { dataStorageConverter, downloadTimeCalculator } from '@/lib/tools/dataStorageConverter'
+import {
+    numberBaseConverter,
+    binaryToDecimal,
+    decimalToBinary,
+    decimalToHexadecimal,
+    hexadecimalToDecimal,
+    textToBinary,
+    binaryToText,
+} from '@/lib/tools/numberBaseConverter'
+import { numberToRoman, romanToNumber } from '@/lib/tools/romanNumeralConverter'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -244,6 +255,39 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     referenceCoterminalAngle: (params: Record<string, any>) => {
         return referenceCoterminalAngle({ angle: params.angle })
+    },
+    dataStorageConverter: (params: Record<string, any>) => {
+        return dataStorageConverter({ value: params.value, from_unit: params.from_unit, to_unit: params.to_unit })
+    },
+    downloadTimeCalculator: (params: Record<string, any>) => {
+        return downloadTimeCalculator({ file_size: params.file_size, file_size_unit: params.file_size_unit, speed: params.speed, speed_unit: params.speed_unit })
+    },
+    numberBaseConverter: (params: Record<string, any>) => {
+        return numberBaseConverter({ value: params.value, from_base: params.from_base, to_base: params.to_base })
+    },
+    binaryToDecimal: (params: Record<string, any>) => {
+        return binaryToDecimal({ value: params.value })
+    },
+    decimalToBinary: (params: Record<string, any>) => {
+        return decimalToBinary({ value: params.value })
+    },
+    decimalToHexadecimal: (params: Record<string, any>) => {
+        return decimalToHexadecimal({ value: params.value })
+    },
+    hexadecimalToDecimal: (params: Record<string, any>) => {
+        return hexadecimalToDecimal({ value: params.value })
+    },
+    textToBinary: (params: Record<string, any>) => {
+        return textToBinary({ value: params.value })
+    },
+    binaryToText: (params: Record<string, any>) => {
+        return binaryToText({ value: params.value })
+    },
+    numberToRoman: (params: Record<string, any>) => {
+        return numberToRoman({ value: params.value })
+    },
+    romanToNumber: (params: Record<string, any>) => {
+        return romanToNumber({ value: params.value })
     },
 }
 
