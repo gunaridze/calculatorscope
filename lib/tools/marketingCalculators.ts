@@ -1,4 +1,5 @@
 // Marketing performance / growth / ROI helpers.
+import { t } from './i18n'
 
 // "ROAS Calculator" - Return on Ad Spend
 export function roasCalculator(params: { revenue: unknown; ad_spend: unknown }): { roas: number; roas_percentage: number } {
@@ -80,16 +81,22 @@ export function multiTouchAttributionCalculator(params: {
 // standalone calculators elsewhere on the site (Customer Lifetime Value,
 // Customer Acquisition Cost) into the single benchmark ratio marketers
 // actually use to judge unit economics (commonly cited healthy range: 3:1-5:1).
-export function ltvCacRatioCalculator(params: { ltv: unknown; cac: unknown }): { ratio: number; assessment: string } {
+const LTV_CAC_ASSESSMENT: Record<string, Record<string, string>> = {
+    unprofitable: { en: 'Unprofitable', ru: 'Убыточно', de: 'Unrentabel', es: 'No Rentable', fr: 'Non Rentable', it: 'Non Redditizio', pl: 'Nieopłacalne', lv: 'Nerentabls' },
+    weak: { en: 'Weak', ru: 'Слабо', de: 'Schwach', es: 'Débil', fr: 'Faible', it: 'Debole', pl: 'Słabe', lv: 'Vājš' },
+    healthy: { en: 'Healthy', ru: 'Хорошо', de: 'Gesund', es: 'Saludable', fr: 'Sain', it: 'Sano', pl: 'Zdrowe', lv: 'Veselīgs' },
+    very_strong: { en: 'Very Strong', ru: 'Очень хорошо', de: 'Sehr Stark', es: 'Muy Fuerte', fr: 'Très Fort', it: 'Molto Forte', pl: 'Bardzo Mocne', lv: 'Ļoti Spēcīgs' },
+}
+export function ltvCacRatioCalculator(params: { ltv: unknown; cac: unknown; language: unknown }): { ratio: number; assessment: string } {
     const ltv = Number(params.ltv) || 0
     const cac = Number(params.cac) || 0
     const ratio = cac > 0 ? ltv / cac : 0
-    let assessment: string
-    if (ratio < 1) assessment = 'unprofitable'
-    else if (ratio < 3) assessment = 'weak'
-    else if (ratio <= 5) assessment = 'healthy'
-    else assessment = 'very_strong'
-    return { ratio, assessment }
+    let bucket: string
+    if (ratio < 1) bucket = 'unprofitable'
+    else if (ratio < 3) bucket = 'weak'
+    else if (ratio <= 5) bucket = 'healthy'
+    else bucket = 'very_strong'
+    return { ratio, assessment: t(LTV_CAC_ASSESSMENT[bucket], params.language) }
 }
 
 // "Customer Churn Rate Calculator"

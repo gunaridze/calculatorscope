@@ -366,7 +366,7 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
         return multiTouchAttributionCalculator({ conversion_value: params.conversion_value, model: params.model })
     },
     ltvCacRatioCalculator: (params: Record<string, any>) => {
-        return ltvCacRatioCalculator({ ltv: params.ltv, cac: params.cac })
+        return ltvCacRatioCalculator({ ltv: params.ltv, cac: params.cac, language: params.language })
     },
     churnRateCalculator: (params: Record<string, any>) => {
         return churnRateCalculator({ customers_start: params.customers_start, customers_lost: params.customers_lost })
@@ -417,31 +417,31 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
         return retainingWallBlockCalculator({ wall_length: params.wall_length, wall_height: params.wall_height, block_length: params.block_length, block_height: params.block_height, unit_system: params.unit_system })
     },
     serpSnippetChecker: (params: Record<string, any>) => {
-        return serpSnippetChecker({ title: params.title, meta_description: params.meta_description })
+        return serpSnippetChecker({ title: params.title, meta_description: params.meta_description, language: params.language })
     },
     removeTrackingParams: (params: Record<string, any>) => {
-        return removeTrackingParams({ url: params.url })
+        return removeTrackingParams({ url: params.url, language: params.language })
     },
     utmUrlBuilder: (params: Record<string, any>) => {
-        return utmUrlBuilder({ base_url: params.base_url, source: params.source, medium: params.medium, campaign: params.campaign, term: params.term, content: params.content })
+        return utmUrlBuilder({ base_url: params.base_url, source: params.source, medium: params.medium, campaign: params.campaign, term: params.term, content: params.content, language: params.language })
     },
     readabilityScoreCalculator: (params: Record<string, any>) => {
-        return readabilityScoreCalculator({ text: params.text })
+        return readabilityScoreCalculator({ text: params.text, language: params.language })
     },
     tournamentBracketGenerator: (params: Record<string, any>) => {
-        return tournamentBracketGenerator({ team_names: params.team_names })
+        return tournamentBracketGenerator({ team_names: params.team_names, language: params.language })
     },
     platformLimitValidator: (params: Record<string, any>) => {
-        return platformLimitValidator({ text: params.text, platform: params.platform })
+        return platformLimitValidator({ text: params.text, platform: params.platform, language: params.language })
     },
     slugGenerator: (params: Record<string, any>) => {
         return slugGenerator({ text: params.text })
     },
     duplicateLineRemover: (params: Record<string, any>) => {
-        return duplicateLineRemover({ text: params.text })
+        return duplicateLineRemover({ text: params.text, language: params.language })
     },
     textDiffChecker: (params: Record<string, any>) => {
-        return textDiffChecker({ text_a: params.text_a, text_b: params.text_b })
+        return textDiffChecker({ text_a: params.text_a, text_b: params.text_b, language: params.language })
     },
     metaTagGenerator: (params: Record<string, any>) => {
         return metaTagGenerator({ title: params.title, description: params.description, url: params.url, image_url: params.image_url, site_name: params.site_name })
@@ -459,19 +459,19 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
         return readingTimeCalculator({ text: params.text, wpm: params.wpm })
     },
     randomNamePicker: (params: Record<string, any>) => {
-        return randomNamePicker({ names: params.names, count: params.count })
+        return randomNamePicker({ names: params.names, count: params.count, language: params.language })
     },
     keywordDensityAnalyzer: (params: Record<string, any>) => {
-        return keywordDensityAnalyzer({ text: params.text })
+        return keywordDensityAnalyzer({ text: params.text, language: params.language })
     },
     commonMisspellingsChecker: (params: Record<string, any>) => {
-        return commonMisspellingsChecker({ text: params.text })
+        return commonMisspellingsChecker({ text: params.text, language: params.language })
     },
     anagramChecker: (params: Record<string, any>) => {
-        return anagramChecker({ text_a: params.text_a, text_b: params.text_b })
+        return anagramChecker({ text_a: params.text_a, text_b: params.text_b, language: params.language })
     },
     palindromeChecker: (params: Record<string, any>) => {
-        return palindromeChecker({ text: params.text })
+        return palindromeChecker({ text: params.text, language: params.language })
     },
     pigLatinTranslator: (params: Record<string, any>) => {
         return pigLatinTranslator({ text: params.text })
