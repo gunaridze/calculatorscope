@@ -110,6 +110,20 @@ import {
     randomWordGenerator,
     textReverser,
 } from '@/lib/tools/wordTextTools'
+import {
+    percentageCalculator,
+    percentChangeCalculator,
+    percentIncreaseCalculator,
+    percentDecreaseCalculator,
+    reversePercentageCalculator,
+    tipCalculator,
+    salesTaxCalculator,
+    discountCalculator,
+    ratioSimplifier,
+    proportionCalculator,
+    aspectRatioCalculator,
+    ratioToPercentageConverter,
+} from '@/lib/tools/percentRatioCalculators'
 
 export interface JsonEngineInput {
     [key: string]: number | string
@@ -484,6 +498,42 @@ const FUNCTION_REGISTRY: Record<string, (params: Record<string, any>) => any> = 
     },
     textReverser: (params: Record<string, any>) => {
         return textReverser({ text: params.text, mode: params.mode })
+    },
+    percentageCalculator: (params: Record<string, any>) => {
+        return percentageCalculator({ percent: params.percent, base_number: params.base_number })
+    },
+    percentChangeCalculator: (params: Record<string, any>) => {
+        return percentChangeCalculator({ old_value: params.old_value, new_value: params.new_value, language: params.language })
+    },
+    percentIncreaseCalculator: (params: Record<string, any>) => {
+        return percentIncreaseCalculator({ original_value: params.original_value, percent: params.percent })
+    },
+    percentDecreaseCalculator: (params: Record<string, any>) => {
+        return percentDecreaseCalculator({ original_value: params.original_value, percent: params.percent })
+    },
+    reversePercentageCalculator: (params: Record<string, any>) => {
+        return reversePercentageCalculator({ part_value: params.part_value, percent: params.percent })
+    },
+    tipCalculator: (params: Record<string, any>) => {
+        return tipCalculator({ bill_amount: params.bill_amount, tip_percent: params.tip_percent, num_people: params.num_people })
+    },
+    salesTaxCalculator: (params: Record<string, any>) => {
+        return salesTaxCalculator({ price: params.price, tax_rate: params.tax_rate })
+    },
+    discountCalculator: (params: Record<string, any>) => {
+        return discountCalculator({ original_price: params.original_price, discount_percent: params.discount_percent })
+    },
+    ratioSimplifier: (params: Record<string, any>) => {
+        return ratioSimplifier({ ratio_a: params.ratio_a, ratio_b: params.ratio_b })
+    },
+    proportionCalculator: (params: Record<string, any>) => {
+        return proportionCalculator({ a: params.a, b: params.b, c: params.c, d: params.d, solve_for: params.solve_for })
+    },
+    aspectRatioCalculator: (params: Record<string, any>) => {
+        return aspectRatioCalculator({ width: params.width, height: params.height, target_value: params.target_value, solve_for: params.solve_for })
+    },
+    ratioToPercentageConverter: (params: Record<string, any>) => {
+        return ratioToPercentageConverter({ ratio_a: params.ratio_a, ratio_b: params.ratio_b })
     },
 }
 
